@@ -10,95 +10,374 @@
     "rather than substituting a default, so nothing can quietly run on a",
     "number nobody chose. See the 'pending' field for what would settle it."
   ],
-
   "temperatures": {
     "_comment": [
-      "PENDING the Schneider Electric RD110 design package. Not yet obtained.",
-      "No value here may be quoted until it is replaced by an RD110 figure.",
-      "These nine are the model's entire temperature basis: SPEC.md section 7."
+      "From the Schneider Electric RD110 10 MW GB300 reference design, rev 3.",
+      "RD110 states four loop temperatures directly; the approach temperatures are",
+      "derived from them and marked M. Two things it does NOT settle are still null.",
+      "",
+      "READ SECTION 7 OF SPEC.md BEFORE USING THESE. RD110 rejects heat with",
+      "high-temperature chillers, not dry coolers, so its 37 C facility supply is a",
+      "chiller output and carries no implication that a dry cooler can produce it."
     ],
-    "facility_supply_c":      {"value": null, "pending": "RD110", "note": "dry cooler outlet / CDU facility inlet"},
-    "facility_return_c":      {"value": null, "pending": "RD110", "note": "CDU facility outlet / dry cooler inlet"},
-    "tcs_supply_c":           {"value": null, "pending": "RD110", "note": "CDU secondary outlet / cold plate inlet"},
-    "tcs_return_c":           {"value": null, "pending": "RD110", "note": "cold plate outlet / CDU secondary inlet"},
-    "cdu_approach_k":         {"value": null, "pending": "RD110", "note": "PHX terminal temperature difference"},
-    "drycooler_approach_k":   {"value": null, "pending": "RD110", "note": "at design ambient; with the ambient below, sets the floor on cold plate inlet"},
-    "ambient_design_c":       {"value": null, "pending": "RD110 + site weather file", "note": "dry bulb"},
-    "ashrae_liquid_class":    {"value": null, "pending": "RD110", "note": "W17 / W27 / W32 / W40 / W45 / W+"},
-    "cold_plate_max_inlet_c": {"value": null, "pending": "RD110 or node vendor", "note": "the limit the verdict is judged against"}
+    "facility_supply_c": {
+      "value": 37.0,
+      "unit": "C",
+      "confidence": "H",
+      "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables",
+      "note": "RD110 'HT chiller CW supply temperature' / 'CDU CW supply temperature'"
+    },
+    "facility_return_c": {
+      "value": 47.0,
+      "unit": "C",
+      "confidence": "H",
+      "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables",
+      "note": "RD110 'HT chiller CW return temperature' / 'CDU CW return temperature'; a 10 K facility rise"
+    },
+    "tcs_supply_c": {
+      "value": 40.0,
+      "unit": "C",
+      "confidence": "H",
+      "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables",
+      "note": "RD110 'TCS loop supply temperature' - the cold plate inlet"
+    },
+    "tcs_return_c": {
+      "value": 50.0,
+      "unit": "C",
+      "confidence": "H",
+      "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables",
+      "note": "RD110 'TCS loop return temperature'; a 10 K secondary rise, matching the facility side"
+    },
+    "cdu_approach_k": {
+      "value": 3.0,
+      "unit": "K",
+      "confidence": "M",
+      "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables, derived",
+      "note": "TCS supply 40 minus facility supply 37. RD110 states no PHX terminal difference directly; this is what its own four temperatures imply for the Motivair MCDU-50."
+    },
+    "drycooler_approach_k": {
+      "value": null,
+      "pending": "a dry cooler selection at an Australian design ambient",
+      "note": [
+        "RD110 CANNOT settle this. Its baseline heat rejection is four Uniflair",
+        "XRAF4242A EHT high-temperature chillers; dry coolers with adiabatic assist",
+        "appear only in its 'Design Options' list, with no approach temperature",
+        "given. A chiller makes 37 C water at any ambient in range; a dry cooler",
+        "cannot make water colder than ambient at all. See SPEC.md section 7.1."
+      ]
+    },
+    "ambient_design_c": {
+      "value": null,
+      "pending": "the AU01 site weather file",
+      "note": "RD110's own range is -9.6 to 39.3 C for Paris and Singapore. AU01 is an Australian site and needs its own design dry bulb AND coincident wet bulb - the wet bulb is what decides whether adiabatic assist closes the gap."
+    },
+    "ambient_range_rd110_c": {
+      "value": [
+        -9.6,
+        39.3
+      ],
+      "unit": "C",
+      "confidence": "H",
+      "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables",
+      "note": "RD110's stated outdoor range, for its reference locations. Recorded for traceability; not AU01's."
+    },
+    "ashrae_liquid_class": {
+      "value": "W40",
+      "confidence": "M",
+      "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables, derived",
+      "note": "A 37 C facility supply sits in the W40 band (W32 tops out at 32 C, W40 at 40 C). RD110 does not name a class itself."
+    },
+    "cold_plate_max_inlet_c": {
+      "value": null,
+      "pending": "NVIDIA GB300 NVL72 / node vendor limit",
+      "note": "RD110's 40 C TCS supply is the DESIGN value, not the allowable maximum. The margin between them is what every hot-day verdict is judged against, and RD110 does not state it."
+    }
   },
-
   "loads": {
-    "hall_liquid_kw":        {"value": 1092.0, "unit": "kW", "confidence": "M",
-                              "source": "cfd-cabinet-cooling/FINDINGS-AU01.md section 6"},
-    "rack_liquid_kw":        {"value": 68.0, "unit": "kW", "confidence": "M",
-                              "source": "digital-twin/README.md, scope limits"},
-    "rack_air_kw":           {"value": 36.75, "unit": "kW", "confidence": "C",
-                              "source": "cfd-cabinet-cooling/AU013-143-cooling-check.md, B300 load sheet (otherwise superseded)"},
-    "dlc_capture_fraction":  {"value": null, "pending": "node vendor system-level spec",
-                              "note": [
-                                "FINDINGS-AU01.md section 365 quotes DLC-2 'up to 95 % heat capture',",
-                                "but 68 liquid + 36.75 air = 104.75 kW/rack implies 65 %. The two cannot",
-                                "both be right. Left null deliberately: this is the open item SPEC.md",
-                                "section 8 says must be resolved before any capacity decision."
-                              ]},
-    "cdu_standing_loss_kw":  {"value": 17.5, "unit": "kW", "confidence": "L",
-                              "source": "midpoint of the 10-25 kW range in AU013-143-cooling-check.md"}
+    "hall_liquid_kw": {
+      "value": 1092.0,
+      "unit": "kW",
+      "confidence": "M",
+      "source": "cfd-cabinet-cooling/FINDINGS-AU01.md section 6"
+    },
+    "rack_liquid_kw": {
+      "value": 68.0,
+      "unit": "kW",
+      "confidence": "M",
+      "source": "digital-twin/README.md, scope limits"
+    },
+    "rack_air_kw": {
+      "value": 36.75,
+      "unit": "kW",
+      "confidence": "C",
+      "source": "cfd-cabinet-cooling/AU013-143-cooling-check.md, B300 load sheet (otherwise superseded)"
+    },
+    "dlc_capture_fraction": {
+      "value": null,
+      "pending": "which rack AU01 actually deploys",
+      "note": [
+        "Still open, and RD110 sharpens the question rather than answering it.",
+        "RD110 states 87 % liquid / 13 % air - but for a 142 kW GB300 NVL72 rack,",
+        "not the B300 nodes in cfd-cabinet-cooling. AU01's own figures, 68 kW liquid",
+        "and 36.75 kW air, imply 65 %. Both cannot describe the same machine, and",
+        "the 22-point gap is roughly a factor of three on the air load. Recorded",
+        "under plant.rd110 so the two can be compared without being merged."
+      ]
+    },
+    "cdu_standing_loss_kw": {
+      "value": 17.5,
+      "unit": "kW",
+      "confidence": "L",
+      "source": "midpoint of the 10-25 kW range in AU013-143-cooling-check.md"
+    }
   },
-
   "plant": {
     "cdu": {
-      "count":            {"value": 3, "confidence": "M", "source": "cooling-model/README.md; SPEC.md line 207"},
-      "model":            {"value": "Vertiv XDU 1350", "confidence": "M", "source": "cooling-model/README.md"},
-      "rated_duty_kw":    {"value": 1350.0, "unit": "kW", "confidence": "M", "source": "model designation"},
-      "rating_point":     {"_comment": "The single vendor point the eps-NTU fit is calibrated from. Every field PENDING the XDU 1350 datasheet.",
-                           "primary_flow_m3h":   {"value": null, "pending": "XDU 1350 datasheet"},
-                           "secondary_flow_m3h": {"value": null, "pending": "XDU 1350 datasheet"},
-                           "primary_in_c":       {"value": null, "pending": "XDU 1350 datasheet"},
-                           "secondary_in_c":     {"value": null, "pending": "XDU 1350 datasheet"},
-                           "primary_dp_kpa":     {"value": null, "pending": "XDU 1350 datasheet"},
-                           "secondary_dp_kpa":   {"value": null, "pending": "XDU 1350 datasheet"}}
+      "count": {
+        "value": 3,
+        "confidence": "M",
+        "source": "cooling-model/README.md; SPEC.md line 207"
+      },
+      "model": {
+        "value": "Vertiv XDU 1350",
+        "confidence": "M",
+        "source": "cooling-model/README.md"
+      },
+      "rated_duty_kw": {
+        "value": 1350.0,
+        "unit": "kW",
+        "confidence": "M",
+        "source": "model designation"
+      },
+      "rating_point": {
+        "_comment": "The single vendor point the eps-NTU fit is calibrated from. Every field PENDING the XDU 1350 datasheet.",
+        "primary_flow_m3h": {
+          "value": null,
+          "pending": "XDU 1350 datasheet"
+        },
+        "secondary_flow_m3h": {
+          "value": null,
+          "pending": "XDU 1350 datasheet"
+        },
+        "primary_in_c": {
+          "value": null,
+          "pending": "XDU 1350 datasheet"
+        },
+        "secondary_in_c": {
+          "value": null,
+          "pending": "XDU 1350 datasheet"
+        },
+        "primary_dp_kpa": {
+          "value": null,
+          "pending": "XDU 1350 datasheet"
+        },
+        "secondary_dp_kpa": {
+          "value": null,
+          "pending": "XDU 1350 datasheet"
+        }
+      }
     },
     "drycooler": {
-      "count":         {"value": 1, "confidence": "L", "source": "cooling-model/README.md - placeholder geometry, one 2.5 MW unit"},
-      "rated_duty_kw": {"value": 2500.0, "unit": "kW", "confidence": "L", "source": "cooling-model/README.md"},
-      "rating_point":  {"_comment": "PENDING a dry cooler selection. Ambient and approach here must agree with temperatures.ambient_design_c.",
-                        "fluid_flow_m3h":  {"value": null, "pending": "dry cooler selection"},
-                        "ambient_c":       {"value": null, "pending": "dry cooler selection"},
-                        "fluid_in_c":      {"value": null, "pending": "dry cooler selection"},
-                        "air_flow_m3s":    {"value": null, "pending": "dry cooler selection"},
-                        "fan_power_kw":    {"value": null, "pending": "dry cooler selection"}}
+      "count": {
+        "value": 1,
+        "confidence": "L",
+        "source": "cooling-model/README.md - placeholder geometry, one 2.5 MW unit"
+      },
+      "rated_duty_kw": {
+        "value": 2500.0,
+        "unit": "kW",
+        "confidence": "L",
+        "source": "cooling-model/README.md"
+      },
+      "rating_point": {
+        "_comment": "PENDING a dry cooler selection. Ambient and approach here must agree with temperatures.ambient_design_c.",
+        "fluid_flow_m3h": {
+          "value": null,
+          "pending": "dry cooler selection"
+        },
+        "ambient_c": {
+          "value": null,
+          "pending": "dry cooler selection"
+        },
+        "fluid_in_c": {
+          "value": null,
+          "pending": "dry cooler selection"
+        },
+        "air_flow_m3s": {
+          "value": null,
+          "pending": "dry cooler selection"
+        },
+        "fan_power_kw": {
+          "value": null,
+          "pending": "dry cooler selection"
+        }
+      }
     },
     "pumps": {
       "_comment": "Head curve as three datasheet points: shutoff, duty, runout. components.PumpCurve.from_points fits the quadratic.",
-      "facility": {"count": {"value": null, "pending": "pump selection"},
-                   "curve_points_m3h_m": {"value": null, "pending": "pump selection"}},
-      "secondary": {"_comment": "Integral to the XDU 1350.",
-                    "curve_points_m3h_m": {"value": null, "pending": "XDU 1350 datasheet"}}
+      "facility": {
+        "count": {
+          "value": null,
+          "pending": "pump selection"
+        },
+        "curve_points_m3h_m": {
+          "value": null,
+          "pending": "pump selection"
+        }
+      },
+      "secondary": {
+        "_comment": "Integral to the XDU 1350.",
+        "curve_points_m3h_m": {
+          "value": null,
+          "pending": "XDU 1350 datasheet"
+        }
+      }
+    },
+    "rd110": {
+      "_comment": [
+        "RD110's own plant, kept separate from AU01's. The temperatures above are",
+        "RD110's and apply to this equipment; AU01's CDU and rack counts are its own.",
+        "Recorded so a comparison is possible without the two quietly merging."
+      ],
+      "it_load_kw": {
+        "value": 7536.0,
+        "unit": "kW",
+        "confidence": "H",
+        "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables"
+      },
+      "ai_rack_kw": {
+        "value": 142.0,
+        "unit": "kW",
+        "confidence": "H",
+        "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables",
+        "note": "48 racks, GB300 NVL72 in NetShelter MGX"
+      },
+      "ai_rack_count": {
+        "value": 48,
+        "confidence": "H",
+        "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables"
+      },
+      "network_rack_kw": {
+        "value": 15.0,
+        "unit": "kW",
+        "confidence": "H",
+        "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables",
+        "note": "48 NetShelter SX racks"
+      },
+      "liquid_fraction": {
+        "value": 0.87,
+        "confidence": "H",
+        "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables",
+        "note": "'remove 87% of the heat via liquid while 13% requires air' - for GB300 NVL72"
+      },
+      "cdu_model": {
+        "value": "Motivair MCDU-50 liquid-to-liquid",
+        "confidence": "H",
+        "source": "RD110_4.2 IT Space equipment list"
+      },
+      "cdu_capacity_kw": {
+        "value": 1700.0,
+        "unit": "kW",
+        "confidence": "H",
+        "source": "RD110_4.2 IT Space equipment list"
+      },
+      "cdu_count": {
+        "value": 9,
+        "confidence": "H",
+        "source": "RD110_4.2; three per pod, N+1"
+      },
+      "heat_rejection": {
+        "value": "Uniflair XRAF4242A EHT air-cooled free-cooling chiller",
+        "confidence": "H",
+        "source": "RD110_3.3 Facility Cooling equipment list",
+        "note": "4 off, N+1. 2075 kW (Paris) / 2386 kW (Singapore). NOT dry coolers - see SPEC.md section 7.1."
+      },
+      "per_rack_control_valves": {
+        "value": 48,
+        "confidence": "H",
+        "source": "RD110_3.2 Mech Piping - PCV01..PCV48, one per liquid-cooled rack"
+      },
+      "header_dn": {
+        "value": 150,
+        "unit": "DN",
+        "confidence": "M",
+        "source": "RD110_3.2 Mech Piping, the only DN callout on the drawing"
+      },
+      "thermal_storage_m3": {
+        "value": 56.8,
+        "unit": "m3",
+        "confidence": "H",
+        "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables",
+        "note": "both facility water systems combined; 5 minutes ride-through"
+      },
+      "air_side_cw_supply_c": {
+        "value": 23.0,
+        "unit": "C",
+        "confidence": "H",
+        "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables",
+        "note": "the separate low-temperature loop serving 6 Uniflair FWCV36L2A fan walls"
+      },
+      "air_side_cw_return_c": {
+        "value": 33.0,
+        "unit": "C",
+        "confidence": "H",
+        "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables"
+      },
+      "crah_supply_air_c": {
+        "value": 28.0,
+        "unit": "C",
+        "confidence": "H",
+        "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Facility Cooling + IT Space attribute tables"
+      }
     }
   },
-
   "fluid": {
-    "name":               {"value": "PG25", "confidence": "H", "source": "SPEC.md section 4.4"},
-    "glycol_vol_percent": {"value": 25.0, "unit": "%", "confidence": "H"},
-    "properties_source":  {"value": "generic published 25 % PG tables", "confidence": "L",
-                           "note": "See dtloop/fluid.py. Generic glycol data, NOT a datasheet for the AU01 fill. Replace before quoting pressure drop to a vendor."}
+    "name": {
+      "value": "PG25",
+      "confidence": "H",
+      "source": "SPEC.md section 4.4"
+    },
+    "glycol_vol_percent": {
+      "value": 25.0,
+      "unit": "%",
+      "confidence": "H"
+    },
+    "properties_source": {
+      "value": "generic published 25 % PG tables",
+      "confidence": "L",
+      "note": "See dtloop/fluid.py. Generic glycol data, NOT a datasheet for the AU01 fill. Replace before quoting pressure drop to a vendor."
+    }
   },
-
   "hydraulic": {
-    "roughness_m":          {"value": 4.5e-05, "unit": "m", "confidence": "M",
-                             "source": "commercial steel, standard published value"},
-    "design_velocity_ms":   {"value": 2.0, "unit": "m/s", "confidence": "L",
-                             "note": "typical closed-loop sizing velocity; used only to sanity-check DN selections"},
-    "reference_pressure_pa": {"value": 300000.0, "unit": "Pa", "confidence": "L",
-                             "note": "expansion vessel setting. Fixes the absolute level of an otherwise closed loop; no flow depends on it."},
-    "closed_valve_k":       {"value": 1.0e10, "unit": "Pa.s2/kg2", "confidence": "H",
-                             "note": [
-                               "A shut valve is a large finite resistance, never infinite: an infinite K",
-                               "gives a singular Jacobian, and pruning the branch would throw away the",
-                               "thermal states whose temperature the demo needs to show rising.",
-                               "At 1e10 a 1 bar drop passes 3e-3 kg/s - 0.03 % of a nominal 10 kg/s -",
-                               "while keeping the system conditioned well inside float64."
-                             ]}
+    "roughness_m": {
+      "value": 4.5e-05,
+      "unit": "m",
+      "confidence": "M",
+      "source": "commercial steel, standard published value"
+    },
+    "design_velocity_ms": {
+      "value": 2.0,
+      "unit": "m/s",
+      "confidence": "L",
+      "note": "typical closed-loop sizing velocity; used only to sanity-check DN selections"
+    },
+    "reference_pressure_pa": {
+      "value": 300000.0,
+      "unit": "Pa",
+      "confidence": "L",
+      "note": "expansion vessel setting. Fixes the absolute level of an otherwise closed loop; no flow depends on it."
+    },
+    "closed_valve_k": {
+      "value": 10000000000.0,
+      "unit": "Pa.s2/kg2",
+      "confidence": "H",
+      "note": [
+        "A shut valve is a large finite resistance, never infinite: an infinite K",
+        "gives a singular Jacobian, and pruning the branch would throw away the",
+        "thermal states whose temperature the demo needs to show rising.",
+        "At 1e10 a 1 bar drop passes 3e-3 kg/s - 0.03 % of a nominal 10 kg/s -",
+        "while keeping the system conditioned well inside float64."
+      ]
+    }
   }
 }

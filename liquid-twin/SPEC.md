@@ -152,43 +152,86 @@ watching — the interest is in the controller fighting the disturbance.
 | CDU secondary | secondary pump speed | rack supply temperature | primary temperature control |
 | CDU facility side | facility control valve | rack supply temperature | valve authority matters; equal-percentage characteristic |
 | Heat rejection | dry cooler fan speed | facility supply temperature | ambient-limited region below minimum speed |
+## 7. Temperatures and setpoints — from Schneider RD110
 
-## 7. Temperatures and setpoints — **PENDING Schneider RD110**
+Source: **RD110 rev 3**, the 10 MW GB300 reference design (`RD110DSR3-GB300.pdf`,
+Facility Cooling and IT Space attribute tables), with the piping topology from
+`RD110_3.2_Mech_Piping_EN_R1` and equipment from `RD110_3.3` and `RD110_4.2`.
 
-All temperature references are to be taken from the Schneider Electric **RD110**
-design package. **Not yet obtained — every value below is a placeholder and must
-not be quoted until replaced.**
-
-| Parameter | Symbol | Value | Source |
+| Parameter | Value | Grade | Where it comes from |
 |---|---|---|---|
-| Facility supply water temperature | T_fws | **TBD** | RD110 |
-| Facility return water temperature | T_frw | **TBD** | RD110 |
-| Technology (TCS) supply temperature | T_tcs,s | **TBD** | RD110 |
-| Technology return temperature | T_tcs,r | **TBD** | RD110 |
-| CDU approach (PHX terminal ΔT) | — | **TBD** | RD110 |
-| Dry cooler approach at design ambient | — | **TBD** | RD110 |
-| Design ambient (dry bulb) | T_amb,des | **TBD** | RD110 + site |
-| ASHRAE liquid class | — | **TBD** | RD110 |
-| Max cold plate inlet temperature | — | **TBD** | RD110 / node vendor |
+| Facility supply (CDU CW supply) | **37 °C** | H | stated |
+| Facility return (CDU CW return) | **47 °C** | H | stated — a 10 K facility rise |
+| TCS supply (cold plate inlet) | **40 °C** | H | stated |
+| TCS return | **50 °C** | H | stated — a 10 K secondary rise |
+| CDU approach | **3 K** | M | derived: 40 − 37 |
+| ASHRAE liquid class | **W40** | M | derived: 37 °C supply sits in the W40 band |
+| RD110 outdoor range | −9.6 to 39.3 °C | H | stated, for Paris and Singapore |
+| Dry cooler approach | **still open** | — | RD110 cannot settle it — §7.1 |
+| AU01 design ambient | **still open** | — | needs the site weather file, dry *and* wet bulb |
+| Cold plate max inlet | **still open** | — | 40 °C is RD110's design value, not the allowable limit |
 
-For orientation only, pending RD110: ASHRAE liquid cooling classes are W17, W27,
-W32, W40, W45 and W+, named for the maximum facility supply water temperature in
-°C. The class RD110 assumes decides whether the dry coolers can run without
-adiabatic assist on a design day.
+Both loops run a 10 K rise, and the whole chain is only 13 K wide: 37 → 40 at the
+CDU, 40 → 50 through the plate, 50 → 47 back. That is a deliberately tight stack,
+and it is why the CDU approach matters as much as it does.
 
-### The two numbers that decide everything
+### 7.1 RD110 does not use dry coolers — and this changes the answer
 
-**CDU approach** and **dry cooler approach at design ambient**. Together they set
-the floor on cold plate inlet temperature:
+**RD110's baseline heat rejection is four Uniflair XRAF4242A EHT
+high-temperature chillers in N+1**, not dry coolers. Dry coolers appear only in
+its Design Options list — *"integrate dry coolers with adiabatic assist to
+further optimize energy electricity"* — with no approach temperature given.
+
+This is not a detail. A chiller makes 37 °C water at any ambient in its range.
+A dry cooler cannot make water colder than the air it rejects into, so holding
+RD110's 37 °C facility supply constrains ambient directly:
 
 ```
-T_plate,in ≥ T_ambient + approach_drycooler + approach_CDU
+T_ambient,max = 37 °C − approach
 ```
 
-At 40 °C ambient with a 5 K and a 6 K approach, that floor is 51 °C before any
-control action. Whether the interesting scenarios are hot-day or
-flow-distribution ones is decided by these two numbers, so obtain them before
-writing the solver.
+| approach | max ambient that still yields 37 °C |
+|---|---|
+| 3 K | 34 °C |
+| 5 K | 32 °C |
+| 8 K | 29 °C |
+
+Australian design dry bulbs sit above that band. Note that even RD110's own
+stated maximum — 39.3 °C — is above every row, which is consistent with its
+choosing chillers for the baseline.
+
+**Adiabatic assist is therefore not an optimisation, it is the enabling
+component.** Pre-cooling drives entering air toward wet bulb:
+
+```
+T_entering = T_db − η (T_db − T_wb)
+```
+
+At 38 °C dry bulb, 21 °C coincident wet bulb and η = 0.8, entering air is
+24.4 °C, and a 5 K approach gives 29.4 °C — inside 37 °C with 7.6 K to spare.
+The same site without assist is 43 °C, which misses by 6 K.
+
+So the design question the model must answer is not "how much energy do dry
+coolers save" but **"how many hours a year does the site's coincident wet bulb
+let them hold 37 °C, and what carries the load when it does not"**. That makes
+`hot_day.json` (§10) the primary scenario rather than a stress case, and it makes
+the coincident wet bulb — not the dry bulb — the number to chase.
+
+None of the arithmetic above is RD110's. It is derived from RD110's stated
+temperatures plus an assumed dry cooler approach, and it needs a real selection
+to firm up.
+
+### 7.2 The two numbers that still decide everything
+
+Unchanged from before, but now half-answered. The CDU approach is 3 K. The dry
+cooler approach at design ambient is what §7.1 is about. Together:
+
+```
+T_plate,in ≥ T_air,entering + approach_drycooler + approach_CDU
+```
+
+With RD110's 3 K CDU approach and a 40 °C plate inlet ceiling, everything
+upstream has 37 °C to work with — which is the whole of §7.1 in one line.
 
 ## 8. Load and plant data
 

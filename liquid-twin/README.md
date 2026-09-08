@@ -5,12 +5,13 @@ Companion to [`../digital-twin/`](../digital-twin/), which does the air side of
 the same hall and which this deliberately does not touch.
 
 **Status: Phase 1 of 6.** The hydraulic core is built and tested. Thermal
-transport, heat exchangers, controls and the viewer are not.
+transport, heat exchangers, controls and the viewer are not. Temperatures come from Schneider
+RD110 rev 3; see below for what it settles and what it changes.
 [SPEC.md](SPEC.md) is the design; this README is what exists.
 
 ```bash
 pip install -e '.[dev]'
-python3 -m pytest loop/tests -q      # 61 tests
+python3 -m pytest loop/tests -q      # 66 tests
 ```
 
 ## Why this is not CFD
@@ -62,35 +63,63 @@ liquid-twin/
 │   ├── components.py    pipe, valve, pump, resistance
 │   ├── network.py       nodes, branches, incidence
 │   └── hydraulics.py    the Newton solve                          (Phase 1)
-└── loop/tests/          61 tests
+└── loop/tests/          66 tests
 ```
 
 ## Phase 0: what is not known yet
 
 `loop_params.json` holds every number the model uses together with where it came
-from and how much to trust it. Twenty-four are still null, and `params.py`
+from and how much to trust it. Eighteen are still null, and `params.py`
 **raises rather than substituting a default** when one is asked for:
 
 ```
->>> LoopParams.load().get("temperatures.tcs_supply_c")
-PendingReference: temperatures.tcs_supply_c is not yet known - pending RD110
-  CDU secondary outlet / cold plate inlet
+>>> LoopParams.load().get("temperatures.drycooler_approach_k")
+PendingReference: temperatures.drycooler_approach_k is not yet known -
+  pending a dry cooler selection at an Australian design ambient
 ```
 
 A default would be a number nobody chose, indistinguishable downstream from one
-somebody did. The model's entire temperature basis is currently pending the
-Schneider RD110 design package, and that had better be loud.
+somebody did. RD110 has since closed six of the original 24, including all four
+loop temperatures; eighteen remain.
 
-Two open items are worth naming here rather than leaving in the JSON:
+### The temperatures, from RD110
 
-- **All nine temperatures await RD110.** Until then no temperature-dependent
-  result means anything. The two that decide the most are the CDU approach and
-  the dry cooler approach at design ambient: together they set the floor on cold
-  plate inlet temperature, `T_amb + approach_dc + approach_cdu`.
-- **The air/liquid split does not add up.** 68 kW liquid + 36.75 kW air is a
-  65 % liquid share, against `FINDINGS-AU01.md` §365's "up to 95 % heat
-  capture". Both cannot be right, so `dlc_capture_fraction` is deliberately
-  null. It must be resolved before this model is used for capacity work.
+Schneider **RD110 rev 3**, the 10 MW GB300 reference design, settles the loop
+temperatures. Both loops run a 10 K rise and the whole stack is 13 K wide:
+
+| | value | grade |
+|---|---|---|
+| Facility supply / return (CDU CW) | **37 / 47 °C** | H, stated |
+| TCS supply / return (cold plate) | **40 / 50 °C** | H, stated |
+| CDU approach | **3 K** | M, derived: 40 − 37 |
+| ASHRAE liquid class | **W40** | M, derived |
+
+### But RD110 does not use dry coolers
+
+Its baseline heat rejection is four **Uniflair XRAF4242A EHT high-temperature
+chillers**, N+1. Dry coolers appear only in its Design Options list — *"integrate
+dry coolers with adiabatic assist to further optimize energy electricity"* — with
+no approach temperature given. A chiller makes 37 °C water at any ambient in
+range; a dry cooler cannot make water colder than the air, so holding 37 °C
+constrains ambient to `37 − approach`: 32 °C at a 5 K approach, 34 °C at 3 K.
+Australian design dry bulbs are above that band, and so is RD110's own stated
+maximum of 39.3 °C — which is consistent with its choosing chillers.
+
+So for a dry-cooler architecture, **adiabatic assist is the enabling component,
+not an optimisation**, and the number to chase is the site's *coincident wet
+bulb*, not its dry bulb. SPEC.md §7.1 has the arithmetic. This makes `hot_day`
+the primary scenario rather than a stress case.
+
+### Two open items
+
+- **The air/liquid split, still.** RD110 sharpened it rather than closing it: it
+  states 87 % liquid / 13 % air, but for a 142 kW GB300 NVL72, where AU01's
+  68 kW liquid + 36.75 kW air imply 65 % for B300 nodes. Different machines, and
+  a 22-point gap is about a factor of three on the air load. RD110's plant is
+  recorded under `plant.rd110` so the two can be compared without merging.
+- **Cold plate maximum inlet.** RD110's 40 °C is the design value, not the
+  allowable limit. The margin between them is what every hot-day verdict is
+  judged against, and RD110 does not state it.
 
 ## Phase 1: the hydraulic core
 
