@@ -194,8 +194,10 @@ def test_chillers_reject_the_load_plus_the_pumping_that_moved_it(solved):
     circuits, sols = solved
     h = heat_balance(circuits, sols)
     assert h["pump_hydraulic_kw"] > 0
+    # abs, not rel: every term in the report is rounded for display, so their
+    # sum carries a few hundredths of a kW that mean nothing.
     assert h["rejected_at_chillers_kw"] == pytest.approx(
-        h["carried_by_liquid_kw"] + h["pump_hydraulic_kw"], rel=1e-6)
+        h["carried_by_liquid_kw"] + h["pump_hydraulic_kw"], abs=0.1)
     assert h["pump_shaft_kw"] > h["pump_hydraulic_kw"]  # efficiency
 
 
@@ -298,3 +300,90 @@ def test_every_scenario_converges(scenarios):
     for key, s in scenarios.items():
         for name, c in s["circuits"].items():
             assert c["converged"], f"{key}/{name} did not converge"
+
+
+# -- parametric load and liquid share -----------------------------------
+
+def test_electrical_balance_takes_a_rack_and_a_split():
+    from dtloop.plant import electrical_balance as eb
+    base = eb()
+    assert base["rack_kw"] == 142.0 and base["liquid_fraction"] == 0.87
+
+    bigger = eb(rack_kw=200.0)
+    assert bigger["to_liquid_kw"] == pytest.approx(200.0 * 48 * 0.87)
+    # Networking racks are unaffected: they are air-cooled whatever the AI rack is.
+    assert bigger["network_racks_kw"] == base["network_racks_kw"]
+
+    drier = eb(liquid_fraction=0.65)
+    assert drier["to_liquid_kw"] < base["to_liquid_kw"]
+    assert drier["to_air_kw"] > base["to_air_kw"]
+    assert drier["to_liquid_kw"] + drier["to_air_kw"] == pytest.approx(
+        base["it_electrical_kw"])
+
+
+def test_heat_constants_carry_everything_needed_to_redo_the_sums():
+    """The browser varies load and plate area live off these, so a missing key
+    is a silently wrong readout rather than an error."""
+    from dtloop.plant import heat_constants
+    c = heat_constants()
+    for key in ("cp_tcs", "cp_facility", "tcs_supply_c", "tcs_return_c",
+                "facility_supply_c", "facility_return_c", "return_limit_c",
+                "starved_flow_fraction", "design_delta_t_k", "design_rack_kw",
+                "design_liquid_fraction", "ai_rack_count", "network_rack_count",
+                "network_rack_kw"):
+        assert key in c, key
+    assert "Flow is set by the pumps" in c["note"]
+
+
+def test_the_plate_table_is_load_independent_and_aligned_to_the_ua_scales():
+    """It has to be: the browser multiplies by a live load. And it is indexed by
+    position, because keying on str(1.0) put "1.0" in the JSON where JavaScript
+    looks for "1"."""
+    from dtloop.plant import UA_SCALES, build_circuits, plate_table, size_pumps, solve_circuit
+    circuits = build_circuits()
+    for c in circuits.values():
+        size_pumps(c)
+    sols = {n: solve_circuit(c) for n, c in circuits.items()}
+    table = plate_table(circuits, sols)
+
+    assert len(table) == 9
+    for name, entry in table.items():
+        assert len(entry["by_ua_scale"]) == len(UA_SCALES)
+        for row, scale in zip(entry["by_ua_scale"], UA_SCALES):
+            assert row["ua_scale"] == scale
+            for key in ("effectiveness", "c_min_kw_per_k", "c_hot_kw_per_k"):
+                assert key in row
+        # Effectiveness rises with area, monotonically.
+        eps = [r["effectiveness"] for r in entry["by_ua_scale"]]
+        assert all(a <= b for a, b in zip(eps, eps[1:])), name
+
+
+def test_fluid_properties_are_stated_with_their_provenance():
+    from dtloop.plant import fluid_properties
+    f = fluid_properties()
+    assert f["confidence"] == "L"
+    assert "NOT a datasheet" in f["caveat"]
+    temps = [r["t_c"] for r in f["rows"]]
+    for loop_t in f["loop_temperatures"].values():
+        assert loop_t in temps, f"no properties listed at {loop_t} C"
+    # Viscosity falls with temperature, and by a lot.
+    mus = [r["mu_mpas"] for r in f["rows"]]
+    assert all(a > b for a, b in zip(mus, mus[1:]))
+    assert mus[0] / mus[-1] > 4
+
+
+# -- the facility side the TCS verdict cannot see ------------------------
+
+def test_losing_a_pump_warns_even_though_no_rack_is_starved(scenarios):
+    """Added because the verdict said PASS while facility return climbed 4 K.
+
+    The TCS side is held by the CDU pumps, so a facility-side flow loss starves
+    no rack - it raises the chiller return, the CDU approach and eventually the
+    cold plate inlet. Only a facility-side check sees it.
+    """
+    base, trip = scenarios["design"], scenarios["cwp_trip"]
+    assert base["heat"]["facility"]["over_design"] is False
+    assert trip["heat"]["facility"]["over_design"] is True
+    assert trip["heat"]["verdict"] == "WARN"
+    assert trip["heat"]["facility"]["return_c"] > base["heat"]["facility"]["return_c"] + 3
+    assert trip["heat"]["starved_racks"] == []

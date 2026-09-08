@@ -95,34 +95,32 @@ def test_segment_length_and_elbow_counts_are_the_ones_the_solver_will_use(lay):
             for a, b in zip(drop.waypoints, drop.waypoints[1:])))
 
 
-def test_runs_turn_at_most_twice_which_is_a_stated_limitation(lay):
+def test_no_run_turns_more_than_once_which_is_a_stated_limitation(lay):
     """Pinned because it is a limit of this model, not a property of real pipework.
 
-    This assertion was `== 1` until the chilled water pumps were drawn in, which
-    added runs that drop from the chiller, cross to the pump and drop again -
-    two elbows. It failing was the intended signal: the fitting counts had
-    changed, so the loss coefficients had to be checked rather than the
-    assertion relaxed. They feed through `_pipe_for`, which is what
-    `test_elbows_reach_the_solver_as_fitting_loss` below verifies.
+    This number has moved twice already and each move was the point of the test.
+    Drawing the chilled water pumps in series took it to 2; putting them on
+    parallel manifolds brought it back to 1, because a stub from a manifold to a
+    pump nozzle turns once. Both times the failure was the signal to check that
+    the loss coefficients had followed, rather than to relax the assertion -
+    `test_elbows_reach_the_solver_as_fitting_loss` is that check.
 
     Real routing round structure, other services and access ways turns far more
-    often than twice, and each extra elbow is loss the solver would see, so
-    these counts remain a **floor, not an estimate**. `piping/route_engine.py`
-    is where A* routing, real bend radii and clash checking live; this layout is
+    often than once, and each extra elbow is loss the solver would see, so these
+    counts remain a **floor, not an estimate**. `piping/route_engine.py` is
+    where A* routing, real bend radii and clash checking live; this layout is
     for reviewing connectivity and equipment placement.
     """
-    assert max(s.elbows() for s in lay.segments) == 2
-    counts = {n: sum(1 for s in lay.segments if s.elbows() == n) for n in (0, 1, 2)}
-    assert counts[2] == 4, "one two-elbow run per chilled water pump"
+    assert max(s.elbows() for s in lay.segments) == 1
 
 
 def test_elbows_reach_the_solver_as_fitting_loss(lay):
     """The link the test above depends on: a drawn elbow is a modelled loss."""
     from dtloop.plant import FITTING_K_PER_ELBOW, _pipe_for
 
-    two = next(s for s in lay.segments if s.elbows() == 2)
+    turning = next(s for s in lay.segments if s.elbows() == 1)
     straight = next(s for s in lay.segments if s.elbows() == 0)
-    assert _pipe_for(two, 40.0).fittings_k == pytest.approx(2 * FITTING_K_PER_ELBOW)
+    assert _pipe_for(turning, 40.0).fittings_k == pytest.approx(FITTING_K_PER_ELBOW)
     assert _pipe_for(straight, 40.0).fittings_k == 0.0
 
 

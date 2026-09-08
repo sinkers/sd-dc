@@ -55,7 +55,14 @@ from dtloop.layout import (  # noqa: E402
     build_layout,
     summary,
 )
-from dtloop.plant import electrical_balance, run_scenarios, segment_flows  # noqa: E402
+from dtloop.plant import (  # noqa: E402
+    electrical_balance,
+    fluid_properties,
+    heat_constants,
+    hx_model,
+    run_scenarios,
+    segment_flows,
+)
 
 # RD110's liquid load. 87 % of the AI racks only - the 48 networking racks at
 # 15 kW are air-cooled, so applying 87 % to RD110's whole 7,536 kW IT figure
@@ -281,6 +288,9 @@ def main() -> int:
     # physics has one implementation and JavaScript only looks things up.
     plant = rd110_plant()
     sweep = plant.sweep(LIQUID_LOAD_KW, RETURN_WATER_C, lo=-10.0, hi=48.0, step=0.5)
+    # The load-independent half: coil capability and COP against ambient, so the
+    # browser can vary the IT load without another axis being precomputed.
+    capability = plant.capability_sweep(RETURN_WATER_C, lo=-10.0, hi=48.0, step=0.5)
 
     # Hydraulics. Solved here, in Python, and handed over as a table per
     # scenario - the same arrangement as the chiller sweep, and for the same
@@ -307,6 +317,9 @@ def main() -> int:
         "valve_colour": VALVE_COLOUR,
         "meter_colour": METER_COLOUR,
         "electrical": electrical_balance(),
+        "heat_constants": heat_constants(),
+        "hx_model": hx_model(),
+        "fluid": fluid_properties(),
         "scenarios": scenarios,
         "chillers": {
             "model": "Uniflair XRAF4242A EHT free-cooling chiller",
@@ -319,6 +332,8 @@ def main() -> int:
             "crossover_c": round(plant.crossover_ambient_c(LIQUID_LOAD_KW, RETURN_WATER_C), 2),
             "rd110_ambient_max_c": 39.3,
             "sweep": sweep,
+            "capability": capability,
+            "ua_free_kw_per_k": round(sum(u.ua_free_kw_per_k for u in plant.units[: plant.running]), 3),
             "note": (
                 "Free cooling below the crossover: fans only, compressors off. "
                 "Above it the coil pre-cools and the compressors carry the rest. "

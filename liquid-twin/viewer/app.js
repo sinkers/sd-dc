@@ -162,6 +162,7 @@ async function load() {
   camera.up.set(0, 0, 1);
 
   buildUI();
+  buildInputsUI();
   buildHydraulicsUI();
   document.getElementById('loading').remove();
   document.getElementById('left').hidden = false;
@@ -327,8 +328,6 @@ function buildUI() {
 
   const slider = document.getElementById('amb');
   slider.oninput = () => setAmbient(parseFloat(slider.value));
-  drawChart();
-  setAmbient(parseFloat(slider.value));
 }
 
 function rowFor(ambient) {
@@ -345,19 +344,30 @@ const MODE_TINT = {
 };
 
 function setAmbient(t) {
-  const r = rowFor(t);
+  document.getElementById('ambVal').textContent = `${t.toFixed(1)} °C`;
+  renderAll();
+}
+
+function renderChiller(th) {
+  const t = +document.getElementById('amb').value;
+  const c = th.chiller;
   document.getElementById('ambVal').textContent = `${t.toFixed(1)} °C`;
   const mode = document.getElementById('mode');
-  mode.textContent = r.mode;
-  mode.className = 'm-' + r.mode;
-  const freePct = r.free_fraction * 100;
+  mode.textContent = c.mode;
+  mode.className = 'm-' + c.mode;
+  const freePct = c.freeFraction * 100;
   document.getElementById('freePct').textContent = `${freePct.toFixed(0)} %`;
   document.getElementById('barFree').style.width = `${freePct}%`;
   document.getElementById('barMech').style.width = `${100 - freePct}%`;
-  document.getElementById('fans').textContent = `${r.fans_kw.toFixed(0)} kW`;
-  document.getElementById('comp').textContent = `${r.compressors_kw.toFixed(0)} kW`;
-  document.getElementById('total').textContent = `${r.total_kw.toFixed(0)} kW`;
-  document.getElementById('cop').textContent = r.cop_effective.toFixed(1);
+  document.getElementById('fans').textContent = `${c.fans_kw.toFixed(0)} kW`;
+  document.getElementById('comp').textContent = `${c.compressorsKw.toFixed(0)} kW`;
+  document.getElementById('total').textContent = `${c.totalKw.toFixed(0)} kW`;
+  document.getElementById('cop').textContent =
+    c.totalKw > 0 ? (th.rejectedKw / c.totalKw).toFixed(1) : '—';
+  // The crossover moves with load: T = T_return - load/UA_free.
+  const crossover = manifest.chillers.return_water_c
+    - th.rejectedKw / manifest.chillers.ua_free_kw_per_k;
+  document.getElementById('crossover').textContent = `${crossover.toFixed(1)} °C`;
 
   // Tint the chillers by mode, so the switch is visible in the model and not
   // only in the readout. Mixed a third of the way toward the base grey rather
@@ -367,18 +377,18 @@ function setAmbient(t) {
   const g = groups.get('chiller');
   if (g) {
     const base = manifest.kind_colour.chiller;
-    const c = MODE_TINT[r.mode] || base;
+    const tint = MODE_TINT[c.mode] || base;
     const k = 0.34;
     g.mesh.material.color.setRGB(
-      base[0] + (c[0] - base[0]) * k,
-      base[1] + (c[1] - base[1]) * k,
-      base[2] + (c[2] - base[2]) * k);
-    g.mesh.material.emissive.setRGB(c[0] * 0.10, c[1] * 0.10, c[2] * 0.10);
+      base[0] + (tint[0] - base[0]) * k,
+      base[1] + (tint[1] - base[1]) * k,
+      base[2] + (tint[2] - base[2]) * k);
+    g.mesh.material.emissive.setRGB(tint[0] * 0.10, tint[1] * 0.10, tint[2] * 0.10);
   }
-  drawChart(t);
+  drawChart(t, crossover);
 }
 
-function drawChart(marker) {
+function drawChart(marker, crossover) {
   const cv = document.getElementById('chart');
   const ctx = cv.getContext('2d');
   const W = cv.width, H = cv.height, pad = 18;
@@ -389,7 +399,7 @@ function drawChart(marker) {
   const y = k => H - pad - k / maxKw * (H - pad * 2);
 
   // Free-cooling band, so the crossover reads as a region not just a number.
-  const xc = x(manifest.chillers.crossover_c);
+  const xc = x(crossover !== undefined ? crossover : manifest.chillers.crossover_c);
   ctx.fillStyle = 'rgba(78,201,160,.10)';
   ctx.fillRect(pad, pad, xc - pad, H - pad * 2);
   ctx.strokeStyle = 'rgba(78,201,160,.5)';
@@ -430,7 +440,172 @@ function drawChart(marker) {
 let scenarioIndex = 0;
 let colourMode = 'service';
 
+/* Live inputs. None of these re-solve the hydraulics, because the hydraulics do
+ * not depend on them: flow is set by the pumps and the valve positions, so load
+ * and plate area move temperatures and leave every flow where it was. That is
+ * what lets them be sliders rather than another precomputed axis.
+ *
+ * The two lines that do the work are an energy balance and the eps-NTU duty
+ * relation, both stated in dtloop/hx.py. The model itself - UA sizing, the COP
+ * curve, the mode boundaries - stays in Python. */
+const inputs = { rackKw: null, liquidFrac: null, uaIdx: null };
+
 function scenario() { return manifest.scenarios[scenarioIndex]; }
+
+function buildInputsUI() {
+  const hc = manifest.heat_constants;
+  const hx = manifest.hx_model;
+  inputs.rackKw = hc.design_rack_kw;
+  inputs.liquidFrac = hc.design_liquid_fraction;
+  inputs.uaIdx = hx.ua_scales.indexOf(1.0);
+
+  const rack = document.getElementById('rackKw');
+  const liq = document.getElementById('liqFrac');
+  const ua = document.getElementById('uaScale');
+  rack.value = inputs.rackKw;
+  liq.value = Math.round(inputs.liquidFrac * 100);
+  ua.max = hx.ua_scales.length - 1;
+  ua.value = inputs.uaIdx;
+
+  rack.oninput = () => { inputs.rackKw = +rack.value; renderAll(); };
+  liq.oninput = () => { inputs.liquidFrac = +liq.value / 100; renderAll(); };
+  ua.oninput = () => { inputs.uaIdx = +ua.value; renderAll(); };
+  document.getElementById('resetIT').onclick = () => {
+    inputs.rackKw = hc.design_rack_kw;
+    inputs.liquidFrac = hc.design_liquid_fraction;
+    inputs.uaIdx = hx.ua_scales.indexOf(1.0);
+    rack.value = inputs.rackKw;
+    liq.value = Math.round(inputs.liquidFrac * 100);
+    ua.value = inputs.uaIdx;
+    renderAll();
+  };
+
+  document.getElementById('hxMethod').textContent = hx.method + ' — ' + hx.calibrated_from;
+  document.getElementById('hxRelations').innerHTML = hx.relations.join('<br>');
+  document.getElementById('hxCaveats').innerHTML = hx.caveats.join('<br><br>');
+
+  const f = manifest.fluid;
+  document.getElementById('fluidName').textContent =
+    `${f.name} · grade ${f.confidence} · ${f.source}`;
+  const loops = new Set(Object.values(f.loop_temperatures));
+  document.getElementById('fluidTable').innerHTML =
+    `<tr><th>°C</th><th>ρ kg/m³</th><th>cp J/kgK</th><th>k W/mK</th><th>μ mPa·s</th><th>Pr</th></tr>` +
+    f.rows.map(r => `<tr class="${loops.has(r.t_c) ? 'loop' : ''}">
+      <td>${r.t_c}</td><td>${r.rho}</td><td>${r.cp}</td>
+      <td>${r.k}</td><td>${r.mu_mpas}</td><td>${r.prandtl}</td></tr>`).join('');
+  document.getElementById('fluidCaveat').textContent = f.caveat;
+}
+
+/* The whole temperature chain, from the IT load outward. Everything here is
+ * arithmetic on the solved flows and the exported plate state. */
+function thermalState() {
+  const s = scenario();
+  const hc = manifest.heat_constants;
+  const hxm = manifest.hx_model;
+  const scale = hxm.ua_scales[inputs.uaIdx];
+
+  const rackLiquidKw = inputs.rackKw * inputs.liquidFrac;
+  const rackAirKw = inputs.rackKw * (1 - inputs.liquidFrac);
+  const plantLiquidKw = rackLiquidKw * hc.ai_rack_count;
+  const itKw = inputs.rackKw * hc.ai_rack_count
+             + hc.network_rack_kw * hc.network_rack_count;
+  const airKw = rackAirKw * hc.ai_rack_count + hc.network_rack_kw * hc.network_rack_count;
+
+  // Racks: dT = Q/(m cp) at the already-solved flow.
+  const racks = {};
+  let worst = null, starved = [], over = [];
+  for (const [name, r] of Object.entries(s.heat.racks)) {
+    const st = r.flow_fraction < hc.starved_flow_fraction;
+    const dt = st || r.m_dot_kgs <= 1e-4
+      ? null : rackLiquidKw * 1000 / (r.m_dot_kgs * hc.cp_tcs);
+    const row = { ...r, duty_kw: rackLiquidKw, starved: st, delta_t_k: dt };
+    racks[name] = row;
+    if (st) starved.push(name);
+    if (!worst || (dt || 0) > (racks[worst].delta_t_k || 0)) worst = name;
+  }
+
+  // CDU plates. Duty splits over the CDUs that are actually passing flow.
+  const plates = [];
+  const live = Object.entries(s.plates).filter(([, p]) => p.hot_flow_kgs > 0.5);
+  const dutyPerCdu = live.length ? plantLiquidKw / live.length : 0;
+  for (const [name, p] of live) {
+    const row = p.by_ua_scale[inputs.uaIdx];  // aligned to hx_model.ua_scales
+    const inletDelta = row.effectiveness * row.c_min_kw_per_k > 0
+      ? dutyPerCdu / (row.effectiveness * row.c_min_kw_per_k) : null;
+    const hotDrop = row.c_hot_kw_per_k > 0 ? dutyPerCdu / row.c_hot_kw_per_k : null;
+    plates.push({
+      name, ...row, duty_kw: dutyPerCdu,
+      inlet_delta_k: inletDelta,
+      terminal_approach_k: inletDelta !== null && hotDrop !== null
+        ? inletDelta - hotDrop : null,
+    });
+  }
+  const approach = plates.length
+    ? Math.max(...plates.map(p => p.terminal_approach_k ?? 0)) : null;
+
+  // Facility side, including the pump work that lands in the fluid.
+  const pumpKw = s.heat.pump_hydraulic_kw;
+  const rejectedKw = plantLiquidKw + pumpKw;
+  const mFac = s.heat.facility.m_dot_kgs;
+  const facDt = mFac > 1e-3 ? rejectedKw * 1000 / (mFac * hc.cp_facility) : null;
+
+  // Chillers: capability is load-independent, so look it up and do the balance.
+  const amb = +document.getElementById('amb').value;
+  const cap = manifest.chillers.capability.reduce((b, r) =>
+    Math.abs(r.ambient_c - amb) < Math.abs(b.ambient_c - amb) ? r : b);
+  const mechKw = Math.max(0, rejectedKw - cap.q_free_kw);
+  const mode = rejectedKw <= 0 ? 'off'
+    : cap.q_free_kw >= rejectedKw ? 'free'
+    : cap.q_free_kw <= 0 ? 'mechanical' : 'mixed';
+  const capacityKw = manifest.chillers.capacity_kw;
+  const heldSetpoint = rejectedKw <= capacityKw;
+
+  // The chain. Facility supply is the chiller's setpoint while it has the
+  // capacity to hold it; past that the shortfall shows up as a rise, which is
+  // the honest way to say "the plant has run out of chiller".
+  const facSupply = hc.facility_supply_c
+    + (heldSetpoint ? 0 : (rejectedKw - capacityKw) / (mFac * hc.cp_facility / 1000));
+  const facReturn = facDt === null ? null : facSupply + facDt;
+  const tcsSupply = approach === null ? null : facSupply + approach;
+  const rackDt = racks[worst] ? racks[worst].delta_t_k : null;
+  const tcsReturn = tcsSupply === null || rackDt === null ? null : tcsSupply + rackDt;
+
+  for (const [name, r] of Object.entries(racks)) {
+    r.outlet_c = r.delta_t_k === null || tcsSupply === null
+      ? null : tcsSupply + r.delta_t_k;
+    r.over_limit = r.outlet_c !== null && r.outlet_c > hc.return_limit_c;
+    if (r.over_limit) over.push(name);
+  }
+
+  let verdict = 'PASS', reason = '';
+  if (starved.length) {
+    verdict = 'FAIL'; reason = `${starved.length} rack(s) starved: ${starved.slice(0, 4).join(', ')}`;
+  } else if (!heldSetpoint) {
+    verdict = 'FAIL';
+    reason = `chillers short by ${(rejectedKw - capacityKw).toFixed(0)} kW — ` +
+             `${rejectedKw.toFixed(0)} kW against ${capacityKw.toFixed(0)} kW of N+1 capacity`;
+  } else if (over.length) {
+    verdict = 'FAIL';
+    reason = `${over.length} rack(s) over the ${hc.return_limit_c} °C return limit: ` +
+             over.slice(0, 4).join(', ');
+  } else if (facReturn !== null && facReturn > hc.facility_return_c + 0.5) {
+    verdict = 'WARN';
+    reason = `racks are fine, but facility return is ${facReturn.toFixed(1)} °C ` +
+             `against ${hc.facility_return_c} °C design`;
+  } else {
+    reason = `worst rise ${rackDt === null ? '—' : rackDt.toFixed(1)} K at ` +
+             `${racks[worst].outlet_c === null ? '—' : racks[worst].outlet_c.toFixed(1)} °C`;
+  }
+
+  return {
+    scale, itKw, plantLiquidKw, airKw, rackLiquidKw, rejectedKw, pumpKw,
+    racks, worst, starved, over, plates, approach, verdict, reason,
+    facSupply, facReturn, facDt, tcsSupply, tcsReturn, rackDt, mFac,
+    chiller: { ...cap, mode, mechKw, compressorsKw: mechKw / cap.cop,
+               totalKw: cap.fans_kw + mechKw / cap.cop, capacityKw, heldSetpoint,
+               freeFraction: rejectedKw > 0 ? Math.min(1, cap.q_free_kw / rejectedKw) : 0 },
+  };
+}
 
 function buildHydraulicsUI() {
   const sel = document.getElementById('scenario');
@@ -440,8 +615,92 @@ function buildHydraulicsUI() {
     o.textContent = s.label;
     sel.appendChild(o);
   });
-  sel.onchange = () => { scenarioIndex = +sel.value; renderHydraulics(); };
-  renderHydraulics();
+  sel.onchange = () => { scenarioIndex = +sel.value; renderAll(); };
+  renderAll();
+}
+
+function renderAll() {
+  const th = thermalState();
+  renderInputs(th);
+  renderTemperatures(th);
+  renderHydraulics(th);
+  renderChiller(th);
+}
+
+function renderInputs(th) {
+  const hc = manifest.heat_constants;
+  document.getElementById('rackKwVal').textContent = `${inputs.rackKw} kW`;
+  document.getElementById('liqFracVal').textContent =
+    `${(inputs.liquidFrac * 100).toFixed(0)} %` +
+    (Math.abs(inputs.liquidFrac - hc.design_liquid_fraction) < 1e-9 ? ' (RD110)' : '');
+  document.getElementById('itSummary').innerHTML = rows([
+    ['To liquid, per rack', `${th.rackLiquidKw.toFixed(1)} kW`],
+    ['To air, per rack', `${(inputs.rackKw - th.rackLiquidKw).toFixed(1)} kW`],
+    [`× ${hc.ai_rack_count} AI racks`, `${th.plantLiquidKw.toFixed(0)} kW liquid`],
+    [`+ ${hc.network_rack_count} × ${hc.network_rack_kw} kW networking`, 'air only'],
+    ['Total IT electrical', `${th.itKw.toFixed(0)} kW`],
+  ]);
+  document.getElementById('itNote').textContent = hc.note;
+
+  const hxm = manifest.hx_model;
+  document.getElementById('uaScaleVal').textContent =
+    `${th.scale.toFixed(2)}×` + (th.scale === 1 ? ' (RD110)' : '');
+  const p0 = th.plates[0];
+  document.getElementById('hxState').innerHTML = p0 ? rows([
+    ['UA per plate', `${p0.ua_kw_per_k.toFixed(0)} kW/K`],
+    ['NTU', p0.ntu.toFixed(2)],
+    ['Cr', p0.cr.toFixed(3)],
+    ['Effectiveness ε', p0.effectiveness.toFixed(3)],
+    ['Duty per CDU', `${p0.duty_kw.toFixed(0)} kW`],
+    ['Inlet-to-inlet ΔT', p0.inlet_delta_k === null ? '—' : `${p0.inlet_delta_k.toFixed(2)} K`],
+    ['Terminal approach', p0.terminal_approach_k === null ? '—'
+      : `${p0.terminal_approach_k.toFixed(2)} K`,
+      p0.terminal_approach_k > 6 ? 'warn' : ''],
+  ]) : '<div class="row"><span>no plate passing flow</span><span>—</span></div>';
+}
+
+const SERVICE_DOT = {
+  facility_supply: '#3399d9', facility_return: '#d9741f',
+  tcs_supply: '#4dbfa6', tcs_return: '#cc4048',
+};
+
+function renderTemperatures(th) {
+  const hc = manifest.heat_constants;
+  const amb = +document.getElementById('amb').value;
+  const fmt = v => v === null ? '—' : `${v.toFixed(1)} °C`;
+  const dev = (v, design) => v === null ? ''
+    : Math.abs(v - design) < 0.35 ? 'on design'
+    : `${v > design ? '+' : ''}${(v - design).toFixed(1)} K`;
+
+  const chain = [
+    ['#6b7a88', 'Ambient air', amb, null, ''],
+    [SERVICE_DOT.facility_supply, 'Facility supply — chiller out, CDU in',
+      th.facSupply, hc.facility_supply_c,
+      th.chiller.heldSetpoint ? '' : 'bad'],
+    [SERVICE_DOT.tcs_supply, 'TCS supply — cold plate in',
+      th.tcsSupply, hc.tcs_supply_c, ''],
+    [SERVICE_DOT.tcs_return, 'TCS return — cold plate out',
+      th.tcsReturn, hc.tcs_return_c,
+      th.tcsReturn !== null && th.tcsReturn > hc.return_limit_c ? 'bad' : ''],
+    [SERVICE_DOT.facility_return, 'Facility return — chiller in',
+      th.facReturn, hc.facility_return_c,
+      th.facReturn !== null && th.facReturn > hc.facility_return_c + 0.5 ? 'warn' : ''],
+  ];
+  document.getElementById('temps').innerHTML = '<div class="chain">' + chain.map(
+    ([dot, label, v, design, cls]) => `<div>
+      <i class="dot" style="background:${dot}"></i>
+      <b>${label}</b>
+      <span class="t ${cls}">${fmt(v)}</span>
+      <span class="d">${design === null ? '' : dev(v, design)}</span>
+    </div>`).join('') + '</div>' + rows([
+      ['CDU plate approach', th.approach === null ? '—' : `${th.approach.toFixed(2)} K`],
+      ['Cold plate rise', th.rackDt === null ? '—' : `${th.rackDt.toFixed(2)} K`],
+      ['Facility rise', th.facDt === null ? '—' : `${th.facDt.toFixed(2)} K`],
+    ]);
+  document.getElementById('tempNote').textContent = th.chiller.heldSetpoint
+    ? 'Facility supply is the chillers\u2019 setpoint; the rest follows from the plate and the solved flows.'
+    : `Facility supply has drifted above setpoint: the chillers are short by ${
+        (th.rejectedKw - th.chiller.capacityKw).toFixed(0)} kW.`;
 }
 
 function rows(pairs) {
@@ -449,12 +708,12 @@ function rows(pairs) {
     `<div class="row"><span>${a}</span><span class="${cls || ''}">${b}</span></div>`).join('');
 }
 
-function renderHydraulics() {
+function renderHydraulics(th) {
   const s = scenario();
   const v = document.getElementById('verdict');
-  v.textContent = s.heat.verdict;
-  v.className = 'verdict v-' + s.heat.verdict;
-  document.getElementById('verdictWhy').textContent = s.heat.verdict_reason;
+  v.textContent = th.verdict;
+  v.className = 'verdict v-' + th.verdict;
+  document.getElementById('verdictWhy').textContent = th.reason;
   document.getElementById('scenarioNote').textContent = s.note;
 
   // Circuits: solved flow against design, and the pressure band.
@@ -519,31 +778,29 @@ function renderHydraulics() {
   }).join('') +
     `<div class="row"><span>CWP-4</span><span style="color:var(--dim)">standby, N+1</span></div>`;
 
-  // Electrical load to heat to liquid.
-  const h = s.heat, e = h.electrical;
-  const liqPct = e.to_liquid_kw / e.it_electrical_kw * 100;
+  // Electrical load to heat to liquid, all of it live off the sliders.
+  const liqPct = th.plantLiquidKw / th.itKw * 100;
+  const w = th.racks[th.worst];
   document.getElementById('heat').innerHTML =
-    rows([['IT electrical', `${e.it_electrical_kw.toFixed(0)} kW`]]) +
+    rows([['IT electrical', `${th.itKw.toFixed(0)} kW`]]) +
     `<div class="sankey">
        <i style="width:${liqPct}%;background:#3ba3d0"></i>
        <i style="width:${100 - liqPct}%;background:#c98a4a"></i>
      </div>` +
     rows([
-      ['→ liquid', `${e.to_liquid_kw.toFixed(0)} kW (${liqPct.toFixed(0)} %)`],
-      ['→ air', `${e.to_air_kw.toFixed(0)} kW`],
-      ['Carried by liquid', `${h.carried_by_liquid_kw.toFixed(0)} kW`],
-      ['+ pump work in fluid', `${h.pump_hydraulic_kw.toFixed(0)} kW`],
-      ['= rejected at chillers', `${h.rejected_at_chillers_kw.toFixed(0)} kW`],
-      ['Pump shaft power', `${h.pump_shaft_kw.toFixed(0)} kW`],
-      ['Worst rack', h.worst_rack],
-      ['its rise', h.worst_delta_t_k === null
-        ? `starved — no steady state`
-        : `${h.worst_delta_t_k.toFixed(1)} K vs ${h.design_delta_t_k} design`,
-        h.worst_delta_t_k === null ? 'bad' : h.worst_delta_t_k > 13 ? 'warn' : ''],
-      ['its outlet', h.racks[h.worst_rack].outlet_c === null
-        ? '—'
-        : `${h.racks[h.worst_rack].outlet_c.toFixed(1)} °C`,
-        h.racks[h.worst_rack].over_limit ? 'bad' : ''],
+      ['→ liquid', `${th.plantLiquidKw.toFixed(0)} kW (${liqPct.toFixed(0)} %)`],
+      ['→ air', `${th.airKw.toFixed(0)} kW`],
+      ['+ pump work in fluid', `${th.pumpKw.toFixed(0)} kW`],
+      ['= rejected at chillers', `${th.rejectedKw.toFixed(0)} kW`,
+        th.chiller.heldSetpoint ? '' : 'bad'],
+      ['Chiller capacity, N+1', `${th.chiller.capacityKw.toFixed(0)} kW`],
+      ['Worst rack', th.worst],
+      ['its rise', th.rackDt === null
+        ? 'starved — no steady state'
+        : `${th.rackDt.toFixed(1)} K vs ${manifest.heat_constants.design_delta_t_k} design`,
+        th.rackDt === null ? 'bad' : th.rackDt > 13 ? 'warn' : ''],
+      ['its outlet', w.outlet_c === null ? '—' : `${w.outlet_c.toFixed(1)} °C`,
+        w.over_limit ? 'bad' : ''],
     ]);
 
   applyColourMode();

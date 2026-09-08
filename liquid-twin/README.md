@@ -183,7 +183,7 @@ RD110's plant as geometry: 4 chillers, 9 CDUs, 48 liquid-cooled racks, 148 pipe
 runs over 598 m, and one control valve per rack — RD110_3.2's PCV01..PCV48.
 Click any part to identify it; drag to orbit; `f` refits the view.
 
-![the review model](docs/viewer-free.png)
+![the review model](docs/viewer-hydraulics.png)
 
 Topology comes from `dtloop/layout.py`, which holds coordinates and connectivity
 and imports neither FreeCAD nor numpy. Three things read it: the FreeCAD script
@@ -204,8 +204,13 @@ plates:
 | pod 1–3 | 50.6 kg/s each | 50.7 | 246–474 kPa | 2.82 m/s |
 
 **18 CDU flow meters** (FM-F01..09 facility side, FM-T01..09 secondary) at
-~60 m³/h each, **4 chilled water pumps** on the chiller side reporting suction,
-discharge, head and shaft power, and per-rack control valve authority. Click any
+~60 m³/h each, and **4 chilled water pumps** in parallel between a common
+suction manifold and a common discharge manifold, reporting suction, discharge,
+head and shaft power. The manifold arrangement is not cosmetic: in series each
+pump sees only its own chiller and the flows differ, while on manifolds every
+pump sees the same differential, so identical pumps share equally and losing one
+leaves the survivors to split the whole duty — 190 m³/h each instead of 180, and
+30 % less facility flow overall. Click any
 pipe for its flow, velocity and Δp; any rack for its duty and temperature rise.
 
 Pipes recolour by flow, velocity or pressure drop, scaled per service — a DN40

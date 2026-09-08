@@ -19,7 +19,7 @@ Pipe runs stop at equipment. The branches that close each circuit run *through*
 equipment and have no centreline in the model, so they are added here:
 
     chiller{i}_in  -> chiller{i}_out     evaporator
-    pump{i}_in     -> pump{i}_out        CWP-i, the HT circuit's pump
+    pump{i}_in     -> pump{i}_out        CWP-i, one of four in parallel
     cdu{n}_fac_in  -> cdu{n}_fac_out     plate, facility side
     cdu{n}_tcs_in  -> cdu{n}_tcs_out     plate, secondary side + integral pump
     {rack}_in      -> {rack}_out         the cold plates in the rack
@@ -28,6 +28,11 @@ The pumps sit on their own branches rather than being bolted onto the chiller
 branch, because CWP-1..4 are drawn as real skids in the layout with pipe either
 side of them: a pump that is a term in someone else's branch cannot report its
 own suction and discharge pressure, and that is exactly what a reader wants.
+
+They are also in **parallel between two manifolds**, not in series one per
+chiller. On manifolds every pump sees the same differential, so identical pumps
+share equally and losing one leaves the survivors to split the whole duty -
+which is both what a plant is built like and the N-1 case worth showing.
 
 ## Pumps are derived, not guessed
 
@@ -52,6 +57,7 @@ import numpy as np
 
 from . import fluid
 from .components import CheckValve, Pipe, Pump, PumpCurve, Resistance, Valve
+from .hx import PlateExchanger
 from .hydraulics import Solution, solve, valve_authority
 from .layout import (
     CDU_PER_POD,
@@ -178,9 +184,8 @@ def _build_facility(lay: LoopLayout) -> Circuit:
     per_cdu = facility_flow_kgs(t_c) / (POD_COUNT * CDU_PER_POD)
     pumps = []
 
-    # Chiller branches: evaporator plus the circuit's pump. RD110 lists one
-    # chilled water pump per chiller, which is what this reflects.
     for i in range(1, CHILLERS_RUNNING + 1):
+        # Evaporator, fed from the pump discharge manifold.
         for node in (f"chiller{i}_in", f"chiller{i}_out"):
             if node not in net.nodes:
                 net.add_node(node)
@@ -188,7 +193,10 @@ def _build_facility(lay: LoopLayout) -> Circuit:
             Resistance.from_rating(DP_EVAPORATOR_KPA * 1000.0, per_chiller, f"CH{i}_evaporator"),
         ], t_c)
 
-        # CWP-i, on its own branch between the pipe runs drawn either side.
+        # CWP-i, in parallel with the others between the two manifolds. The
+        # non-return valve is what stops the manifolds short-circuiting straight
+        # through a stopped pump - which, on a common-manifold arrangement, they
+        # otherwise do: the whole discharge header is sitting on its outlet.
         for node in (f"pump{i}_in", f"pump{i}_out"):
             if node not in net.nodes:
                 net.add_node(node)
@@ -327,9 +335,10 @@ def _loop_pressure(circuit: Circuit, pump_share: float) -> float:
     net = circuit.network
     total = 0.0
     if circuit.name == "facility":
-        path = ["CH1_UNIT", "CH1_TO_PUMP", "CWP-1_UNIT", "CH1_PUMP_OUT",
-                "FAC_SUPPLY_MAIN", "CDU1_FAC_IN", "CDU1_PLATE_FAC",
-                "CDU1_FAC_OUT", "FAC_RETURN_MAIN", "CH1_RETURN"]
+        path = ["FAC_RETURN_MAIN", "RETURN_TO_SUCTION", "CWP-1_SUCTION",
+                "CWP-1_UNIT", "CWP-1_DISCHARGE", "PUMP_DISCHARGE_MANIFOLD",
+                "CH1_FEED", "CH1_UNIT", "CH1_SUPPLY", "FAC_SUPPLY_MAIN",
+                "CDU1_FAC_IN", "CDU1_PLATE_FAC", "CDU1_FAC_OUT"]
     else:
         pod = int(circuit.name[-1]) - 1
         n = pod * CDU_PER_POD + 1
@@ -560,6 +569,7 @@ def run_scenarios(lay: LoopLayout | None = None) -> list[dict]:
             "note": scenario["note"],
             "circuits": reports,
             "heat": heat_balance(circuits, sols),
+            "plates": plate_table(circuits, sols),
         })
     return out
 
@@ -611,24 +621,38 @@ STARVED_FLOW_FRACTION = 0.25
 TCS_RETURN_LIMIT_C = 60.0
 
 
-def electrical_balance() -> dict:
+def electrical_balance(rack_kw: float | None = None,
+                       liquid_fraction: float | None = None) -> dict:
     """Where the IT electrical load goes, before any flow is solved.
 
     Every watt into a rack leaves it as heat - a server does no net work on its
     surroundings - so the split is not an efficiency, it is a routing question:
-    which coolant carries it out. RD110 answers it at 87/13 for the GB300 racks.
+    which coolant carries it out. RD110 answers it at 87/13 for the GB300 racks,
+    and both arguments default to its figures.
+
+    Parametric because the two numbers are the ones a reader most wants to move:
+    the rack a hall is designed around changes generation to generation, and the
+    liquid share is the open item in loop_params.json.
     """
-    ai_total = AI_RACK_ELECTRICAL_KW * RACK_COUNT
+    rack_kw = AI_RACK_ELECTRICAL_KW if rack_kw is None else rack_kw
+    liquid_fraction = LIQUID_FRACTION if liquid_fraction is None else liquid_fraction
+    ai_total = rack_kw * RACK_COUNT
     net_total = NETWORK_RACK_ELECTRICAL_KW * NETWORK_RACK_COUNT
-    to_liquid = ai_total * LIQUID_FRACTION
-    to_air = ai_total * (1.0 - LIQUID_FRACTION) + net_total
+    to_liquid = ai_total * liquid_fraction
+    to_air = ai_total * (1.0 - liquid_fraction) + net_total
     return {
+        "rack_kw": round(rack_kw, 2),
+        "liquid_fraction": round(liquid_fraction, 4),
+        "rack_liquid_kw": round(rack_kw * liquid_fraction, 2),
         "it_electrical_kw": round(ai_total + net_total, 1),
         "ai_racks_kw": round(ai_total, 1),
         "network_racks_kw": round(net_total, 1),
         "to_liquid_kw": round(to_liquid, 1),
         "to_air_kw": round(to_air, 1),
         "liquid_share": round(to_liquid / (ai_total + net_total), 4),
+        "ai_rack_count": RACK_COUNT,
+        "network_rack_count": NETWORK_RACK_COUNT,
+        "network_rack_kw": NETWORK_RACK_ELECTRICAL_KW,
         "note": (
             "All of it becomes heat; the split is which coolant carries it out. "
             "The 87 % applies to the AI racks only - the networking racks are "
@@ -719,6 +743,27 @@ def heat_balance(circuits: dict, solutions: dict) -> dict:
     carried_kw = sum(r["duty_kw"] for r in racks.values())
     rejected_kw = carried_kw + pump_fluid_kw
 
+    # The facility side has a temperature rise of its own, and it was invisible
+    # until this was added. Losing a chilled water pump costs 30 % of facility
+    # flow and starves no rack, so the verdict said PASS - while the facility
+    # return climbed from 47 C to over 51 C, which raises the chiller return,
+    # the CDU approach and eventually the cold plate inlet. The TCS-side verdict
+    # cannot see that; this line can.
+    fac = circuits.get("facility")
+    facility = None
+    if fac is not None:
+        m_fac = sum(solutions["facility"].flows[n] for n in fac.pump_branches)
+        cp_fac = float(fluid.cp(FACILITY_SUPPLY_C))
+        dt_fac = rejected_kw * 1000.0 / (m_fac * cp_fac) if m_fac > 1e-3 else None
+        facility = {
+            "m_dot_kgs": round(float(m_fac), 3),
+            "flow_fraction": round(float(m_fac) / facility_flow_kgs(FACILITY_SUPPLY_C), 4),
+            "delta_t_k": round(dt_fac, 2) if dt_fac else None,
+            "return_c": round(FACILITY_SUPPLY_C + dt_fac, 2) if dt_fac else None,
+            "design_return_c": FACILITY_RETURN_C,
+            "over_design": bool(dt_fac and FACILITY_SUPPLY_C + dt_fac > FACILITY_RETURN_C + 0.5),
+        }
+
     starved = sorted(k for k, v in racks.items() if v["starved"])
     over = sorted(k for k, v in racks.items() if v["over_limit"])
     if starved:
@@ -727,6 +772,11 @@ def heat_balance(circuits: dict, solutions: dict) -> dict:
         verdict, reason = "FAIL", (
             f"{len(over)} rack(s) over the {TCS_RETURN_LIMIT_C:.0f} C return limit: "
             f"{', '.join(over[:4])}")
+    elif facility and facility["over_design"]:
+        verdict, reason = "WARN", (
+            f"racks are fine, but facility return is {facility['return_c']} C against "
+            f"{FACILITY_RETURN_C:.0f} C design - the chillers and the CDU approach "
+            f"see that before the racks do")
     else:
         verdict, reason = "PASS", (
             f"worst rise {racks[worst]['delta_t_k']} K at {racks[worst]['outlet_c']} C")
@@ -736,6 +786,7 @@ def heat_balance(circuits: dict, solutions: dict) -> dict:
         "racks": racks,
         "verdict": verdict,
         "verdict_reason": reason,
+        "facility": facility,
         "starved_racks": starved,
         "over_limit_racks": over,
         "return_limit_c": TCS_RETURN_LIMIT_C,
@@ -751,4 +802,201 @@ def heat_balance(circuits: dict, solutions: dict) -> dict:
             "Chillers reject the IT liquid load plus the pumping that moved it. "
             "Sizing on the IT load alone is short by the pump work."
         ),
+    }
+
+
+def heat_constants() -> dict:
+    """Everything a caller needs to redo the heat sums at a different load.
+
+    The hydraulics do not depend on the heat load at all: flow is set by the
+    pumps and the valve positions, so changing load moves the temperature rise
+    and leaves every flow where it was. That is what makes load and liquid share
+    live inputs rather than another axis to precompute - `dT = Q/(m cp)` at the
+    already-solved flow.
+
+    The caveat belongs next to the numbers, so `note` carries it: this answers
+    "the plant as built, carrying a different load", not "the plant you would
+    build for that load". At a much larger rack the pipes and pumps would be
+    sized differently, and the model will happily show a 30 K rise rather than
+    telling you to use bigger pipe.
+    """
+    return {
+        "cp_tcs": round(float(fluid.cp(TCS_SUPPLY_C)), 1),
+        "cp_facility": round(float(fluid.cp(FACILITY_SUPPLY_C)), 1),
+        "tcs_supply_c": TCS_SUPPLY_C,
+        "tcs_return_c": TCS_RETURN_C,
+        "facility_supply_c": FACILITY_SUPPLY_C,
+        "facility_return_c": FACILITY_RETURN_C,
+        "return_limit_c": TCS_RETURN_LIMIT_C,
+        "starved_flow_fraction": STARVED_FLOW_FRACTION,
+        "design_delta_t_k": LOOP_DELTA_T,
+        "design_rack_kw": AI_RACK_ELECTRICAL_KW,
+        "design_liquid_fraction": LIQUID_FRACTION,
+        "ai_rack_count": RACK_COUNT,
+        "network_rack_count": NETWORK_RACK_COUNT,
+        "network_rack_kw": NETWORK_RACK_ELECTRICAL_KW,
+        "pump_efficiency": PUMP_EFFICIENCY,
+        "note": (
+            "Flow is set by the pumps and valves, not by the load, so varying "
+            "load moves the temperature rise and nothing else. This is the plant "
+            "as built carrying a different load - not the plant you would build "
+            "for that load."
+        ),
+    }
+
+
+# -- heat exchangers -----------------------------------------------------
+
+# UA multipliers to tabulate, so a reviewer can ask "what if the plate were
+# better or worse" without re-solving anything. 1.0 is RD110's own plate.
+UA_SCALES = (0.5, 0.6, 0.7, 0.85, 1.0, 1.2, 1.4, 1.6)
+
+
+def design_cdu_flows() -> tuple[float, float]:
+    """Secondary (hot) and facility (cold) design flow through one CDU plate."""
+    return (pod_flow_kgs(TCS_SUPPLY_C) / CDU_PER_POD,
+            facility_flow_kgs(FACILITY_SUPPLY_C) / (POD_COUNT * CDU_PER_POD))
+
+
+def cdu_plate() -> PlateExchanger:
+    """The CDU plate, calibrated from RD110's four temperatures.
+
+    Secondary 50 -> 40 C against 37 C facility in, at design flows. The plate
+    therefore reproduces RD110's stated 3 K terminal approach by construction
+    rather than being asserted to have it.
+    """
+    hot, cold = design_cdu_flows()
+    return PlateExchanger.calibrate_from_temperatures(
+        "Motivair MCDU-50 plate", TCS_RETURN_C, TCS_SUPPLY_C, FACILITY_SUPPLY_C, hot, cold)
+
+
+def plate_table(circuits: dict, solutions: dict) -> dict:
+    """Plate state per CDU per UA scale, for every solved scenario.
+
+    Load-independent by construction: eps, C_min and C_hot depend only on the
+    flows and the plate, so the browser can vary the IT load live and get the
+    approach from `Q / (eps * C_min)` without any of the model moving to
+    JavaScript. That division and the one below it are an energy balance, not a
+    second implementation.
+    """
+    plate = cdu_plate()
+    out: dict[str, dict] = {}
+    for name, circuit in circuits.items():
+        if name == "facility":
+            continue
+        sol = solutions[name]
+        fac = solutions["facility"]
+        for br in circuit.network.branches:
+            if not br.name.endswith("_PLATE_TCS"):
+                continue
+            n = br.name.split("_")[0].replace("CDU", "")
+            hot = float(sol.flows[br.name])
+            cold_branch = f"CDU{n}_PLATE_FAC"
+            cold = float(fac.flows[cold_branch]) if cold_branch in fac.flows else 0.0
+            # A list aligned to UA_SCALES, not a dict keyed by the float. Keying
+            # by str(scale) put "1.0" in the JSON, and JavaScript's String(1.0)
+            # is "1" - so the browser looked up a key that was not there and got
+            # undefined for the design case, the one that matters most.
+            rows = []
+            for scale in UA_SCALES:
+                plate.ua_scale = scale
+                s = plate.state(abs(hot), abs(cold))
+                c_h, _ = plate.capacities_kw_per_k(abs(hot), abs(cold))
+                rows.append({
+                    "ua_scale": scale,
+                    "ua_kw_per_k": s["ua_kw_per_k"],
+                    "effectiveness": s["effectiveness"],
+                    "ntu": s["ntu"],
+                    "cr": s["cr"],
+                    "c_min_kw_per_k": s["c_min_kw_per_k"],
+                    "c_hot_kw_per_k": round(c_h, 2),
+                })
+            out[f"CDU-{n}"] = {
+                "hot_flow_kgs": round(abs(hot), 3),
+                "cold_flow_kgs": round(abs(cold), 3),
+                "pod": name,
+                "by_ua_scale": rows,  # aligned to UA_SCALES
+            }
+    return out
+
+
+def hx_model() -> dict:
+    """How the heat exchangers are modelled, as data the viewer can display."""
+    plate = cdu_plate()
+    hot, cold = design_cdu_flows()
+    s = plate.state(hot, cold)
+    duty = RACK_LIQUID_KW * RACK_COUNT / (POD_COUNT * CDU_PER_POD)
+    return {
+        "method": "effectiveness-NTU, counterflow",
+        "relations": [
+            "1/UA = 1/(c_h m_h^0.8) + 1/(c_c m_c^0.8)",
+            "NTU = UA/C_min,  Cr = C_min/C_max",
+            "eps = (1-exp[-NTU(1-Cr)]) / (1-Cr exp[-NTU(1-Cr)])",
+            "Q = eps C_min (T_h,in - T_c,in)",
+        ],
+        "calibrated_from": (
+            "RD110's four temperatures: secondary 50 -> 40 C against 37 C "
+            "facility in, at design flow. The 3 K terminal approach follows "
+            "rather than being assumed."
+        ),
+        "design": {
+            "duty_kw_per_cdu": round(duty, 1),
+            "hot_flow_kgs": round(hot, 3),
+            "cold_flow_kgs": round(cold, 3),
+            "ua_kw_per_k": s["ua_kw_per_k"],
+            "ntu": s["ntu"],
+            "cr": s["cr"],
+            "effectiveness": s["effectiveness"],
+            "inlet_delta_k": round(plate.inlet_delta_for_duty_k(duty, hot, cold), 2),
+            "terminal_approach_k": round(plate.terminal_approach_k(duty, hot, cold), 2),
+        },
+        "flow_exponent": 0.8,
+        "ua_scales": list(UA_SCALES),
+        "caveats": [
+            "Cr is 0.997 - both sides carry the same duty at the same rise - and "
+            "that is the worst case for a counterflow plate: eps caps at "
+            "NTU/(1+NTU), so 1.6x the area buys only about 1 K of approach.",
+            "UA falls with flow as m^0.8 on each side, so a CDU at 70 % flow is "
+            "not 70 % of a heat exchanger.",
+            "Rated pressure drops (60 kPa per side) are grade L placeholders "
+            "pending the MCDU-50 datasheet, as is the dry cooler coil.",
+        ],
+    }
+
+
+def fluid_properties(temps=(0.0, 10.0, 20.0, 30.0, 37.0, 40.0, 47.0, 50.0, 60.0)) -> dict:
+    """PG25 properties at the temperatures this plant runs at.
+
+    Stated rather than adjustable in the browser, deliberately: viscosity enters
+    the pressure drop, so changing the fluid re-solves every circuit. It is a
+    Python-side edit in fluid.py, not a slider - and the properties are generic
+    published 25 % PG data (grade L), not a datasheet for the AU01 fill.
+    """
+    rows = []
+    for t_c in temps:
+        rows.append({
+            "t_c": t_c,
+            "rho": round(float(fluid.density(t_c)), 1),
+            "cp": round(float(fluid.cp(t_c)), 0),
+            "k": round(float(fluid.conductivity(t_c)), 4),
+            "mu_mpas": round(float(fluid.viscosity(t_c)) * 1000.0, 3),
+            "prandtl": round(float(fluid.prandtl(t_c)), 2),
+        })
+    return {
+        "name": "PG25 - 25 % propylene glycol by volume",
+        "confidence": "L",
+        "source": "generic published 25 % PG tables (ASHRAE Fundamentals ch. 31; Dow DOWFROST agrees within a few percent)",
+        "caveat": (
+            "Generic glycol data, NOT a datasheet for the AU01 fill. Replace "
+            "before quoting pressure drop to a vendor. Viscosity is the property "
+            "that must not be held constant: it is 5x higher at 0 C than 60 C, "
+            "and it enters the pressure drop through the Reynolds number."
+        ),
+        "loop_temperatures": {
+            "facility_supply_c": FACILITY_SUPPLY_C,
+            "facility_return_c": FACILITY_RETURN_C,
+            "tcs_supply_c": TCS_SUPPLY_C,
+            "tcs_return_c": TCS_RETURN_C,
+        },
+        "rows": rows,
     }

@@ -52,10 +52,20 @@ CHILLER_COUNT = 4                                  # N+1
 CHILLER_PITCH_Y = 7000
 
 # Chilled water pumps. RD110_3.3 lists seven CWPs across the two water systems,
-# "to be sized upon design implementation"; four of them serve the HT circuit,
-# one per chiller, which is the arrangement drawn here.
+# "to be sized upon design implementation"; four of them serve the HT circuit.
+#
+# They sit in PARALLEL between a common suction manifold and a common discharge
+# manifold - not one in series with each chiller, which is how this was drawn
+# first. The difference is not cosmetic. In series, each pump sees only its own
+# chiller's resistance and the flows differ; on manifolds every pump sees the
+# same differential pressure, so identical pumps share equally and losing one
+# leaves the survivors to split the whole duty. That is the arrangement a plant
+# is actually built with, and it is the one whose N-1 behaviour is worth showing.
 PUMP_W, PUMP_D, PUMP_H = 1500, 1000, 1400
 PUMP_X = 16800
+PUMP_SUCTION_X = 16400      # manifold upstream of the pumps
+PUMP_DISCHARGE_X = 18700    # manifold downstream
+PUMP_MANIFOLD_Z = 2200
 
 # Flow meters, one per CDU per side. Drawn as a short collar on the pipe rather
 # than a box beside it, because that is what a magnetic or ultrasonic meter is:
@@ -310,45 +320,89 @@ def build_layout() -> LoopLayout:
     seg.append(Segment(
         name="FAC_RETURN_MAIN", service="facility_return", dn=DN_FACILITY_MAIN,
         from_node="cdu_hdr_return", to_node="chiller_hdr_return",
-        waypoints=route(Point(FACILITY_X_RETURN, y_lo, FACILITY_HEADER_Z),
-                   Point(FACILITY_X_RETURN, y_hi, FACILITY_HEADER_Z)),
+        waypoints=route(Point(FACILITY_X_RETURN, y_hi, FACILITY_HEADER_Z),
+                   Point(FACILITY_X_RETURN, y_lo, FACILITY_HEADER_Z)),
     ))
 
-    # Chiller connections, each through its own pump. CV01..CV04 in RD110_3.2
-    # are the control valves on these circuits, one per chiller.
+    # Pump room: two manifolds with the pumps in parallel between them.
+    #
+    # Flow path on the facility side, left to right:
+    #   CDU return 47 C -> return main -> suction manifold -> pumps ->
+    #   discharge manifold -> chillers -> supply main -> CDUs at 37 C
+    #
+    # Pumps upstream of the evaporators, so the chillers sit on the pressurised
+    # side. Both arrangements are used; this one keeps positive pressure through
+    # the evaporator, which is the more common choice.
+    pump_ys = [i * CHILLER_PITCH_Y + CHILLER_W / 2 for i in range(CHILLER_COUNT)]
+    man_lo = min(pump_ys) - 1200
+    man_hi = max(pump_ys) + 1200
+
+    seg.append(Segment(
+        name="PUMP_SUCTION_MANIFOLD", service="facility_return", dn=DN_FACILITY_MAIN,
+        from_node="chiller_hdr_return", to_node="pump_suction_hdr",
+        waypoints=route(Point(PUMP_SUCTION_X, man_lo, PUMP_MANIFOLD_Z),
+                        Point(PUMP_SUCTION_X, man_hi, PUMP_MANIFOLD_Z)),
+    ))
+    seg.append(Segment(
+        name="PUMP_DISCHARGE_MANIFOLD", service="facility_supply", dn=DN_FACILITY_MAIN,
+        from_node="pump_discharge_hdr", to_node="chiller_feed_hdr",
+        waypoints=route(Point(PUMP_DISCHARGE_X, man_hi, PUMP_MANIFOLD_Z),
+                        Point(PUMP_DISCHARGE_X, man_lo, PUMP_MANIFOLD_Z)),
+    ))
+    # The return main ties into the suction manifold.
+    seg.append(Segment(
+        name="RETURN_TO_SUCTION", service="facility_return", dn=DN_FACILITY_MAIN,
+        from_node="chiller_hdr_return", to_node="pump_suction_hdr",
+        waypoints=route(Point(FACILITY_X_RETURN, man_lo, FACILITY_HEADER_Z),
+                        Point(PUMP_SUCTION_X, man_lo, FACILITY_HEADER_Z),
+                        Point(PUMP_SUCTION_X, man_lo, PUMP_MANIFOLD_Z)),
+    ))
+
     for i in range(CHILLER_COUNT):
-        cy = i * CHILLER_PITCH_Y + CHILLER_W / 2
-        tag = f"CH{i + 1}"
-        pump = f"CWP-{i + 1}"
+        n = i + 1
+        cy = pump_ys[i]
+        pump = f"CWP-{n}"
         eq.append(Equipment(
             name=pump, kind="pump",
             origin=Point(PUMP_X, cy - PUMP_D / 2, 0),
             size=(PUMP_W, PUMP_D, PUMP_H),
-            label="Chilled water pump, HT circuit",
+            label="Chilled water pump, HT circuit, on common manifolds",
             reads_branch=f"{pump}_UNIT",
         ))
+        # Suction stub, with its isolating valve - what gets shut when a pump is
+        # taken out, and what stops the manifolds short-circuiting through it.
         seg.append(Segment(
-            name=f"{tag}_TO_PUMP", service="facility_supply", dn=DN_CHILLER_BRANCH,
-            from_node=f"chiller{i + 1}_out", to_node=f"pump{i + 1}_in",
+            name=f"{pump}_SUCTION", service="facility_return", dn=DN_CHILLER_BRANCH,
+            from_node="pump_suction_hdr", to_node=f"pump{n}_in",
+            valve=f"ISV-P{n}S",
+            waypoints=route(Point(PUMP_SUCTION_X, cy, PUMP_MANIFOLD_Z),
+                            Point(PUMP_SUCTION_X, cy, PUMP_H),
+                            Point(PUMP_X, cy, PUMP_H)),
+        ))
+        seg.append(Segment(
+            name=f"{pump}_DISCHARGE", service="facility_supply", dn=DN_CHILLER_BRANCH,
+            from_node=f"pump{n}_out", to_node="pump_discharge_hdr",
+            valve=f"ISV-P{n}D",
+            waypoints=route(Point(PUMP_X + PUMP_W, cy, PUMP_H),
+                            Point(PUMP_DISCHARGE_X, cy, PUMP_H),
+                            Point(PUMP_DISCHARGE_X, cy, PUMP_MANIFOLD_Z)),
+        ))
+        # Discharge manifold to the chiller evaporator, and back out to the
+        # supply main. CV01..CV04 in RD110_3.2 are these circuits' control valves.
+        seg.append(Segment(
+            name=f"CH{n}_FEED", service="facility_supply", dn=DN_CHILLER_BRANCH,
+            from_node="chiller_feed_hdr", to_node=f"chiller{n}_in",
+            valve=f"CV{n:02d}",
+            waypoints=route(Point(PUMP_DISCHARGE_X, cy, PUMP_MANIFOLD_Z),
+                            Point(CHILLER_X0 + 1600, cy, PUMP_MANIFOLD_Z),
+                            Point(CHILLER_X0 + 1600, cy, CHILLER_H)),
+        ))
+        seg.append(Segment(
+            name=f"CH{n}_SUPPLY", service="facility_supply", dn=DN_CHILLER_BRANCH,
+            from_node=f"chiller{n}_out", to_node="chiller_hdr_supply",
             waypoints=route(Point(CHILLER_X0 + 500, cy, CHILLER_H),
-                       Point(CHILLER_X0 + 500, cy, FACILITY_HEADER_Z),
-                       Point(PUMP_X + PUMP_W, cy, FACILITY_HEADER_Z),
-                       Point(PUMP_X + PUMP_W, cy, PUMP_H)),
-        ))
-        seg.append(Segment(
-            name=f"{tag}_PUMP_OUT", service="facility_supply", dn=DN_CHILLER_BRANCH,
-            from_node=f"pump{i + 1}_out", to_node="chiller_hdr_supply",
-            valve=f"CV{i + 1:02d}",
-            waypoints=route(Point(PUMP_X, cy, PUMP_H),
-                       Point(PUMP_X, cy, FACILITY_HEADER_Z),
-                       Point(FACILITY_X_SUPPLY, cy, FACILITY_HEADER_Z)),
-        ))
-        seg.append(Segment(
-            name=f"{tag}_RETURN", service="facility_return", dn=DN_CHILLER_BRANCH,
-            from_node="chiller_hdr_return", to_node=f"chiller{i + 1}_in",
-            waypoints=route(Point(FACILITY_X_RETURN, cy + 900, FACILITY_HEADER_Z),
-                       Point(CHILLER_X0 + 1600, cy + 900, FACILITY_HEADER_Z),
-                       Point(CHILLER_X0 + 1600, cy + 900, CHILLER_H)),
+                            Point(CHILLER_X0 + 500, cy, FACILITY_HEADER_Z),
+                            Point(FACILITY_X_SUPPLY, cy, FACILITY_HEADER_Z)),
         ))
 
     # --- pods: CDUs, TCS headers, rack drops --------------------------

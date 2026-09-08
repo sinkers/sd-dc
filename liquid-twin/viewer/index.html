@@ -15,7 +15,7 @@
   #scene { position: fixed; inset: 0; }
   .panel { position: fixed; background: rgba(24,29,35,.93); border: 1px solid var(--line);
            border-radius: 8px; backdrop-filter: blur(8px); }
-  #left  { top: 12px; left: 12px; width: 272px; padding: 14px; max-height: calc(100vh - 24px);
+  #left  { top: 12px; left: 12px; width: 300px; padding: 14px; max-height: calc(100vh - 24px);
            overflow-y: auto; }
   #right { top: 12px; right: 12px; width: 316px; padding: 14px; }
   #hydraulics { top: 12px; right: 340px; width: 330px; padding: 14px;
@@ -36,6 +36,18 @@
   .t { flex: 1; }
   .t small { color: var(--dim); font-size: 10px; }
   input[type=range] { width: 100%; accent-color: #5b8fd0; margin: 6px 0 2px; }
+  table.props { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums;
+                font-size: 11px; }
+  table.props th { color: var(--dim); font-weight: 600; text-align: right; padding: 2px 0;
+                   border-bottom: 1px solid var(--line); font-size: 10px;
+                   text-transform: uppercase; letter-spacing: .05em; }
+  table.props th:first-child, table.props td:first-child { text-align: left; }
+  table.props td { text-align: right; padding: 2px 0; }
+  table.props tr.loop td { color: #7fb2e8; font-weight: 600; }
+  .eq { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px;
+        color: var(--dim); line-height: 1.7; }
+  .reset { float: right; font-size: 10px; color: #7fb2e8; cursor: pointer;
+           text-transform: none; letter-spacing: 0; font-weight: 500; }
   #mode, .verdict { display: inline-block; padding: 2px 9px; border-radius: 4px;
           font-weight: 600; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
   .v-PASS { background: rgba(78,201,160,.16); color: var(--free); }
@@ -52,6 +64,13 @@
   .sankey { height: 10px; border-radius: 5px; overflow: hidden; display: flex;
             background: #22292f; margin: 7px 0 3px; }
   .sankey i { display: block; height: 100%; }
+  .chain { margin: 4px 0 2px; }
+  .chain div { display: grid; grid-template-columns: 12px 1fr auto auto; gap: 8px;
+               align-items: baseline; padding: 2px 0; font-variant-numeric: tabular-nums; }
+  .chain i.dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; }
+  .chain b { font-weight: 500; font-size: 11.5px; color: var(--dim); }
+  .chain span.t { font-weight: 600; min-width: 54px; text-align: right; }
+  .chain span.d { color: var(--dim); font-size: 10.5px; min-width: 62px; text-align: right; }
   .m-free { background: rgba(78,201,160,.16); color: var(--free); }
   .m-mixed { background: rgba(224,179,74,.16); color: var(--mixed); }
   .m-mechanical { background: rgba(224,108,90,.16); color: var(--mech); }
@@ -79,6 +98,27 @@
 
   <h2>Colour pipes by</h2>
   <div id="colourBy"></div>
+
+  <h2>IT equipment <span class="reset" id="resetIT">reset to RD110</span></h2>
+  <div class="row"><span>Base load per AI rack</span><span id="rackKwVal"></span></div>
+  <input type="range" id="rackKw" min="20" max="300" step="1">
+  <div class="row"><span>Heat to liquid</span><span id="liqFracVal"></span></div>
+  <input type="range" id="liqFrac" min="40" max="100" step="1">
+  <div id="itSummary"></div>
+  <p class="sub" id="itNote" style="margin-top:6px"></p>
+
+  <h2>Heat exchangers</h2>
+  <p class="sub" id="hxMethod"></p>
+  <div class="eq" id="hxRelations"></div>
+  <div class="row"><span>Plate area / UA</span><span id="uaScaleVal"></span></div>
+  <input type="range" id="uaScale" min="0" max="7" step="1">
+  <div id="hxState"></div>
+  <p class="sub" id="hxCaveats" style="margin-top:6px"></p>
+
+  <h2>Fluid</h2>
+  <p class="sub" id="fluidName"></p>
+  <table class="props" id="fluidTable"></table>
+  <p class="sub" id="fluidCaveat" style="margin-top:6px"></p>
 
   <h2>Plant</h2>
   <div id="counts"></div>
@@ -121,6 +161,10 @@
   <select id="scenario"></select>
   <div class="row"><span>Verdict</span><span id="verdict"></span></div>
   <p class="sub" id="verdictWhy" style="margin:2px 0 0"></p>
+
+  <h2>Loop temperatures</h2>
+  <div id="temps"></div>
+  <p class="sub" id="tempNote" style="margin-top:4px"></p>
 
   <h2>Circuits</h2>
   <div id="circuits"></div>

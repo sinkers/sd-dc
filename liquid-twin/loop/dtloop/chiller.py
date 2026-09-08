@@ -213,6 +213,35 @@ class ChillerPlant:
     def crossover_ambient_c(self, load_kw: float, return_water_c: float) -> float:
         return self.units[0].crossover_ambient_c(load_kw / self.running, return_water_c)
 
+    def capability_sweep(self, return_water_c: float, lo: float = -10.0,
+                         hi: float = 48.0, step: float = 0.5) -> list[dict]:
+        """Per-ambient coil capability and COP, with no load in it.
+
+        The load-independent half of the model, so a caller can vary load
+        without re-solving anything:
+
+            compressors_kw = max(0, load - q_free_kw) / cop
+            mode           = free if q_free >= load else
+                             mechanical if q_free <= 0 else mixed
+
+        Both lines are definitional - an energy balance and the mode boundaries
+        this module states - rather than a second implementation of the physics.
+        UA sizing, the COP curve and the fan power stay here, which is what
+        keeps the browser a lookup rather than a fork.
+        """
+        out = []
+        t = lo
+        while t <= hi + 1e-9:
+            out.append({
+                "ambient_c": round(t, 2),
+                "q_free_kw": round(sum(u.free_cooling_kw(t, return_water_c)
+                                       for u in self.units[: self.running]), 2),
+                "cop": round(self.units[0].cop(t), 3),
+                "fans_kw": round(sum(u.fan_kw_full for u in self.units[: self.running]), 2),
+            })
+            t += step
+        return out
+
     def sweep(self, load_kw: float, return_water_c: float,
               lo: float = -10.0, hi: float = 45.0, step: float = 0.5) -> list[dict]:
         """Power against ambient, for the viewer and for annual-hours work.
