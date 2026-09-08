@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dtloop"
+version = "0.1.0"
+description = "Real-time model of the AU01 two-loop liquid cooling system"
+requires-python = ">=3.10"
+# Phase 1 needs numpy and nothing else. websockets arrives with the service in
+# Phase 4; keeping it out until then keeps a clean checkout cheap to install.
+dependencies = [
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+]
+
+[tool.setuptools.packages.find]
+where = ["loop"]
+
+[tool.setuptools.package-data]
+dtloop = ["*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["loop/tests"]

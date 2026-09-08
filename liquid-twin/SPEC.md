@@ -1,6 +1,8 @@
 # Liquid twin — two-loop DLC cooling system
 
-**Status:** specification. No code yet.
+**Status:** Phase 1 of 6 built. Sections 4.1-4.4 (elements), 9 and the
+hydraulic half of 12 are implemented and tested; see README.md for what
+changed once the physics was actually run.
 
 A real-time model of the AU01 liquid cooling system: DLC cold plates → CDU →
 dry coolers. Built to answer operating questions the CFD cannot — what happens

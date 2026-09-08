@@ -29,6 +29,16 @@ else
   ( cd "$HERE/digital-twin" && PYTHONPATH=rom python3 -m pytest -q rom/tests ) || fail=1
 fi
 
+# liquid-twin, same arrangement as digital-twin: prefer an installed dtloop,
+# fall back to PYTHONPATH so a plain checkout still runs.
+if python3 -c "import dtloop" 2>/dev/null; then
+  run "liquid-twin — hydraulics" liquid-twin python3 -m pytest -q loop/tests
+else
+  echo -e "\n\033[1m== liquid-twin — hydraulics\033[0m"
+  echo "  dtloop not installed; using PYTHONPATH. For CI: pip install -e liquid-twin"
+  ( cd "$HERE/liquid-twin" && PYTHONPATH=loop python3 -m pytest -q loop/tests ) || fail=1
+fi
+
 printf '\n'
 if [ "$fail" -eq 0 ]; then echo "All suites passed."; else echo "One or more suites FAILED."; fi
 exit "$fail"

@@ -98,7 +98,7 @@ route: Korvest, for instance, offer a Copyright Release Form.
                                │  feeds
    ┌───────────────────────────▼────────────────────────────────────┐
    │  3. SIMULATION — how it will run                               │
-   │     cfd-cabinet-cooling/ · digital-twin/                       │
+   │     cfd-cabinet-cooling/ · digital-twin/ · liquid-twin/       │
    │     CFD ground truth, then a real-time reduced-order model      │
    └────────────────────────────────────────────────────────────────┘
 
@@ -123,6 +123,7 @@ comply*. Layer 3 answers *what happens when I switch it on*.
 | [`cooling-model/`](cooling-model/) | Engineering | Parametric cooling plant and pump skid geometry, exported to STEP/OBJ | Working |
 | [`cfd-cabinet-cooling/`](cfd-cabinet-cooling/) | Simulation | OpenFOAM: does a fan wall keep a 30 kW cabinet inside ASHRAE limits? | Working |
 | [`digital-twin/`](digital-twin/) | Simulation | Real-time AU01 hall thermals, calibrated against the CFD, streamed to a browser and Unreal | Deployed |
+| [`liquid-twin/`](liquid-twin/) | Simulation | Two-loop liquid cooling — DLC cold plates to CDU to dry coolers, as a pressure-driven hydraulic network | Phase 1 of 6 |
 | [`vm-setup/`](vm-setup/) | Infrastructure | Headless FreeCAD VM, XML-RPC server, MCP bridge | Working |
 
 ---
@@ -259,6 +260,25 @@ scenarios ship: `training_run`, `n_minus_one`, `west_fanwall_trip`.
 
 This is the pattern worth repeating — CFD is too slow to sit inside a design
 loop, so it becomes the ground truth that calibrates something fast enough to.
+
+### `liquid-twin/`
+
+The other half of the cooling story: DLC cold plates to CDU to dry coolers, the
+loop the air twin explicitly does not model. Reducing each heat exchanger to a
+couple of numbers leaves no flow field to resolve, so this is not CFD at all —
+it is a pressure-driven hydraulic network plus thermal transport, solved in
+milliseconds.
+
+The governing decision is that **flow is an output, never an input**. Shut one
+of four identical rack branches and total flow falls 23.7 %, not the 25 % that
+was removed, because the pump rides up its curve while the three survivors each
+gain 1.6 %. Nothing models that; it falls out of solving the network, and it is
+why the air side's prescribed-flow approach could not answer the question.
+
+Phase 1 of 6. The hydraulic core is built and tested; thermal transport, heat
+exchangers, controls and the viewer are not. Every temperature it will need is
+still pending the Schneider RD110 design package, and the parameter loader
+raises rather than substituting a default for any of them.
 
 ---
 

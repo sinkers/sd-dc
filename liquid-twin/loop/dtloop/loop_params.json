@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "_comment": [
+    "Every number the liquid twin uses, with its source and a confidence grade.",
+    "Grades follow cfd-cabinet-cooling/FINDINGS-AU01.md: H = from a primary",
+    "document; M = derived from one, stated assumptions; C = carried forward",
+    "from a superseded source; L = engineering judgement or a placeholder.",
+    "",
+    "A value of null means NOT YET KNOWN. params.py refuses to return one",
+    "rather than substituting a default, so nothing can quietly run on a",
+    "number nobody chose. See the 'pending' field for what would settle it."
+  ],
+
+  "temperatures": {
+    "_comment": [
+      "PENDING the Schneider Electric RD110 design package. Not yet obtained.",
+      "No value here may be quoted until it is replaced by an RD110 figure.",
+      "These nine are the model's entire temperature basis: SPEC.md section 7."
+    ],
+    "facility_supply_c":      {"value": null, "pending": "RD110", "note": "dry cooler outlet / CDU facility inlet"},
+    "facility_return_c":      {"value": null, "pending": "RD110", "note": "CDU facility outlet / dry cooler inlet"},
+    "tcs_supply_c":           {"value": null, "pending": "RD110", "note": "CDU secondary outlet / cold plate inlet"},
+    "tcs_return_c":           {"value": null, "pending": "RD110", "note": "cold plate outlet / CDU secondary inlet"},
+    "cdu_approach_k":         {"value": null, "pending": "RD110", "note": "PHX terminal temperature difference"},
+    "drycooler_approach_k":   {"value": null, "pending": "RD110", "note": "at design ambient; with the ambient below, sets the floor on cold plate inlet"},
+    "ambient_design_c":       {"value": null, "pending": "RD110 + site weather file", "note": "dry bulb"},
+    "ashrae_liquid_class":    {"value": null, "pending": "RD110", "note": "W17 / W27 / W32 / W40 / W45 / W+"},
+    "cold_plate_max_inlet_c": {"value": null, "pending": "RD110 or node vendor", "note": "the limit the verdict is judged against"}
+  },
+
+  "loads": {
+    "hall_liquid_kw":        {"value": 1092.0, "unit": "kW", "confidence": "M",
+                              "source": "cfd-cabinet-cooling/FINDINGS-AU01.md section 6"},
+    "rack_liquid_kw":        {"value": 68.0, "unit": "kW", "confidence": "M",
+                              "source": "digital-twin/README.md, scope limits"},
+    "rack_air_kw":           {"value": 36.75, "unit": "kW", "confidence": "C",
+                              "source": "cfd-cabinet-cooling/AU013-143-cooling-check.md, B300 load sheet (otherwise superseded)"},
+    "dlc_capture_fraction":  {"value": null, "pending": "node vendor system-level spec",
+                              "note": [
+                                "FINDINGS-AU01.md section 365 quotes DLC-2 'up to 95 % heat capture',",
+                                "but 68 liquid + 36.75 air = 104.75 kW/rack implies 65 %. The two cannot",
+                                "both be right. Left null deliberately: this is the open item SPEC.md",
+                                "section 8 says must be resolved before any capacity decision."
+                              ]},
+    "cdu_standing_loss_kw":  {"value": 17.5, "unit": "kW", "confidence": "L",
+                              "source": "midpoint of the 10-25 kW range in AU013-143-cooling-check.md"}
+  },
+
+  "plant": {
+    "cdu": {
+      "count":            {"value": 3, "confidence": "M", "source": "cooling-model/README.md; SPEC.md line 207"},
+      "model":            {"value": "Vertiv XDU 1350", "confidence": "M", "source": "cooling-model/README.md"},
+      "rated_duty_kw":    {"value": 1350.0, "unit": "kW", "confidence": "M", "source": "model designation"},
+      "rating_point":     {"_comment": "The single vendor point the eps-NTU fit is calibrated from. Every field PENDING the XDU 1350 datasheet.",
+                           "primary_flow_m3h":   {"value": null, "pending": "XDU 1350 datasheet"},
+                           "secondary_flow_m3h": {"value": null, "pending": "XDU 1350 datasheet"},
+                           "primary_in_c":       {"value": null, "pending": "XDU 1350 datasheet"},
+                           "secondary_in_c":     {"value": null, "pending": "XDU 1350 datasheet"},
+                           "primary_dp_kpa":     {"value": null, "pending": "XDU 1350 datasheet"},
+                           "secondary_dp_kpa":   {"value": null, "pending": "XDU 1350 datasheet"}}
+    },
+    "drycooler": {
+      "count":         {"value": 1, "confidence": "L", "source": "cooling-model/README.md - placeholder geometry, one 2.5 MW unit"},
+      "rated_duty_kw": {"value": 2500.0, "unit": "kW", "confidence": "L", "source": "cooling-model/README.md"},
+      "rating_point":  {"_comment": "PENDING a dry cooler selection. Ambient and approach here must agree with temperatures.ambient_design_c.",
+                        "fluid_flow_m3h":  {"value": null, "pending": "dry cooler selection"},
+                        "ambient_c":       {"value": null, "pending": "dry cooler selection"},
+                        "fluid_in_c":      {"value": null, "pending": "dry cooler selection"},
+                        "air_flow_m3s":    {"value": null, "pending": "dry cooler selection"},
+                        "fan_power_kw":    {"value": null, "pending": "dry cooler selection"}}
+    },
+    "pumps": {
+      "_comment": "Head curve as three datasheet points: shutoff, duty, runout. components.PumpCurve.from_points fits the quadratic.",
+      "facility": {"count": {"value": null, "pending": "pump selection"},
+                   "curve_points_m3h_m": {"value": null, "pending": "pump selection"}},
+      "secondary": {"_comment": "Integral to the XDU 1350.",
+                    "curve_points_m3h_m": {"value": null, "pending": "XDU 1350 datasheet"}}
+    }
+  },
+
+  "fluid": {
+    "name":               {"value": "PG25", "confidence": "H", "source": "SPEC.md section 4.4"},
+    "glycol_vol_percent": {"value": 25.0, "unit": "%", "confidence": "H"},
+    "properties_source":  {"value": "generic published 25 % PG tables", "confidence": "L",
+                           "note": "See dtloop/fluid.py. Generic glycol data, NOT a datasheet for the AU01 fill. Replace before quoting pressure drop to a vendor."}
+  },
+
+  "hydraulic": {
+    "roughness_m":          {"value": 4.5e-05, "unit": "m", "confidence": "M",
+                             "source": "commercial steel, standard published value"},
+    "design_velocity_ms":   {"value": 2.0, "unit": "m/s", "confidence": "L",
+                             "note": "typical closed-loop sizing velocity; used only to sanity-check DN selections"},
+    "reference_pressure_pa": {"value": 300000.0, "unit": "Pa", "confidence": "L",
+                             "note": "expansion vessel setting. Fixes the absolute level of an otherwise closed loop; no flow depends on it."},
+    "closed_valve_k":       {"value": 1.0e10, "unit": "Pa.s2/kg2", "confidence": "H",
+                             "note": [
+                               "A shut valve is a large finite resistance, never infinite: an infinite K",
+                               "gives a singular Jacobian, and pruning the branch would throw away the",
+                               "thermal states whose temperature the demo needs to show rising.",
+                               "At 1e10 a 1 bar drop passes 3e-3 kg/s - 0.03 % of a nominal 10 kg/s -",
+                               "while keeping the system conditioned well inside float64."
+                             ]}
+  }
+}
