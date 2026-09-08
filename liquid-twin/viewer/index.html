@@ -1,0 +1,103 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RD110 liquid loop — review model</title>
+<style>
+  :root {
+    --bg: #101418; --panel: #181d23; --line: #2a3239;
+    --ink: #e6ebf0; --dim: #8b98a5;
+    --free: #4ec9a0; --mixed: #e0b34a; --mech: #e06c5a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         overflow: hidden; }
+  #scene { position: fixed; inset: 0; }
+  .panel { position: fixed; background: rgba(24,29,35,.93); border: 1px solid var(--line);
+           border-radius: 8px; backdrop-filter: blur(8px); }
+  #left  { top: 12px; left: 12px; width: 268px; padding: 14px; max-height: calc(100vh - 24px);
+           overflow-y: auto; }
+  #right { top: 12px; right: 12px; width: 300px; padding: 14px; }
+  #pick  { bottom: 12px; left: 12px; padding: 10px 14px; display: none; max-width: 420px; }
+  h1 { font-size: 14px; margin: 0 0 2px; letter-spacing: .01em; }
+  h2 { font-size: 10px; text-transform: uppercase; letter-spacing: .09em;
+       color: var(--dim); margin: 16px 0 7px; font-weight: 600; }
+  .sub { color: var(--dim); font-size: 11px; margin: 0 0 4px; }
+  .row { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0;
+         font-variant-numeric: tabular-nums; }
+  .row span:last-child { color: var(--ink); font-weight: 500; }
+  .row span:first-child { color: var(--dim); }
+  label.toggle { display: flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer;
+                 user-select: none; }
+  label.toggle input { accent-color: #5b8fd0; margin: 0; }
+  .swatch { width: 11px; height: 11px; border-radius: 2px; flex: none; }
+  .t { flex: 1; }
+  .t small { color: var(--dim); font-size: 10px; }
+  input[type=range] { width: 100%; accent-color: #5b8fd0; margin: 6px 0 2px; }
+  #mode { display: inline-block; padding: 2px 9px; border-radius: 4px; font-weight: 600;
+          font-size: 11px; letter-spacing: .04em; text-transform: uppercase; }
+  .m-free { background: rgba(78,201,160,.16); color: var(--free); }
+  .m-mixed { background: rgba(224,179,74,.16); color: var(--mixed); }
+  .m-mechanical { background: rgba(224,108,90,.16); color: var(--mech); }
+  #bar { height: 7px; border-radius: 4px; overflow: hidden; display: flex;
+         background: #22292f; margin: 8px 0 3px; }
+  #bar i { display: block; height: 100%; }
+  #barFree { background: var(--free); }
+  #barMech { background: var(--mech); }
+  canvas#chart { width: 100%; height: 96px; display: block; margin-top: 6px; }
+  .foot { color: var(--dim); font-size: 10.5px; line-height: 1.45; margin-top: 12px;
+          border-top: 1px solid var(--line); padding-top: 9px; }
+  code { background: #22292f; padding: 1px 4px; border-radius: 3px; font-size: 11px; }
+  #loading { position: fixed; inset: 0; display: grid; place-items: center; color: var(--dim); }
+</style>
+
+<div id="scene"></div>
+<div id="loading">loading geometry…</div>
+
+<div class="panel" id="left" hidden>
+  <h1>RD110 liquid loop</h1>
+  <p class="sub">Two-loop DLC cooling — review model</p>
+
+  <h2>Show</h2>
+  <div id="toggles"></div>
+
+  <h2>Plant</h2>
+  <div id="counts"></div>
+
+  <div class="foot">
+    Drag to orbit, scroll to zoom, click a part to identify it.
+    Geometry from <code>dtloop.layout</code> — the same module the STEP export and
+    the hydraulic solver read.
+  </div>
+</div>
+
+<div class="panel" id="right" hidden>
+  <h1>Free cooling</h1>
+  <p class="sub" id="chillerModel"></p>
+
+  <div class="row"><span>Ambient</span><span id="ambVal"></span></div>
+  <input type="range" id="amb" min="-10" max="48" step="0.5" value="25">
+
+  <div class="row" style="margin-top:6px"><span>Mode</span><span id="mode"></span></div>
+  <div id="bar"><i id="barFree"></i><i id="barMech"></i></div>
+  <div class="row"><span>Load on free cooling</span><span id="freePct"></span></div>
+  <div class="row"><span>Fans</span><span id="fans"></span></div>
+  <div class="row"><span>Compressors</span><span id="comp"></span></div>
+  <div class="row"><span>Total electrical</span><span id="total"></span></div>
+  <div class="row"><span>Effective COP</span><span id="cop"></span></div>
+
+  <h2>Total plant power vs ambient</h2>
+  <canvas id="chart" width="560" height="192"></canvas>
+  <div class="row"><span>Compressors engage above</span><span id="crossover"></span></div>
+  <div class="row"><span>RD110 stated max ambient</span><span id="ambMax"></span></div>
+
+  <div class="foot" id="chillerNote"></div>
+</div>
+
+<div class="panel" id="pick"></div>
+
+<!-- OrbitControls imports the bare specifier "three", so it needs a map. -->
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js" } }
+</script>
+<script type="module" src="./app.js"></script>

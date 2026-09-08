@@ -71,23 +71,39 @@ def test_the_whole_temperature_stack_is_thirteen_kelvin_wide(params):
     assert hi - lo == pytest.approx(13.0)
 
 
-def test_rd110_cannot_settle_the_dry_cooler_approach(params):
-    """The finding in SPEC.md 7.1, pinned so it cannot be quietly filled in.
+def test_the_chillers_are_the_baseline_and_dry_coolers_are_not(params):
+    """RD110's Design Options list dry coolers; its baseline is the chillers,
+    and following the baseline is the decision that has been taken.
 
-    RD110's baseline heat rejection is high-temperature chillers. Dry coolers
-    appear only in its Design Options list with no approach given, and a chiller
-    figure would not transfer: a chiller makes 37 C water at any ambient in
-    range, a dry cooler cannot make water colder than the air at all.
+    A free-cooling chiller is a dry cooler below its crossover ambient and a
+    chiller above it, so the dry-cooler approach is no longer on the critical
+    path - `hydraulic.free_cooling_full_ambient_c` sets the crossover instead.
+    The parameter is kept rather than deleted because the option is real.
     """
+    assert params.get("plant.drycooler.selected") is False
     assert params.is_pending("temperatures.drycooler_approach_k")
-    why = dict(params.pending())["temperatures.drycooler_approach_k"]
-    assert "dry cooler selection" in why
+    assert "design option" in dict(params.pending())["temperatures.drycooler_approach_k"]
 
-    # RD110 does record its own ambient range, and it is above every ambient at
-    # which a dry cooler could hold 37 C - which is consistent with its choice.
+    crossover_input = params.param("hydraulic.free_cooling_full_ambient_c")
+    assert crossover_input.confidence == "L", "this is judgement, not an RD110 figure"
+
     lo, hi = params.get("temperatures.ambient_range_rd110_c")
     assert (lo, hi) == (-9.6, 39.3)
-    assert hi > params.get("temperatures.facility_supply_c") - 3.0
+
+
+def test_the_liquid_load_uses_the_ai_racks_not_the_whole_it_figure(params):
+    """The arithmetic slip worth pinning: 87 % of the AI racks, not of all IT."""
+    load = params.get("loads.rd110_liquid_load_kw")
+    ai_only = params.get("plant.rd110.ai_rack_count") * params.get("plant.rd110.ai_rack_kw") \
+        * params.get("plant.rd110.liquid_fraction")
+    assert load == pytest.approx(ai_only, abs=1.0)
+
+    all_it = params.get("plant.rd110.it_load_kw") * params.get("plant.rd110.liquid_fraction")
+    capacity = 3 * 2075.0  # N+1 of four at RD110's Paris rating
+    assert load < capacity < all_it, (
+        "the wrong sum exceeds N+1 capacity and the right one does not - "
+        "which is exactly why it matters"
+    )
 
 
 def test_rd110_plant_is_recorded_separately_from_au01s(params):
@@ -130,11 +146,21 @@ def test_pending_lists_every_unsettled_parameter_with_what_would_settle_it(param
 
 
 def test_judgement_calls_are_findable(params):
-    # by_confidence("L") is the list of numbers that are judgement, not evidence.
+    """by_confidence("L") is the list of numbers that are judgement, not evidence.
+
+    Worth keeping honest: every one of these moves a result, and none of them
+    came from a document. `free_cooling_full_ambient_c` is the one with the most
+    leverage - it sets the crossover ambient, and so the whole free-cooling story.
+    """
     low = {p.path for p in params.by_confidence("L")}
+    assert "hydraulic.free_cooling_full_ambient_c" in low
     assert "loads.cdu_standing_loss_kw" in low
-    assert "plant.drycooler.rated_duty_kw" in low
-    assert "loads.hall_liquid_kw" not in low
+    assert "fluid.properties_source" in low
+
+    # And things that did come from a document are not in it.
+    for settled in ("loads.hall_liquid_kw", "temperatures.facility_supply_c",
+                    "plant.rd110.ai_rack_kw"):
+        assert settled not in low
 
 
 def test_unknown_paths_and_groups_are_distinguished(params):

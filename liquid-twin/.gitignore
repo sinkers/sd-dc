@@ -1,0 +1,10 @@
+# The FreeCAD document is a rebuild artefact of geometry/model_loop.py, and a
+# binary one that diffs badly. The STEP export is committed instead: it is the
+# thing a reviewer opens, and it is readable by every CAD tool rather than one.
+models/*.FCStd
+models/*.FCBak
+
+# geometry.bin and manifest.json ARE committed, deliberately. They are
+# regenerable by viewer/prepare_geometry.py, but committing them means a clone
+# can open the viewer without running anything, and 0.55 MB is a fair price for
+# that. Rebuild them whenever layout.py changes.

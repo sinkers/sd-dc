@@ -57,13 +57,14 @@
     },
     "drycooler_approach_k": {
       "value": null,
-      "pending": "a dry cooler selection at an Australian design ambient",
+      "pending": "only needed if the dry-cooler design option is taken instead of the chillers",
       "note": [
-        "RD110 CANNOT settle this. Its baseline heat rejection is four Uniflair",
-        "XRAF4242A EHT high-temperature chillers; dry coolers with adiabatic assist",
-        "appear only in its 'Design Options' list, with no approach temperature",
-        "given. A chiller makes 37 C water at any ambient in range; a dry cooler",
-        "cannot make water colder than ambient at all. See SPEC.md section 7.1."
+        "RD110's baseline is four Uniflair XRAF4242A EHT FREE-COOLING chillers, and",
+        "the decision has been taken to follow it. A free-cooling chiller is a dry",
+        "cooler below its crossover ambient and a chiller above it, so this parameter",
+        "is not on the critical path any more - hydraulic.free_cooling_full_ambient_c",
+        "is what sets the crossover. Kept, not deleted, because RD110 does list dry",
+        "coolers with adiabatic assist as a design option."
       ]
     },
     "ambient_design_c": {
@@ -129,6 +130,19 @@
       "unit": "kW",
       "confidence": "L",
       "source": "midpoint of the 10-25 kW range in AU013-143-cooling-check.md"
+    },
+    "rd110_liquid_load_kw": {
+      "value": 5930.0,
+      "unit": "kW",
+      "confidence": "M",
+      "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), derived",
+      "note": [
+        "48 AI racks x 142 kW x 0.87. The 87 % liquid share applies to the AI racks,",
+        "NOT to RD110's whole 7,536 kW IT figure - the 48 networking racks at 15 kW",
+        "are air-cooled. Applying it to the full IT load gives 6,556 kW, which would",
+        "exceed the 6,225 kW N+1 chiller capacity at RD110's Paris rating and start a",
+        "capacity argument the correct sum does not support."
+      ]
     }
   },
   "plant": {
@@ -178,39 +192,15 @@
       }
     },
     "drycooler": {
-      "count": {
-        "value": 1,
-        "confidence": "L",
-        "source": "cooling-model/README.md - placeholder geometry, one 2.5 MW unit"
-      },
-      "rated_duty_kw": {
-        "value": 2500.0,
-        "unit": "kW",
-        "confidence": "L",
-        "source": "cooling-model/README.md"
-      },
-      "rating_point": {
-        "_comment": "PENDING a dry cooler selection. Ambient and approach here must agree with temperatures.ambient_design_c.",
-        "fluid_flow_m3h": {
-          "value": null,
-          "pending": "dry cooler selection"
-        },
-        "ambient_c": {
-          "value": null,
-          "pending": "dry cooler selection"
-        },
-        "fluid_in_c": {
-          "value": null,
-          "pending": "dry cooler selection"
-        },
-        "air_flow_m3s": {
-          "value": null,
-          "pending": "dry cooler selection"
-        },
-        "fan_power_kw": {
-          "value": null,
-          "pending": "dry cooler selection"
-        }
+      "_comment": [
+        "RD110 design option, not the baseline: 'integrate dry coolers with adiabatic",
+        "assist to further optimize energy electricity'. Left unpopulated - the",
+        "chillers under plant.rd110 are what is being modelled."
+      ],
+      "selected": {
+        "value": false,
+        "confidence": "H",
+        "source": "Schneider Electric RD110 rev 3 (RD110DSR3-GB300.pdf), Design Options list"
       }
     },
     "pumps": {
@@ -377,6 +367,20 @@
         "thermal states whose temperature the demo needs to show rising.",
         "At 1e10 a 1 bar drop passes 3e-3 kg/s - 0.03 % of a nominal 10 kg/s -",
         "while keeping the system conditioned well inside float64."
+      ]
+    },
+    "free_cooling_full_ambient_c": {
+      "value": 20.0,
+      "unit": "C",
+      "confidence": "L",
+      "source": "engineering judgement",
+      "note": [
+        "Ambient at which one chiller carries its rated load on the coil alone.",
+        "Sizes the free-cooling coil: UA = rated / (T_return - this). The single",
+        "number a vendor will quote and the first one to replace - RD110 gives",
+        "capacity at two reference climates and nothing about part load.",
+        "At 20 C with 47 C return, the crossover at RD110's 5,930 kW liquid load",
+        "is 21.3 C. See dtloop/chiller.py."
       ]
     }
   }

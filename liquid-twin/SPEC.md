@@ -1,6 +1,6 @@
 # Liquid twin — two-loop DLC cooling system
 
-**Status:** Phase 1 of 6 built. Sections 4.1-4.4 (elements), 9 and the
+**Status:** Phases 0-1 built, plus the geometry and review viewer from Phase 4. Sections 4.1-4.4 (elements), 9 and the
 hydraulic half of 12 are implemented and tested; see README.md for what
 changed once the physics was actually run.
 
@@ -175,33 +175,53 @@ Both loops run a 10 K rise, and the whole chain is only 13 K wide: 37 → 40 at 
 CDU, 40 → 50 through the plate, 50 → 47 back. That is a deliberately tight stack,
 and it is why the CDU approach matters as much as it does.
 
-### 7.1 RD110 does not use dry coolers — and this changes the answer
+### 7.1 The chillers ARE the dry coolers, below a crossover ambient
 
-**RD110's baseline heat rejection is four Uniflair XRAF4242A EHT
-high-temperature chillers in N+1**, not dry coolers. Dry coolers appear only in
-its Design Options list — *"integrate dry coolers with adiabatic assist to
-further optimize energy electricity"* — with no approach temperature given.
+**Decided: follow RD110's baseline** — four Uniflair XRAF4242A EHT
+high-temperature chillers in N+1. Dry coolers appear only in its Design Options
+list (*"integrate dry coolers with adiabatic assist to further optimize energy
+electricity"*) and are not being pursued.
 
-This is not a detail. A chiller makes 37 °C water at any ambient in its range.
-A dry cooler cannot make water colder than the air it rejects into, so holding
-RD110's 37 °C facility supply constrains ambient directly:
+That decision resolves rather than sidesteps the analysis below, because the
+XRAF is a **free-cooling** chiller. Below a crossover ambient it runs as a dry
+cooler — fans only, compressors off — and above it the compressors make up
+whatever the coil cannot take. One machine, two regimes.
+
+So the arithmetic in this section is not an argument against dry coolers. It is
+the **free-cooling mode boundary of the chillers RD110 already specifies**. A
+coil cannot make water colder than the air, so free cooling alone holds RD110's
+37 °C facility supply only while:
 
 ```
 T_ambient,max = 37 °C − approach
 ```
 
-| approach | max ambient that still yields 37 °C |
+| approach | max ambient still holding 37 °C on air alone |
 |---|---|
 | 3 K | 34 °C |
 | 5 K | 32 °C |
 | 8 K | 29 °C |
 
-Australian design dry bulbs sit above that band. Note that even RD110's own
-stated maximum — 39.3 °C — is above every row, which is consistent with its
-choosing chillers for the baseline.
+Above that band the compressors run, which is exactly why RD110 specifies
+chillers rather than bare dry coolers: its own stated maximum of 39.3 °C is
+above every row.
 
-**Adiabatic assist is therefore not an optimisation, it is the enabling
-component.** Pre-cooling drives entering air toward wet bulb:
+`dtloop/chiller.py` models both regimes. The crossover is derived, not assumed:
+
+```
+Q_free = UA_free * (T_return - T_ambient)
+T_crossover = T_return - load / UA_free
+```
+
+and it **falls as load rises** — a fully loaded plant loses free cooling at a
+*lower* ambient than a half-loaded one, which is the opposite of the usual
+intuition. At RD110's 5,930 kW liquid load with 47 °C return water, the crossover
+is 21.3 °C, and crossing it costs a factor of 6.3 in plant power by 42 °C
+(218 kW of fans against 1,375 kW with compressors). The browser viewer shows the
+switch on a slider.
+
+**Adiabatic assist still matters, as the lever that widens the free-cooling
+band.** Pre-cooling drives entering air toward wet bulb:
 
 ```
 T_entering = T_db − η (T_db − T_wb)
@@ -211,15 +231,17 @@ At 38 °C dry bulb, 21 °C coincident wet bulb and η = 0.8, entering air is
 24.4 °C, and a 5 K approach gives 29.4 °C — inside 37 °C with 7.6 K to spare.
 The same site without assist is 43 °C, which misses by 6 K.
 
-So the design question the model must answer is not "how much energy do dry
-coolers save" but **"how many hours a year does the site's coincident wet bulb
-let them hold 37 °C, and what carries the load when it does not"**. That makes
-`hot_day.json` (§10) the primary scenario rather than a stress case, and it makes
-the coincident wet bulb — not the dry bulb — the number to chase.
+So the design question is not "chiller or dry cooler" — it is **"how many hours
+a year is the plant below its crossover, and what does the rest cost"**. That
+makes `hot_day.json` (§10) the primary scenario rather than a stress case, and it
+makes the site's coincident wet bulb — not its dry bulb — the number to chase,
+because that is what adiabatic assist converts into free-cooling hours.
 
-None of the arithmetic above is RD110's. It is derived from RD110's stated
-temperatures plus an assumed dry cooler approach, and it needs a real selection
-to firm up.
+None of the arithmetic above is RD110's. RD110 gives capacity at two reference
+climates and nothing about part load, so `UA_free`, the fan power fraction and
+the COP curve are **grade L judgement** (`hydraulic.free_cooling_full_ambient_c`
+is the one to replace first). The structure is right; the constants are
+placeholders.
 
 ### 7.2 The two numbers that still decide everything
 
@@ -325,7 +347,7 @@ sign and velocity. Reuses the three.js shell and geometry packer.
 | 1 | Hydraulic core + tests (§12 rows 3–6) |
 | 2 | Thermal transport + the shared ε-NTU component |
 | 3 | Controls + scenarios |
-| 4 | Telemetry + viewer |
+| 4 | Telemetry + live viewer. **Geometry and the static review viewer are done early** - see README.md; layout.py is the single source SPEC section 9 asks for |
 | 5 | Validation and honest scope limits |
 | 6 | *Later:* couple to the air twin — CDU standing losses and pump room heat become air-side load; one rack object owns both its liquid and air share |
 

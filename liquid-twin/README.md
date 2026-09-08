@@ -171,6 +171,69 @@ So a system-level flow change is not a good check that viscosity is wired up.
 `test_cold_fluid_costs_more_pressure_in_the_pipework` is; the cancellation is
 pinned by its own test so that Phase 2 notices if it changes.
 
+## The review model
+
+```bash
+./viewer/serve.sh                 # http://127.0.0.1:8770/
+./geometry/run.sh                 # rebuild models/RD110_Loop.step (needs FreeCAD)
+./viewer/prepare_geometry.py      # rebuild the browser bundle (no FreeCAD)
+```
+
+RD110's plant as geometry: 4 chillers, 9 CDUs, 48 liquid-cooled racks, 148 pipe
+runs over 598 m, and one control valve per rack — RD110_3.2's PCV01..PCV48.
+Click any part to identify it; drag to orbit; `f` refits the view.
+
+![the review model](docs/viewer-free.png)
+
+Topology comes from `dtloop/layout.py`, which holds coordinates and connectivity
+and imports neither FreeCAD nor numpy. Three things read it: the FreeCAD script
+that exports STEP, the packer that builds the browser bundle, and — from Phase 2
+— the hydraulic solver. That is §9 of the spec made real: a layout change moves
+the physics and the picture together, because there is only one of them.
+
+### Free cooling, and when the compressors start
+
+The chillers are **Uniflair XRAF4242A EHT free-cooling** units. Below a crossover
+ambient they are dry coolers — fans only, compressors off — and above it the
+compressors make up whatever the coil cannot take. The ambient slider shows the
+switch, and the chillers change colour with it:
+
+| ambient | mode | fans | compressors | total | COP |
+|---|---|---|---|---|---|
+| 10 °C | free | 218 kW | 0 | **218 kW** | 27.2 |
+| 25 °C | mixed | 218 kW | 143 kW | 361 kW | 16.4 |
+| 42 °C | mixed | 218 kW | 1,157 kW | **1,375 kW** | 4.3 |
+
+A factor of 6.3 in plant power across the range, and the crossover at RD110's
+5,930 kW liquid load is **21.3 °C**.
+
+This also corrects the framing in the first pass at SPEC.md §7.1. The arithmetic
+there — "a dry cooler cannot make water colder than the air, so holding 37 °C
+constrains ambient" — is not an argument against dry coolers. It is the
+free-cooling mode boundary of the chillers RD110 already specifies. Nothing is
+ruled out; what changes is the electricity bill.
+
+`UA`, fan power and the COP curve are **grade L judgement**, not RD110 figures —
+RD110 gives capacity at two reference climates and nothing about part load. The
+shape is right and the constants are placeholders; `dtloop/chiller.py` says so.
+
+### One arithmetic correction worth carrying
+
+The liquid load is **87 % of the AI racks**, not of RD110's whole IT figure:
+48 × 142 kW × 0.87 = 5,930 kW. The 48 networking racks at 15 kW are air-cooled,
+so applying 87 % to all 7,536 kW gives 6,556 kW — which would *exceed* N+1
+capacity (6,225 kW at RD110's Paris rating) and start a capacity argument that
+the correct sum does not support. A test pins it.
+
+### What the geometry is not
+
+Every run is a straight leg or a single right angle. Real routing turns far more
+often, and each extra elbow is fitting loss the solver would see, so the fitting
+counts here are a **floor, not an estimate**. `piping/route_engine.py` is where
+A* routing, real bend radii and clash checking live; this layout is for reviewing
+connectivity and equipment placement. A test pins the limitation so that routing
+it properly is a deliberate act.
+
 ## Next
 
 Phase 2 is thermal transport — pipes discretised into finite volumes so a load
