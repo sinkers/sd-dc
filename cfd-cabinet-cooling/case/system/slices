@@ -1,0 +1,37 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Sample the vertical centreline plane into flat text, so the result can be   |
+| plotted with matplotlib and no ParaView install is required.                |
+|                                                                            |
+|   postProcess -func slices -latestTime                                      |
+|                                                                            |
+| Writes postProcessing/slices/<time>/{T,U,p_rgh}_centreline.raw              |
+\*---------------------------------------------------------------------------*/
+
+#include "simulationParameters"
+
+type                surfaces;
+libs                (sampling);
+
+writeControl        onEnd;
+
+surfaceFormat       raw;
+interpolationScheme cellPoint;
+
+fields              (T U);
+
+surfaces
+{
+    centreline
+    {
+        type            plane;
+        planeType       pointAndNormal;
+        pointAndNormalDict
+        {
+            point       (0 $sliceY 0);
+            normal      (0 1 0);
+        }
+        interpolate     true;
+    }
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -1,0 +1,39 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Step 2: the two openings in the fan wall unit, consumed by createPatch.      |
+|                                                                            |
+|   fanWall        cold air discharged from the unit face into the cold aisle |
+|   fanWallIntake  hot air drawn back in through the TOP of the unit          |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      topoSetDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "simulationParameters"
+
+actions
+(
+    // Supply discharge on the unit face, x = unitDepth, z = supplyZ0..supplyZ1.
+    {
+        name    fanWallFaces;
+        type    faceSet;
+        action  new;
+        source  boxToFace;
+        box     ($unitDepthM -0.01 $supplyZ0M) ($unitDepthP $roomWidthP $supplyZ1P);
+    }
+
+    // Return intake on top of the unit, z = unitHeight, x = 0..unitDepth.
+    {
+        name    fanWallIntakeFaces;
+        type    faceSet;
+        action  new;
+        source  boxToFace;
+        box     (-0.01 -0.01 $unitHeightM) ($unitDepthM $roomWidthP $unitHeightP);
+    }
+);
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

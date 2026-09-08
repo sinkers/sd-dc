@@ -1,0 +1,44 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Turn internalWallsZone into zero-thickness adiabatic no-slip walls.         |
+| All solid internal surfaces share one patch pair; nothing here needs to be  |
+| post-processed separately, so there is no reason to split them up.          |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      createBafflesDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Only convert internal faces; leave existing boundary faces alone.
+internalFacesOnly   true;
+
+// Field files are handled by the "(walls|internalWalls.*)" regexes in 0.orig.
+fields              false;
+
+baffles
+{
+    internalWalls
+    {
+        type        faceZone;
+        zoneName    internalWallsZone;
+
+        patches
+        {
+            master
+            {
+                name    internalWalls;
+                type    wall;
+            }
+            slave
+            {
+                name    internalWalls_slave;
+                type    wall;
+            }
+        }
+    }
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

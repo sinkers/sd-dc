@@ -1,0 +1,605 @@
+{
+ "_SYNTHETIC": true,
+ "_WARNING": "SYNTHETIC FIXTURE. Invented numbers, not from any standard. Never issue a design from this file.",
+ "cables": {
+  "XLPE_SDI_CU": {
+   "name": "SYNTHETIC XLPE single core copper",
+   "voltage_kv": 0.6,
+   "insulation": "X-90 XLPE",
+   "sheath": "PVC",
+   "conductor": "Copper",
+   "class": 2,
+   "max_temp_c": 90,
+   "colour": "#1a1a1a",
+   "sizes": {
+    "1": {
+     "i_3ph_touching_a": 12.0,
+     "i_3ph_spaced_a": 13.0,
+     "i_3ph_conduit_a": 10.0,
+     "i_3ph_buried_a": 11.0,
+     "r_dc_ohm_km": 18.0,
+     "od_mm": 5.0,
+     "weight_kg_km": 31,
+     "bend_radius_mm": 40.0
+    },
+    "1.5": {
+     "i_3ph_touching_a": 15.4,
+     "i_3ph_spaced_a": 16.7,
+     "i_3ph_conduit_a": 12.9,
+     "i_3ph_buried_a": 14.1,
+     "r_dc_ohm_km": 12.0,
+     "od_mm": 5.2,
+     "weight_kg_km": 36.0,
+     "bend_radius_mm": 42.0
+    },
+    "2.5": {
+     "i_3ph_touching_a": 21.2,
+     "i_3ph_spaced_a": 22.9,
+     "i_3ph_conduit_a": 17.6,
+     "i_3ph_buried_a": 19.4,
+     "r_dc_ohm_km": 7.2,
+     "od_mm": 5.6,
+     "weight_kg_km": 48.0,
+     "bend_radius_mm": 45.0
+    },
+    "4": {
+     "i_3ph_touching_a": 28.3,
+     "i_3ph_spaced_a": 30.7,
+     "i_3ph_conduit_a": 23.6,
+     "i_3ph_buried_a": 26.0,
+     "r_dc_ohm_km": 4.5,
+     "od_mm": 6.0,
+     "weight_kg_km": 64,
+     "bend_radius_mm": 48.0
+    },
+    "6": {
+     "i_3ph_touching_a": 36.4,
+     "i_3ph_spaced_a": 39.5,
+     "i_3ph_conduit_a": 30.4,
+     "i_3ph_buried_a": 33.4,
+     "r_dc_ohm_km": 3.0,
+     "od_mm": 6.4,
+     "weight_kg_km": 86,
+     "bend_radius_mm": 52.0
+    },
+    "10": {
+     "i_3ph_touching_a": 50.0,
+     "i_3ph_spaced_a": 54.2,
+     "i_3ph_conduit_a": 41.7,
+     "i_3ph_buried_a": 45.9,
+     "r_dc_ohm_km": 1.8,
+     "od_mm": 7.2,
+     "weight_kg_km": 130,
+     "bend_radius_mm": 57.0
+    },
+    "16": {
+     "i_3ph_touching_a": 66.9,
+     "i_3ph_spaced_a": 72.5,
+     "i_3ph_conduit_a": 55.8,
+     "i_3ph_buried_a": 61.4,
+     "r_dc_ohm_km": 1.125,
+     "od_mm": 8.0,
+     "weight_kg_km": 196,
+     "bend_radius_mm": 64.0
+    },
+    "25": {
+     "i_3ph_touching_a": 88.3,
+     "i_3ph_spaced_a": 95.6,
+     "i_3ph_conduit_a": 73.6,
+     "i_3ph_buried_a": 80.9,
+     "r_dc_ohm_km": 0.72,
+     "od_mm": 9.0,
+     "weight_kg_km": 295,
+     "bend_radius_mm": 72.0
+    },
+    "35": {
+     "i_3ph_touching_a": 108.8,
+     "i_3ph_spaced_a": 117.8,
+     "i_3ph_conduit_a": 90.6,
+     "i_3ph_buried_a": 99.7,
+     "r_dc_ohm_km": 0.5143,
+     "od_mm": 9.9,
+     "weight_kg_km": 405,
+     "bend_radius_mm": 79.0
+    },
+    "50": {
+     "i_3ph_touching_a": 135.7,
+     "i_3ph_spaced_a": 147.0,
+     "i_3ph_conduit_a": 113.1,
+     "i_3ph_buried_a": 124.4,
+     "r_dc_ohm_km": 0.36,
+     "od_mm": 11.1,
+     "weight_kg_km": 570,
+     "bend_radius_mm": 89.0
+    },
+    "70": {
+     "i_3ph_touching_a": 167.2,
+     "i_3ph_spaced_a": 181.1,
+     "i_3ph_conduit_a": 139.3,
+     "i_3ph_buried_a": 153.2,
+     "r_dc_ohm_km": 0.2571,
+     "od_mm": 12.4,
+     "weight_kg_km": 790,
+     "bend_radius_mm": 99.0
+    },
+    "95": {
+     "i_3ph_touching_a": 202.0,
+     "i_3ph_spaced_a": 218.8,
+     "i_3ph_conduit_a": 168.3,
+     "i_3ph_buried_a": 185.2,
+     "r_dc_ohm_km": 0.1895,
+     "od_mm": 13.7,
+     "weight_kg_km": 1065,
+     "bend_radius_mm": 110.0
+    },
+    "120": {
+     "i_3ph_touching_a": 233.5,
+     "i_3ph_spaced_a": 253.0,
+     "i_3ph_conduit_a": 194.6,
+     "i_3ph_buried_a": 214.0,
+     "r_dc_ohm_km": 0.15,
+     "od_mm": 15.0,
+     "weight_kg_km": 1340,
+     "bend_radius_mm": 120.0
+    },
+    "150": {
+     "i_3ph_touching_a": 268.1,
+     "i_3ph_spaced_a": 290.5,
+     "i_3ph_conduit_a": 223.4,
+     "i_3ph_buried_a": 245.8,
+     "r_dc_ohm_km": 0.12,
+     "od_mm": 16.2,
+     "weight_kg_km": 1670,
+     "bend_radius_mm": 130.0
+    },
+    "185": {
+     "i_3ph_touching_a": 305.4,
+     "i_3ph_spaced_a": 330.8,
+     "i_3ph_conduit_a": 254.5,
+     "i_3ph_buried_a": 279.9,
+     "r_dc_ohm_km": 0.0973,
+     "od_mm": 17.6,
+     "weight_kg_km": 2055,
+     "bend_radius_mm": 141.0
+    },
+    "240": {
+     "i_3ph_touching_a": 358.8,
+     "i_3ph_spaced_a": 388.8,
+     "i_3ph_conduit_a": 299.0,
+     "i_3ph_buried_a": 328.9,
+     "r_dc_ohm_km": 0.075,
+     "od_mm": 19.5,
+     "weight_kg_km": 2660,
+     "bend_radius_mm": 156.0
+    },
+    "300": {
+     "i_3ph_touching_a": 412.1,
+     "i_3ph_spaced_a": 446.4,
+     "i_3ph_conduit_a": 343.4,
+     "i_3ph_buried_a": 377.8,
+     "r_dc_ohm_km": 0.06,
+     "od_mm": 21.3,
+     "weight_kg_km": 3320,
+     "bend_radius_mm": 171.0
+    },
+    "400": {
+     "i_3ph_touching_a": 492.6,
+     "i_3ph_spaced_a": 533.6,
+     "i_3ph_conduit_a": 410.5,
+     "i_3ph_buried_a": 451.5,
+     "r_dc_ohm_km": 0.045,
+     "od_mm": 24.0,
+     "weight_kg_km": 4420,
+     "bend_radius_mm": 192.0
+    },
+    "500": {
+     "i_3ph_touching_a": 565.6,
+     "i_3ph_spaced_a": 612.8,
+     "i_3ph_conduit_a": 471.4,
+     "i_3ph_buried_a": 518.5,
+     "r_dc_ohm_km": 0.036,
+     "od_mm": 26.4,
+     "weight_kg_km": 5520,
+     "bend_radius_mm": 211.0
+    },
+    "630": {
+     "i_3ph_touching_a": 652.8,
+     "i_3ph_spaced_a": 707.2,
+     "i_3ph_conduit_a": 544.0,
+     "i_3ph_buried_a": 598.4,
+     "r_dc_ohm_km": 0.0286,
+     "od_mm": 29.1,
+     "weight_kg_km": 6950,
+     "bend_radius_mm": 233.0
+    }
+   }
+  },
+  "XLPE_SDI_AL": {
+   "name": "SYNTHETIC XLPE single core aluminium",
+   "voltage_kv": 0.6,
+   "insulation": "X-90 XLPE",
+   "sheath": "PVC",
+   "conductor": "Aluminium",
+   "class": 2,
+   "max_temp_c": 90,
+   "colour": "#8a8a8a",
+   "sizes": {
+    "16": {
+     "i_3ph_touching_a": 50.2,
+     "i_3ph_spaced_a": 55.8,
+     "i_3ph_conduit_a": 44.6,
+     "i_3ph_buried_a": 50.2,
+     "r_dc_ohm_km": 1.8125,
+     "od_mm": 8.0,
+     "weight_kg_km": 79,
+     "bend_radius_mm": 64.0
+    },
+    "25": {
+     "i_3ph_touching_a": 66.2,
+     "i_3ph_spaced_a": 73.6,
+     "i_3ph_conduit_a": 58.9,
+     "i_3ph_buried_a": 66.2,
+     "r_dc_ohm_km": 1.16,
+     "od_mm": 9.0,
+     "weight_kg_km": 115,
+     "bend_radius_mm": 72.0
+    },
+    "35": {
+     "i_3ph_touching_a": 81.6,
+     "i_3ph_spaced_a": 90.6,
+     "i_3ph_conduit_a": 72.5,
+     "i_3ph_buried_a": 81.6,
+     "r_dc_ohm_km": 0.8286,
+     "od_mm": 9.9,
+     "weight_kg_km": 155,
+     "bend_radius_mm": 79.0
+    },
+    "50": {
+     "i_3ph_touching_a": 101.8,
+     "i_3ph_spaced_a": 113.1,
+     "i_3ph_conduit_a": 90.5,
+     "i_3ph_buried_a": 101.8,
+     "r_dc_ohm_km": 0.58,
+     "od_mm": 11.1,
+     "weight_kg_km": 215,
+     "bend_radius_mm": 89.0
+    },
+    "70": {
+     "i_3ph_touching_a": 125.4,
+     "i_3ph_spaced_a": 139.3,
+     "i_3ph_conduit_a": 111.4,
+     "i_3ph_buried_a": 125.4,
+     "r_dc_ohm_km": 0.4143,
+     "od_mm": 12.4,
+     "weight_kg_km": 295,
+     "bend_radius_mm": 99.0
+    },
+    "95": {
+     "i_3ph_touching_a": 151.5,
+     "i_3ph_spaced_a": 168.3,
+     "i_3ph_conduit_a": 134.7,
+     "i_3ph_buried_a": 151.5,
+     "r_dc_ohm_km": 0.3053,
+     "od_mm": 13.7,
+     "weight_kg_km": 395,
+     "bend_radius_mm": 110.0
+    },
+    "120": {
+     "i_3ph_touching_a": 175.1,
+     "i_3ph_spaced_a": 194.6,
+     "i_3ph_conduit_a": 155.7,
+     "i_3ph_buried_a": 175.1,
+     "r_dc_ohm_km": 0.2417,
+     "od_mm": 15.0,
+     "weight_kg_km": 495,
+     "bend_radius_mm": 120.0
+    },
+    "150": {
+     "i_3ph_touching_a": 201.1,
+     "i_3ph_spaced_a": 223.4,
+     "i_3ph_conduit_a": 178.8,
+     "i_3ph_buried_a": 201.1,
+     "r_dc_ohm_km": 0.1933,
+     "od_mm": 16.2,
+     "weight_kg_km": 615,
+     "bend_radius_mm": 130.0
+    },
+    "185": {
+     "i_3ph_touching_a": 229.0,
+     "i_3ph_spaced_a": 254.5,
+     "i_3ph_conduit_a": 203.6,
+     "i_3ph_buried_a": 229.0,
+     "r_dc_ohm_km": 0.1568,
+     "od_mm": 17.6,
+     "weight_kg_km": 755,
+     "bend_radius_mm": 141.0
+    },
+    "240": {
+     "i_3ph_touching_a": 269.1,
+     "i_3ph_spaced_a": 299.0,
+     "i_3ph_conduit_a": 239.2,
+     "i_3ph_buried_a": 269.1,
+     "r_dc_ohm_km": 0.1208,
+     "od_mm": 19.5,
+     "weight_kg_km": 975,
+     "bend_radius_mm": 156.0
+    },
+    "300": {
+     "i_3ph_touching_a": 309.1,
+     "i_3ph_spaced_a": 343.4,
+     "i_3ph_conduit_a": 274.7,
+     "i_3ph_buried_a": 309.1,
+     "r_dc_ohm_km": 0.0967,
+     "od_mm": 21.3,
+     "weight_kg_km": 1215,
+     "bend_radius_mm": 171.0
+    },
+    "400": {
+     "i_3ph_touching_a": 369.4,
+     "i_3ph_spaced_a": 410.5,
+     "i_3ph_conduit_a": 328.4,
+     "i_3ph_buried_a": 369.4,
+     "r_dc_ohm_km": 0.0725,
+     "od_mm": 24.0,
+     "weight_kg_km": 1615,
+     "bend_radius_mm": 192.0
+    },
+    "500": {
+     "i_3ph_touching_a": 424.2,
+     "i_3ph_spaced_a": 471.4,
+     "i_3ph_conduit_a": 377.1,
+     "i_3ph_buried_a": 424.2,
+     "r_dc_ohm_km": 0.058,
+     "od_mm": 26.4,
+     "weight_kg_km": 2015,
+     "bend_radius_mm": 211.0
+    },
+    "630": {
+     "i_3ph_touching_a": 489.6,
+     "i_3ph_spaced_a": 544.0,
+     "i_3ph_conduit_a": 435.2,
+     "i_3ph_buried_a": 489.6,
+     "r_dc_ohm_km": 0.046,
+     "od_mm": 29.1,
+     "weight_kg_km": 2535,
+     "bend_radius_mm": 233.0
+    }
+   }
+  },
+  "LFH_SINGLE": {
+   "name": "SYNTHETIC LFH single core",
+   "voltage_kv": 0.6,
+   "insulation": "X-HF-110",
+   "sheath": "-",
+   "conductor": "Copper",
+   "class": 5,
+   "max_temp_c": 110,
+   "colour": "#b5721f",
+   "sizes": {
+    "1": {
+     "i_3ph_touching_a": 13.0,
+     "i_3ph_spaced_a": 14.0,
+     "i_3ph_conduit_a": 11.0,
+     "i_3ph_buried_a": 12.0,
+     "r_dc_ohm_km": 18.0,
+     "od_mm": 5.0,
+     "weight_kg_km": 31,
+     "bend_radius_mm": 40.0
+    },
+    "1.5": {
+     "i_3ph_touching_a": 16.7,
+     "i_3ph_spaced_a": 18.0,
+     "i_3ph_conduit_a": 14.1,
+     "i_3ph_buried_a": 15.4,
+     "r_dc_ohm_km": 12.0,
+     "od_mm": 5.2,
+     "weight_kg_km": 36.0,
+     "bend_radius_mm": 42.0
+    },
+    "2.5": {
+     "i_3ph_touching_a": 22.9,
+     "i_3ph_spaced_a": 24.7,
+     "i_3ph_conduit_a": 19.4,
+     "i_3ph_buried_a": 21.2,
+     "r_dc_ohm_km": 7.2,
+     "od_mm": 5.6,
+     "weight_kg_km": 48.0,
+     "bend_radius_mm": 45.0
+    },
+    "4": {
+     "i_3ph_touching_a": 30.7,
+     "i_3ph_spaced_a": 33.1,
+     "i_3ph_conduit_a": 26.0,
+     "i_3ph_buried_a": 28.3,
+     "r_dc_ohm_km": 4.5,
+     "od_mm": 6.0,
+     "weight_kg_km": 64,
+     "bend_radius_mm": 48.0
+    },
+    "6": {
+     "i_3ph_touching_a": 39.5,
+     "i_3ph_spaced_a": 42.5,
+     "i_3ph_conduit_a": 33.4,
+     "i_3ph_buried_a": 36.4,
+     "r_dc_ohm_km": 3.0,
+     "od_mm": 6.4,
+     "weight_kg_km": 86,
+     "bend_radius_mm": 52.0
+    },
+    "10": {
+     "i_3ph_touching_a": 54.2,
+     "i_3ph_spaced_a": 58.4,
+     "i_3ph_conduit_a": 45.9,
+     "i_3ph_buried_a": 50.0,
+     "r_dc_ohm_km": 1.8,
+     "od_mm": 7.2,
+     "weight_kg_km": 130,
+     "bend_radius_mm": 57.0
+    },
+    "16": {
+     "i_3ph_touching_a": 72.5,
+     "i_3ph_spaced_a": 78.1,
+     "i_3ph_conduit_a": 61.4,
+     "i_3ph_buried_a": 66.9,
+     "r_dc_ohm_km": 1.125,
+     "od_mm": 8.0,
+     "weight_kg_km": 196,
+     "bend_radius_mm": 64.0
+    },
+    "25": {
+     "i_3ph_touching_a": 95.6,
+     "i_3ph_spaced_a": 103.0,
+     "i_3ph_conduit_a": 80.9,
+     "i_3ph_buried_a": 88.3,
+     "r_dc_ohm_km": 0.72,
+     "od_mm": 9.0,
+     "weight_kg_km": 295,
+     "bend_radius_mm": 72.0
+    },
+    "35": {
+     "i_3ph_touching_a": 117.8,
+     "i_3ph_spaced_a": 126.9,
+     "i_3ph_conduit_a": 99.7,
+     "i_3ph_buried_a": 108.8,
+     "r_dc_ohm_km": 0.5143,
+     "od_mm": 9.9,
+     "weight_kg_km": 405,
+     "bend_radius_mm": 79.0
+    },
+    "50": {
+     "i_3ph_touching_a": 147.0,
+     "i_3ph_spaced_a": 158.3,
+     "i_3ph_conduit_a": 124.4,
+     "i_3ph_buried_a": 135.7,
+     "r_dc_ohm_km": 0.36,
+     "od_mm": 11.1,
+     "weight_kg_km": 570,
+     "bend_radius_mm": 89.0
+    },
+    "70": {
+     "i_3ph_touching_a": 181.1,
+     "i_3ph_spaced_a": 195.0,
+     "i_3ph_conduit_a": 153.2,
+     "i_3ph_buried_a": 167.2,
+     "r_dc_ohm_km": 0.2571,
+     "od_mm": 12.4,
+     "weight_kg_km": 790,
+     "bend_radius_mm": 99.0
+    },
+    "95": {
+     "i_3ph_touching_a": 218.8,
+     "i_3ph_spaced_a": 235.7,
+     "i_3ph_conduit_a": 185.2,
+     "i_3ph_buried_a": 202.0,
+     "r_dc_ohm_km": 0.1895,
+     "od_mm": 13.7,
+     "weight_kg_km": 1065,
+     "bend_radius_mm": 110.0
+    },
+    "120": {
+     "i_3ph_touching_a": 253.0,
+     "i_3ph_spaced_a": 272.4,
+     "i_3ph_conduit_a": 214.0,
+     "i_3ph_buried_a": 233.5,
+     "r_dc_ohm_km": 0.15,
+     "od_mm": 15.0,
+     "weight_kg_km": 1340,
+     "bend_radius_mm": 120.0
+    },
+    "150": {
+     "i_3ph_touching_a": 290.5,
+     "i_3ph_spaced_a": 312.8,
+     "i_3ph_conduit_a": 245.8,
+     "i_3ph_buried_a": 268.1,
+     "r_dc_ohm_km": 0.12,
+     "od_mm": 16.2,
+     "weight_kg_km": 1670,
+     "bend_radius_mm": 130.0
+    },
+    "185": {
+     "i_3ph_touching_a": 330.8,
+     "i_3ph_spaced_a": 356.3,
+     "i_3ph_conduit_a": 279.9,
+     "i_3ph_buried_a": 305.4,
+     "r_dc_ohm_km": 0.0973,
+     "od_mm": 17.6,
+     "weight_kg_km": 2055,
+     "bend_radius_mm": 141.0
+    },
+    "240": {
+     "i_3ph_touching_a": 388.8,
+     "i_3ph_spaced_a": 418.7,
+     "i_3ph_conduit_a": 328.9,
+     "i_3ph_buried_a": 358.8,
+     "r_dc_ohm_km": 0.075,
+     "od_mm": 19.5,
+     "weight_kg_km": 2660,
+     "bend_radius_mm": 156.0
+    },
+    "300": {
+     "i_3ph_touching_a": 446.4,
+     "i_3ph_spaced_a": 480.8,
+     "i_3ph_conduit_a": 377.8,
+     "i_3ph_buried_a": 412.1,
+     "r_dc_ohm_km": 0.06,
+     "od_mm": 21.3,
+     "weight_kg_km": 3320,
+     "bend_radius_mm": 171.0
+    },
+    "400": {
+     "i_3ph_touching_a": 533.6,
+     "i_3ph_spaced_a": 574.7,
+     "i_3ph_conduit_a": 451.5,
+     "i_3ph_buried_a": 492.6,
+     "r_dc_ohm_km": 0.045,
+     "od_mm": 24.0,
+     "weight_kg_km": 4420,
+     "bend_radius_mm": 192.0
+    },
+    "500": {
+     "i_3ph_touching_a": 612.8,
+     "i_3ph_spaced_a": 659.9,
+     "i_3ph_conduit_a": 518.5,
+     "i_3ph_buried_a": 565.6,
+     "r_dc_ohm_km": 0.036,
+     "od_mm": 26.4,
+     "weight_kg_km": 5520,
+     "bend_radius_mm": 211.0
+    },
+    "630": {
+     "i_3ph_touching_a": 707.2,
+     "i_3ph_spaced_a": 761.6,
+     "i_3ph_conduit_a": 598.4,
+     "i_3ph_buried_a": 652.8,
+     "r_dc_ohm_km": 0.0286,
+     "od_mm": 29.1,
+     "weight_kg_km": 6950,
+     "bend_radius_mm": 233.0
+    }
+   }
+  }
+ },
+ "derating_factors": {
+  "ambient_temp": {
+   "25": 1.3,
+   "30": 1.2,
+   "35": 1.1,
+   "40": 1.0,
+   "45": 0.9,
+   "50": 0.8,
+   "55": 0.7,
+   "60": 0.6
+  },
+  "grouping": {
+   "1": 1.0,
+   "2": 0.94,
+   "3": 0.88,
+   "4": 0.82,
+   "5": 0.76,
+   "6": 0.7,
+   "7": 0.64,
+   "8": 0.58,
+   "9": 0.52
+  }
+ }
+}

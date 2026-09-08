@@ -1,0 +1,8 @@
+# SYNTHETIC TEST FIXTURE - not from any standard. Encodes the 300 mm2 thermoplastic break.
+insulation,size_max_mm2,initial_temperature_c,final_temperature_c
+PVC/75,300,70,160
+PVC/75,1000000000,70,140
+PVC/90,300,90,160
+PVC/90,1000000000,90,140
+XLPE/90,1000000000,90,250
+EPR/110,1000000000,110,250

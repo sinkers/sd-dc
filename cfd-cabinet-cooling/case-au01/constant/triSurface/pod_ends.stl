@@ -1,0 +1,172 @@
+solid podend_w
+  facet normal 0 0 -1
+    outer loop
+      vertex 8.335000 3.200000 1.999900
+      vertex 8.335000 5.000000 1.999900
+      vertex 8.435000 5.000000 1.999900
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 8.335000 3.200000 1.999900
+      vertex 8.435000 5.000000 1.999900
+      vertex 8.435000 3.200000 1.999900
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 8.335000 3.200000 3.950000
+      vertex 8.435000 3.200000 3.950000
+      vertex 8.435000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 8.335000 3.200000 3.950000
+      vertex 8.435000 5.000000 3.950000
+      vertex 8.335000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 8.335000 3.200000 1.999900
+      vertex 8.435000 3.200000 1.999900
+      vertex 8.435000 3.200000 3.950000
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 8.335000 3.200000 1.999900
+      vertex 8.435000 3.200000 3.950000
+      vertex 8.335000 3.200000 3.950000
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 8.335000 5.000000 1.999900
+      vertex 8.335000 5.000000 3.950000
+      vertex 8.435000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 8.335000 5.000000 1.999900
+      vertex 8.435000 5.000000 3.950000
+      vertex 8.435000 5.000000 1.999900
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 8.335000 3.200000 1.999900
+      vertex 8.335000 3.200000 3.950000
+      vertex 8.335000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 8.335000 3.200000 1.999900
+      vertex 8.335000 5.000000 3.950000
+      vertex 8.335000 5.000000 1.999900
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 8.435000 3.200000 1.999900
+      vertex 8.435000 5.000000 1.999900
+      vertex 8.435000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 8.435000 3.200000 1.999900
+      vertex 8.435000 5.000000 3.950000
+      vertex 8.435000 3.200000 3.950000
+    endloop
+  endfacet
+endsolid podend_w
+solid podend_e
+  facet normal 0 0 -1
+    outer loop
+      vertex 15.755000 3.200000 1.999900
+      vertex 15.755000 5.000000 1.999900
+      vertex 15.855000 5.000000 1.999900
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 15.755000 3.200000 1.999900
+      vertex 15.855000 5.000000 1.999900
+      vertex 15.855000 3.200000 1.999900
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 15.755000 3.200000 3.950000
+      vertex 15.855000 3.200000 3.950000
+      vertex 15.855000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 15.755000 3.200000 3.950000
+      vertex 15.855000 5.000000 3.950000
+      vertex 15.755000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 15.755000 3.200000 1.999900
+      vertex 15.855000 3.200000 1.999900
+      vertex 15.855000 3.200000 3.950000
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 15.755000 3.200000 1.999900
+      vertex 15.855000 3.200000 3.950000
+      vertex 15.755000 3.200000 3.950000
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 15.755000 5.000000 1.999900
+      vertex 15.755000 5.000000 3.950000
+      vertex 15.855000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 15.755000 5.000000 1.999900
+      vertex 15.855000 5.000000 3.950000
+      vertex 15.855000 5.000000 1.999900
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 15.755000 3.200000 1.999900
+      vertex 15.755000 3.200000 3.950000
+      vertex 15.755000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 15.755000 3.200000 1.999900
+      vertex 15.755000 5.000000 3.950000
+      vertex 15.755000 5.000000 1.999900
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 15.855000 3.200000 1.999900
+      vertex 15.855000 5.000000 1.999900
+      vertex 15.855000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 15.855000 3.200000 1.999900
+      vertex 15.855000 5.000000 3.950000
+      vertex 15.855000 3.200000 3.950000
+    endloop
+  endfacet
+endsolid podend_e

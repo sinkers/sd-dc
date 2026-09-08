@@ -1,0 +1,6 @@
+# SYNTHETIC TEST FIXTURE - not from any standard. 
+device,rating_a,disconnection_time_s,max_zs_ohm
+MCB-C,100,0.4,0.23
+MCB-C,63,0.4,0.36
+MCB-C,32,0.4,0.72
+MCB-C,100,5,0.23

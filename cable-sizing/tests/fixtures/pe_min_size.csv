@@ -1,0 +1,21 @@
+# SYNTHETIC TEST FIXTURE - not from any standard. 
+material,active_size_mm2,pe_size_mm2
+Cu,1.5,1.5
+Cu,2.5,2.5
+Cu,4,4
+Cu,6,6
+Cu,10,10
+Cu,16,16
+Cu,25,16
+Cu,35,16
+Cu,50,25
+Cu,70,35
+Cu,95,47.5
+Cu,120,60
+Cu,150,75
+Cu,185,92.5
+Cu,240,120
+Cu,300,150
+Cu,400,200
+Cu,500,250
+Cu,630,315

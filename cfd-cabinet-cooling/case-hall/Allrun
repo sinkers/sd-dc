@@ -1,0 +1,56 @@
+#!/bin/sh
+cd "${0%/*}" || exit 1
+. "${WM_PROJECT_DIR:?}/bin/tools/RunFunctions"
+
+# Without this, a failed decomposePar is followed straight into the solve
+# and every rank above the last written processor dir dies looking for fields.
+set -e
+
+runApplication blockMesh
+
+# Cut the two fan wall units out of the box.
+runApplication -s units     topoSet -dict system/topoSetDict.units
+runApplication subsetMesh roomCells -patch unitWalls -overwrite
+# subsetMesh makes that patch `empty`, which silently wrecks the pressure
+# equation in a 3D case. It is a solid surface.
+foamDictionary constant/polyMesh/boundary -entry entry0/unitWalls/type     -set wall
+foamDictionary constant/polyMesh/boundary -entry entry0/unitWalls/inGroups -set '1(wall)'
+if grep -qw empty constant/polyMesh/boundary
+then echo "ERROR: mesh contains an 'empty' patch" 1>&2; exit 1
+fi
+
+# Supply discharges and top intakes.
+runApplication -s patches   topoSet -dict system/topoSetDict.patches
+runApplication createPatch -overwrite
+
+# Plenum floor, rack tops, row ends, containment, hot aisle doors.
+runApplication -s baffles   topoSet -dict system/topoSetDict.baffles
+runApplication createBaffles -overwrite
+
+# Rack cell zones and per-rack inlet face zones.
+runApplication -s racks     topoSet -dict system/topoSetDict.racks
+
+# -allTopology is very expensive at tens of millions of cells and the
+# geometry generator has not changed since it last passed.
+runApplication checkMesh -constant
+
+restore0Dir
+
+nProcs=$(getNumberOfProcessors)
+if [ "$nProcs" -gt 1 ]
+then
+    runApplication decomposePar
+    runParallel $(getApplication)
+    if [ "$(awk '/^reconstruct/{print $2}' system/hallParameters)" != "0" ]
+    then
+        runApplication reconstructPar -latestTime
+    else
+        echo "reconstructPar skipped (reconstruct 0); metrics and slices are already written"
+    fi
+else
+    runApplication $(getApplication)
+fi
+
+touch case.foam
+echo
+echo "Done. Metrics in postProcessing/ ; open case.foam in ParaView."

@@ -1,0 +1,106 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Step 4 (after all mesh modification): the cell zone that carries the heat    |
+| and fan sources, plus the oriented face zones the metrics are measured on.   |
+|                                                                            |
+| Face zone sign convention: every zone below is oriented +x, so              |
+|   cabinetInlet    > 0  air entering the servers                            |
+|   cabinetOutlet   > 0  air leaving the servers into the hot aisle          |
+|   containmentGap  > 0  cold air BYPASSING over the containment (oversupply) |
+|                   < 0  hot air RECIRCULATING back to the cold aisle        |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      topoSetDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "simulationParameters"
+
+actions
+(
+    // ---- cabinet interior: heat + server fan sources ----------------------
+    {
+        name    serversCells;
+        type    cellSet;
+        action  new;
+        source  boxToCell;
+        box     ($cabinetX0M $rowY0M -0.01) ($cabinetX1P $rowY1P $cabinetHeightP);
+    }
+    {
+        name    servers;
+        type    cellZoneSet;
+        action  new;
+        source  setToCellZone;
+        set     serversCells;
+    }
+
+    // ---- hot aisle, used only to orient the containment gap zone ----------
+    {
+        name    hotAisleCells;
+        type    cellSet;
+        action  new;
+        source  boxToCell;
+        box     ($cabinetX1M $rowY0M -0.01) ($roomLengthP $rowY1P $unitHeightM);
+    }
+
+    // ---- server intake face (the pass/fail plane) -------------------------
+    {
+        name    cabinetInletFaces;
+        type    faceSet;
+        action  new;
+        source  boxToFace;
+        box     ($cabinetX0M $rowY0M -0.01) ($cabinetX0P $rowY1P $cabinetHeightP);
+    }
+    {
+        name    cabinetInlet;
+        type    faceZoneSet;
+        action  new;
+        source  setsToFaceZone;
+        faceSet cabinetInletFaces;
+        cellSet serversCells;
+        flip    true;                   // normals -> +x (into the cabinet)
+    }
+
+    // ---- server exhaust face ---------------------------------------------
+    {
+        name    cabinetOutletFaces;
+        type    faceSet;
+        action  new;
+        source  boxToFace;
+        box     ($cabinetX1M $rowY0M -0.01) ($cabinetX1P $rowY1P $cabinetHeightP);
+    }
+    {
+        name    cabinetOutlet;
+        type    faceZoneSet;
+        action  new;
+        source  setsToFaceZone;
+        faceSet cabinetOutletFaces;
+        cellSet serversCells;
+        flip    false;                  // normals -> +x (out of the cabinet)
+    }
+
+    // ---- containment leakage gap -----------------------------------------
+    // Empty when containmentTopZ == unitHeight (fully sealed), in which case
+    // there is no gap flow to measure.
+    {
+        name    containmentGapFaces;
+        type    faceSet;
+        action  new;
+        source  boxToFace;
+        box     ($cabinetX1M $rowY0M $containmentTopZM) ($cabinetX1P $rowY1P $unitHeightM);
+    }
+    {
+        name    containmentGap;
+        type    faceZoneSet;
+        action  new;
+        source  setsToFaceZone;
+        faceSet containmentGapFaces;
+        cellSet hotAisleCells;
+        flip    true;                   // normals -> +x (into the hot aisle)
+    }
+);
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -1,0 +1,275 @@
+{
+ "_SYNTHETIC": true,
+ "_WARNING": "SYNTHETIC FIXTURE. Invented numbers, not from any standard. Never issue a design from this file.",
+ "limiting_temperatures_as3000_table_3_2": {
+  "data": {
+   "V-75": {
+    "normal_use_c": 75,
+    "max_permissible_c": 75,
+    "min_ambient_c": -15,
+    "family": "thermoplastic"
+   },
+   "V-90": {
+    "normal_use_c": 75,
+    "max_permissible_c": 90,
+    "min_ambient_c": -15,
+    "family": "thermoplastic"
+   },
+   "V-90HT": {
+    "normal_use_c": 75,
+    "max_permissible_c": 105,
+    "min_ambient_c": -15,
+    "family": "thermoplastic"
+   },
+   "TP-90": {
+    "normal_use_c": 75,
+    "max_permissible_c": 90,
+    "min_ambient_c": -15,
+    "family": "thermoplastic"
+   },
+   "X-90": {
+    "normal_use_c": 90,
+    "max_permissible_c": 90,
+    "min_ambient_c": -15,
+    "family": "xlpe"
+   },
+   "X-90UV": {
+    "normal_use_c": 90,
+    "max_permissible_c": 90,
+    "min_ambient_c": -15,
+    "family": "xlpe"
+   },
+   "X-HF-90": {
+    "normal_use_c": 90,
+    "max_permissible_c": 90,
+    "min_ambient_c": -15,
+    "family": "xlpe"
+   },
+   "X-HF-110": {
+    "normal_use_c": 110,
+    "max_permissible_c": 110,
+    "min_ambient_c": -15,
+    "family": "xlpe"
+   },
+   "R-EP-90": {
+    "normal_use_c": 90,
+    "max_permissible_c": 90,
+    "min_ambient_c": -15,
+    "family": "elastomeric"
+   },
+   "R-S-150": {
+    "normal_use_c": 150,
+    "max_permissible_c": 150,
+    "min_ambient_c": -15,
+    "family": "elastomeric"
+   },
+   "MIMS": {
+    "normal_use_c": 100,
+    "max_permissible_c": 250,
+    "min_ambient_c": -15,
+    "family": "mims"
+   },
+   "PE": {
+    "normal_use_c": 70,
+    "max_permissible_c": 70,
+    "min_ambient_c": -15,
+    "family": "other"
+   }
+  }
+ },
+ "min_conductor_size_as3000_table_3_3": {
+  "data": {
+   "other_circuits": {
+    "area_mm2": 1.0
+   },
+   "socket_outlets": {
+    "area_mm2": 2.5
+   },
+   "signal_and_relay_control": {
+    "area_mm2": 0.5
+   }
+  }
+ },
+ "conductor_colours_as3000_table_3_4": {
+  "data": {
+   "protective_earth": {
+    "colour": "green/yellow"
+   },
+   "neutral": {
+    "colour": "black"
+   },
+   "active": {
+    "colour": "red",
+    "three_phase": [
+     "red",
+     "white",
+     "blue"
+    ]
+   },
+   "equipotential_bonding": {
+    "colour": "green/yellow"
+   }
+  }
+ },
+ "earth_sizes_as3000_table_5_1": {
+  "data": {
+   "1": 2.5,
+   "1.5": 2.5,
+   "2.5": 2.5,
+   "4": 2.5,
+   "6": 3.0,
+   "10": 5.0,
+   "16": 8.0,
+   "25": 12.5,
+   "35": 17.5,
+   "50": 25.0,
+   "70": 35.0,
+   "95": 47.5,
+   "120": 60.0,
+   "150": 75.0,
+   "185": 92.5,
+   "240": 120.0,
+   "300": 150.0,
+   "400": 200.0,
+   "500": 250.0,
+   "630": 315.0
+  },
+  "large_conductor_fraction": {
+   "Copper": 0.5,
+   "Aluminium": 0.5,
+   "applies_above_mm2": 800
+  }
+ },
+ "ambient_rating_factors_air": {
+  "data": {
+   "25": 1.3,
+   "30": 1.2,
+   "35": 1.1,
+   "40": 1.0,
+   "45": 0.9,
+   "50": 0.8,
+   "55": 0.7,
+   "60": 0.6
+  }
+ },
+ "grouping_rating_factors": {
+  "data": {
+   "1": 1.0,
+   "2": 0.94,
+   "3": 0.88,
+   "4": 0.82,
+   "5": 0.76,
+   "6": 0.7,
+   "7": 0.64,
+   "8": 0.58,
+   "9": 0.52
+  }
+ },
+ "ac_dc_resistance_ratio": {
+  "data": {
+   "1": 1.0,
+   "1.5": 1.0,
+   "2.5": 1.0,
+   "4": 1.0,
+   "6": 1.0,
+   "10": 1.0,
+   "16": 1.0,
+   "25": 1.0,
+   "35": 1.0,
+   "50": 1.0,
+   "70": 1.0,
+   "95": 1.0,
+   "120": 1.0,
+   "150": 1.0,
+   "185": 1.0,
+   "240": 1.0,
+   "300": 1.0,
+   "400": 1.0,
+   "500": 1.0,
+   "630": 1.0
+  }
+ },
+ "reactance_ohm_km": {
+  "data": {},
+  "nominal_by_construction_ohm_km": {
+   "single_core": 0.09,
+   "multicore": 0.08
+  },
+  "fallback_ohm_km": 0.08
+ },
+ "vd_simplified_as3000_table_c8": {
+  "data": {
+   "1": {
+    "single_phase": 45,
+    "three_phase": 90
+   },
+   "1.5": {
+    "single_phase": 68.0,
+    "three_phase": 135.0
+   },
+   "2.5": {
+    "single_phase": 112.0,
+    "three_phase": 225.0
+   },
+   "4": {
+    "single_phase": 180,
+    "three_phase": 360
+   },
+   "6": {
+    "single_phase": 270,
+    "three_phase": 540
+   },
+   "10": {
+    "single_phase": 450,
+    "three_phase": 900
+   },
+   "16": {
+    "single_phase": 720,
+    "three_phase": 1440
+   },
+   "25": {
+    "single_phase": 1125,
+    "three_phase": 2250
+   },
+   "35": {
+    "single_phase": 1575,
+    "three_phase": 3150
+   },
+   "50": {
+    "single_phase": 2250,
+    "three_phase": 4500
+   },
+   "70": {
+    "single_phase": 3150,
+    "three_phase": 6300
+   },
+   "95": {
+    "single_phase": 4275,
+    "three_phase": 8550
+   }
+  }
+ },
+ "aluminium_earthing_as3000_clause_5_3_2_1_2": {
+  "data": {
+   "solid_required_at_or_below_mm2": 10,
+   "min_main_earthing_mm2": 16,
+   "not_underground_or_damp": true,
+   "damp_exception": true,
+   "connection_methods_section_3": true,
+   "corrosion_prevention_required": true,
+   "note": "SYNTHETIC FIXTURE. Invented numbers, not from any standard. Never issue a design from this file."
+  }
+ },
+ "conduit_fill_as3000_table_c10": {
+  "data": {},
+  "conduit_columns": []
+ },
+ "conduit_fill_as3000_table_c11": {
+  "data": {},
+  "conduit_columns": []
+ },
+ "conduit_fill_as3000_table_c12": {
+  "data": {},
+  "conduit_columns": []
+ }
+}

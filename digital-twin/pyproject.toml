@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dthall"
+version = "0.1.0"
+description = "Real-time reduced-order digital twin of the AU01 data centre hall"
+requires-python = ">=3.10"
+# Runtime is deliberately lean: the solver and the service need only these two.
+# scipy is used by calibrate.py and fields/bake_slices.py; matplotlib only by
+# debugview.py and the plotting tools. Keeping them out of the deployed
+# environment makes the install smaller and the dependency surface smaller.
+dependencies = [
+    "numpy>=1.24",
+    "websockets>=14.0",
+]
+
+[project.optional-dependencies]
+# Everything needed to calibrate, bake fields, plot, and run the test suite.
+dev = [
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+    "pytest>=7.4",
+]
+
+[project.scripts]
+dthall = "dthall.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["rom"]
+
+[tool.setuptools.package-data]
+# params_calibrated.json is the fit; au01_export_params.json is the geometry
+# contract, packaged so a deployment does not need the sibling CFD tree.
+dthall = ["*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["rom/tests"]

@@ -1,0 +1,19 @@
+# OpenFOAM run artefacts - regenerate with ./run.sh and ./sweep.sh
+# Patterns cover every case dir: case/, case-au01/, case-hall/ and any future one.
+case*/[0-9]*/
+case*/0/
+case*/0.orig/
+case*/processor*/
+case*/constant/polyMesh/
+case*/postProcessing/
+case*/log.*
+case*/case.foam
+
+# Generated media. Large, and reproducible from the case data.
+case*/*.mp4
+geometry/
+runs/
+
+# Keep the figures the write-ups reference.
+!case/metrics.png
+!case/slice.png

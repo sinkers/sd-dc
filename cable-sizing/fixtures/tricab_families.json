@@ -1,0 +1,32 @@
+{
+ "_SYNTHETIC": true,
+ "_WARNING": "SYNTHETIC FIXTURE. Invented numbers, not from any standard. Never issue a design from this file.",
+ "source": "SYNTHETIC",
+ "scope": "SYNTHETIC family metadata only",
+ "families": [
+  {
+   "id": "SYN-1",
+   "name": "SYNTHETIC family 1",
+   "voltage_kv": 0.6,
+   "conductor": "Copper",
+   "insulation": "X-90 XLPE",
+   "per_size_data": false
+  },
+  {
+   "id": "SYN-2",
+   "name": "SYNTHETIC family 2",
+   "voltage_kv": 0.6,
+   "conductor": "Copper",
+   "insulation": "X-90 XLPE",
+   "per_size_data": false
+  },
+  {
+   "id": "SYN-3",
+   "name": "SYNTHETIC family 3",
+   "voltage_kv": 0.6,
+   "conductor": "Copper",
+   "insulation": "X-90 XLPE",
+   "per_size_data": false
+  }
+ ]
+}

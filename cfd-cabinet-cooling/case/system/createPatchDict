@@ -1,0 +1,33 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Carve the supply discharge and the top intake out of the `unitWalls` patch   |
+| that subsetMesh created around the fan wall unit.                            |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      createPatchDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+pointSync   false;
+
+patches
+(
+    {
+        name            fanWall;
+        patchInfo       { type patch; }
+        constructFrom   set;
+        set             fanWallFaces;
+    }
+
+    {
+        name            fanWallIntake;
+        patchInfo       { type patch; }
+        constructFrom   set;
+        set             fanWallIntakeFaces;
+    }
+);
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

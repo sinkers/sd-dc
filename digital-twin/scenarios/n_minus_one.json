@@ -1,0 +1,14 @@
+{
+  "name": "N-1 on one module at a load it can carry",
+  "description": "The realistic redundancy check rather than the dramatic one. One 40L1 module is isolated for maintenance, leaving 712.5 kW installed, and the job is held at 28 kW/rack so total IT stays inside that. Shows the asymmetry a single module trip creates across the hall without tipping it into runaway.",
+  "duration_s": 1800,
+  "sample_s": 20,
+  "mode": "manual",
+  "seed": 1,
+  "settle": true,
+  "commands": [
+    {"t": 0, "cmd": "set_load", "target": "global", "kw": 28.0},
+    {"t": 300, "cmd": "set_unit", "unit": "W1", "on": false},
+    {"t": 1200, "cmd": "set_supply_temp", "celsius": 24.0}
+  ]
+}

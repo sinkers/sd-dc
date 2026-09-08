@@ -1,0 +1,49 @@
+{
+ "_SYNTHETIC": true,
+ "_WARNING": "SYNTHETIC FIXTURE. Invented numbers, not from any standard. Never issue a design from this file.",
+ "source": "SYNTHETIC",
+ "trays": [
+  {
+   "part": "SYN-75",
+   "width_mm": 75,
+   "depth_mm": 50,
+   "type": "cable tray"
+  },
+  {
+   "part": "SYN-100",
+   "width_mm": 100,
+   "depth_mm": 50,
+   "type": "cable tray"
+  },
+  {
+   "part": "SYN-150",
+   "width_mm": 150,
+   "depth_mm": 50,
+   "type": "cable tray"
+  },
+  {
+   "part": "SYN-225",
+   "width_mm": 225,
+   "depth_mm": 50,
+   "type": "cable tray"
+  },
+  {
+   "part": "SYN-300",
+   "width_mm": 300,
+   "depth_mm": 50,
+   "type": "cable tray"
+  },
+  {
+   "part": "SYN-450",
+   "width_mm": 450,
+   "depth_mm": 50,
+   "type": "cable tray"
+  },
+  {
+   "part": "SYN-600",
+   "width_mm": 600,
+   "depth_mm": 50,
+   "type": "cable tray"
+  }
+ ]
+}

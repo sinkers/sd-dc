@@ -1,0 +1,15 @@
+# Generated run artefacts — regenerate with dthall replay / tools/snapshot_debugview.py
+runs/
+__pycache__/
+*.egg-info/
+.venv/
+
+# Unreal project build output (Content/ and Config/ are worth committing)
+ue/*/Binaries/
+ue/*/Intermediate/
+ue/*/Saved/
+ue/*/DerivedDataCache/
+
+# Baked verification renders
+fields/baked/_verify_*.png
+.pytest_cache/

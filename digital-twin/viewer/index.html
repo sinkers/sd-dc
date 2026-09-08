@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AU01 digital twin</title>
+<style>
+  :root {
+    --bg: #0b0e13;
+    --panel: rgba(16, 21, 30, 0.92);
+    --line: #232c3a;
+    --text: #dfe6f0;
+    --dim: #8b98ab;
+    --accent: #5ac8fa;
+    --pass: #3ddc84;
+    --marginal: #ffb020;
+    --fail: #ff4d5e;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: var(--bg); color: var(--text);
+    font: 13px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  #scene { position: fixed; inset: 0; }
+  #loading {
+    position: fixed; inset: 0; display: grid; place-content: center;
+    background: var(--bg); z-index: 50; text-align: center; color: var(--dim);
+  }
+  .panel {
+    position: fixed; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 8px; backdrop-filter: blur(8px);
+  }
+
+  /* verdict banner */
+  #verdict { top: 14px; left: 50%; transform: translateX(-50%);
+             padding: 9px 18px; text-align: center; max-width: 62vw; }
+  #verdict b { font-size: 15px; letter-spacing: .08em; }
+  #verdict .why { color: var(--dim); font-size: 11.5px; margin-top: 3px; }
+  .v-PASS b { color: var(--pass); } .v-MARGINAL b { color: var(--marginal); }
+  .v-FAIL b { color: var(--fail); }
+
+  /* controls */
+  #controls { top: 14px; left: 14px; width: 268px; padding: 12px 14px; }
+  #controls h2, #stats h2, #racks h2 {
+    margin: 0 0 9px; font-size: 11px; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--dim); font-weight: 600;
+  }
+  .row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+  .row label { flex: 0 0 74px; color: var(--dim); font-size: 11.5px; }
+  .row output { flex: 0 0 62px; text-align: right; font-variant-numeric: tabular-nums; }
+  input[type=range] { flex: 1; accent-color: var(--accent); min-width: 0; }
+  .seg { display: flex; gap: 0; border: 1px solid var(--line); border-radius: 5px; overflow: hidden; }
+  .seg button { flex: 1; background: none; border: 0; color: var(--dim);
+                padding: 5px 0; font: inherit; cursor: pointer; }
+  .seg button.on { background: var(--accent); color: #06121c; font-weight: 700; }
+  .units { display: flex; gap: 6px; }
+  .units button {
+    flex: 1; background: #16202e; border: 1px solid var(--line); color: var(--pass);
+    border-radius: 5px; padding: 6px 0; font: inherit; cursor: pointer;
+  }
+  .units button.off { color: var(--fail); border-color: #4a2530; background: #1d1418; }
+  .units button.sat { color: var(--marginal); }
+  .toggles { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+  .toggles button {
+    background: #141c28; border: 1px solid var(--line); color: var(--dim);
+    border-radius: 4px; padding: 4px 7px; font: 11px ui-monospace; cursor: pointer;
+  }
+  .toggles button.on { color: var(--text); border-color: var(--accent); }
+  .hint { color: var(--dim); font-size: 10.5px; margin-top: 8px; line-height: 1.4; }
+
+  /* stats */
+  #stats { bottom: 14px; left: 14px; width: 268px; padding: 12px 14px; }
+  #stats table { width: 100%; border-collapse: collapse; }
+  #stats td { padding: 1.5px 0; }
+  #stats td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  #stats td:first-child { color: var(--dim); font-size: 11.5px; }
+
+  /* rack table */
+  #racks { top: 14px; right: 14px; width: 320px; max-height: calc(100vh - 28px);
+           padding: 12px 14px; overflow: auto; }
+  #racks table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  #racks th { text-align: right; color: var(--dim); font-weight: 500;
+              border-bottom: 1px solid var(--line); padding: 0 0 4px; }
+  #racks th:first-child { text-align: left; }
+  #racks td { padding: 1.5px 0; text-align: right; font-variant-numeric: tabular-nums; }
+  #racks td:first-child { text-align: left; }
+  #racks tr.hot td { color: var(--fail); }
+  #racks tr.warm td { color: var(--marginal); }
+  #racks tr.spare td { color: #5b6577; }
+
+  /* legend */
+  #legend { bottom: 14px; left: 50%; transform: translateX(-50%);
+            padding: 8px 12px; display: flex; align-items: center; gap: 10px; }
+  #ramp { width: 260px; height: 9px; border-radius: 5px; }
+  #legend span { color: var(--dim); font-size: 11px; }
+  #disconnected {
+    position: fixed; bottom: 14px; right: 14px; padding: 7px 12px;
+    background: #2a1015; border: 1px solid #5a2531; border-radius: 6px;
+    color: var(--fail); display: none;
+  }
+</style>
+</head>
+<body>
+<div id="scene"></div>
+<div id="loading">loading AU01 geometry&hellip;<br><span id="loaderr" style="color:#ff4d5e"></span></div>
+
+<div id="verdict" class="panel v-PASS">
+  <b id="v-text">&mdash;</b>
+  <div class="why" id="v-why">connecting</div>
+</div>
+
+<div id="controls" class="panel">
+  <h2>Load</h2>
+  <div class="seg" id="mode">
+    <button data-mode="auto">auto</button>
+    <button data-mode="manual">manual</button>
+  </div>
+  <div class="row" style="margin-top:9px">
+    <label>B300 load</label>
+    <input type="range" autocomplete="off" id="load" min="0" max="40" step="0.25" value="36.75">
+    <output id="load-out">36.75 kW</output>
+  </div>
+  <div class="row">
+    <label>phase</label><output id="phase" style="flex:1;text-align:left">&mdash;</output>
+  </div>
+
+  <h2 style="margin-top:14px">Cooling</h2>
+  <div class="units" id="units"></div>
+  <div class="row" style="margin-top:10px">
+    <label>fan speed</label>
+    <input type="range" autocomplete="off" id="fan" min="30" max="110" step="1" value="100">
+    <output id="fan-out">100 %</output>
+  </div>
+  <div class="row">
+    <label>supply air</label>
+    <input type="range" autocomplete="off" id="supply" min="14" max="34" step="0.5" value="28">
+    <output id="supply-out">28.0 &deg;C</output>
+  </div>
+  <div class="row">
+    <label>time</label>
+    <input type="range" autocomplete="off" id="speed" min="0" max="60" step="1" value="10">
+    <output id="speed-out">10&times;</output>
+  </div>
+  <div class="row" style="margin-bottom:4px">
+    <label>bulkheads</label>
+    <div class="seg" id="bulkhead" style="flex:1">
+      <button data-top="3.0" class="on">3.0 m</button>
+      <button data-top="2.0">2.0 m</button>
+    </div>
+  </div>
+  <div class="row">
+    <label>return slot</label>
+    <output id="slot-out" style="flex:1;text-align:left">&mdash;</output>
+  </div>
+
+  <h2 style="margin-top:14px">Show</h2>
+  <div class="toggles" id="toggles"></div>
+  <div class="hint">drag to orbit &middot; scroll to zoom &middot; right-drag to pan<br>
+    airflow streams are the model's zone-level mass flows, not a resolved CFD field</div>
+</div>
+
+<div id="stats" class="panel">
+  <h2>Hall</h2>
+  <table><tbody id="stats-body"></tbody></table>
+</div>
+
+<div id="racks" class="panel">
+  <h2>Racks</h2>
+  <table>
+    <thead><tr><th>rack</th><th>kW</th><th>in</th><th>peak</th><th>out</th><th>recirc</th></tr></thead>
+    <tbody id="racks-body"></tbody>
+  </table>
+</div>
+
+<div id="legend" class="panel">
+  <span id="ramp-lo">18</span><canvas id="ramp" width="260" height="9"></canvas>
+  <span id="ramp-hi">50 &deg;C</span>
+</div>
+
+<div id="disconnected">solver not connected &mdash; retrying</div>
+
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js" } }
+</script>
+<script type="module" src="./app.js"></script>
+</body>
+</html>

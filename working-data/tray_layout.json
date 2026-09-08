@@ -1,0 +1,21 @@
+{
+  "_README": "WORKING ASSUMPTION, not a design basis. Resolves M4 Rev B OI-4.5 for the purpose of letting the grouping factor resolve. Replace with the real AU04 layout before any issued design.",
+  "_why_it_matters": "AS/NZS 3008.1.1:2025 Table 3.34 has separate axes for 'number of rows or tiers' and 'number of circuits per tier or row'. Three circuits read as one row of three takes 0.87; read as three rows of one it takes 0.93. A 7 % swing on every grouped feeder.",
+  "reference": "METHODOLOGY-S4-RevB.md OI-4.5",
+  "assumption": {
+    "reading": "one row per tray, circuits counted across the row",
+    "rows": 1,
+    "circuits_per_row": 3,
+    "support_type": "perforated_tray",
+    "circuit_spacing": "touching",
+    "grouping_code": "t334_perforated_touching_1row",
+    "vertical_tray_pitch_mm": 300,
+    "note": "R-GRP-1b requires at least 300 mm vertical pitch between horizontal trays for Table 3.34 to apply at all; below that the table does not apply and the engine raises."
+  },
+  "alternative_not_taken": {
+    "reading": "three rows of one circuit",
+    "factor_would_be": 0.93,
+    "difference_pct": 6.9
+  },
+  "status": "EXAMPLE. Confirm against the real tray layout before issue."
+}

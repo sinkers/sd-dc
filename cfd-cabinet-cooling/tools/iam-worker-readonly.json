@@ -1,0 +1,36 @@
+{
+  "Version": "2012-10-17",
+  "Comment": [
+    "Read-only access to solved CFD cases for cluster workers.",
+    "Attach to the worker role/instance profile. Workers pull solutions; they",
+    "never push. Pushing is a deliberate act from a machine that knows which",
+    "git sha produced the fields, which a worker does not.",
+    "",
+    "Apply with:",
+    "  sed 's/<ACCOUNT_ID>/123456789012/' tools/iam-worker-readonly.json > /tmp/p.json",
+    "  aws iam create-policy --policy-name sd-dc-artifacts-read \\",
+    "    --policy-document file://tools/iam-worker-readonly.json"
+  ],
+  "Statement": [
+    {
+      "Sid": "ListBucketScopedToCfdPrefix",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::sd-dc-artifacts-<ACCOUNT_ID>-apse2",
+      "Condition": {
+        "StringLike": {
+          "s3:prefix": ["cfd/*", "geometry/*", "cfd/", "geometry/", ""]
+        }
+      }
+    },
+    {
+      "Sid": "ReadObjects",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:GetObjectVersion"],
+      "Resource": [
+        "arn:aws:s3:::sd-dc-artifacts-<ACCOUNT_ID>-apse2/cfd/*",
+        "arn:aws:s3:::sd-dc-artifacts-<ACCOUNT_ID>-apse2/geometry/*"
+      ]
+    }
+  ]
+}

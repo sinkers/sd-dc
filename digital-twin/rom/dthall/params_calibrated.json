@@ -1,0 +1,33 @@
+{
+  "supply_reach": 0.72,
+  "zone_coupling": 0.5,
+  "module_flow_multiplier": 1.0415881795562207,
+  "fan_flow_multiplier": 1.2627324935252697,
+  "fan_flow_floor": 0.25,
+  "fan_tau_s": 25.0,
+  "recirc_baseline": {
+    "end": 0.13696909657712297,
+    "next": 0.03855707917884238,
+    "mid": 0.02020500478332823
+  },
+  "recirc_baseline_override": {},
+  "recirc_gain": 0.6304402584147655,
+  "recirc_exponent": 0.6341748228045795,
+  "max_recirc_fraction": 0.95,
+  "peak_multiplier": 6.275373775298131,
+  "rack_metal_delta_t_k": 25.0,
+  "thermal_mass_kj_per_k": {
+    "default": 100.0,
+    "b300": 110.0,
+    "hd": 100.0,
+    "ib_leaf": 90.0,
+    "ib_spine": 95.0,
+    "ethernet": 40.0,
+    "net": 55.0,
+    "storage": 80.0,
+    "spare": 5.0
+  },
+  "coil_tau_s": 45.0,
+  "return_mix_factor": 1.0,
+  "idle_power_fraction": 0.08
+}

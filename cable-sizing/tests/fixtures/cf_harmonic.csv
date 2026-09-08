@@ -1,0 +1,6 @@
+# SYNTHETIC TEST FIXTURE - not from any standard. Band STRUCTURE mirrors Clause 3.5.9; values are placeholders.
+third_harmonic_fraction,basis,band_upper_fraction,cf
+0.0,phase,0.15,1.00
+0.15,phase,0.33,0.86
+0.33,neutral,0.45,0.86
+0.45,neutral,1.00,1.00

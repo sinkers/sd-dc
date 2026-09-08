@@ -1,0 +1,9 @@
+#!/bin/sh
+cd "${0%/*}" || exit 1
+. "${WM_PROJECT_DIR:?}/bin/tools/CleanFunctions"
+
+cleanCase0
+rm -rf processor* postProcessing log.* case.foam
+# constant/triSurface is NOT cleaned: it holds the CAD export plus roof.stl,
+# which the host generator writes before the container starts. Deleting it here
+# leaves snappyHexMesh with no geometry.

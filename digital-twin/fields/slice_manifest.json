@@ -1,0 +1,169 @@
+{
+  "source_case": "cfd-cabinet-cooling/case-hall",
+  "source_time": "4000",
+  "reference": {
+    "supply_temp_c": 28.0,
+    "hall_delta_t_k": 15.0,
+    "it_load_kw": 864.0,
+    "note": "Telemetry publishes fields.scale and fields.offset_k each frame. Remap as: T = supply_temp_c + offset_k + (T_baked - supply_temp_c) * scale"
+  },
+  "peak_baked_temp_c": 47.0634,
+  "planes": [
+    {
+      "name": "coldAisleA",
+      "field": "T",
+      "file": "T_coldAisleA.png",
+      "normal_axis": "z",
+      "normal_position_m": 0.925,
+      "u_axis": "x",
+      "v_axis": "y",
+      "u_range_m": [
+        1.6,
+        16.8
+      ],
+      "v_range_m": [
+        0.0,
+        8.35
+      ],
+      "resolution": [
+        512,
+        256
+      ],
+      "value_min": 27.9869,
+      "value_max": 47.0634,
+      "units": "degC",
+      "encoding": "grey16, value = value_min + png/65535 * (value_max - value_min)",
+      "points_sampled": 51240
+    },
+    {
+      "name": "coldAisleA",
+      "field": "U",
+      "file": "U_coldAisleA.png",
+      "normal_axis": "z",
+      "normal_position_m": 0.925,
+      "u_axis": "x",
+      "v_axis": "y",
+      "u_range_m": [
+        1.6,
+        16.8
+      ],
+      "v_range_m": [
+        0.0,
+        8.35
+      ],
+      "resolution": [
+        512,
+        256
+      ],
+      "value_min": -0.0,
+      "value_max": 7.1517,
+      "units": "m/s",
+      "encoding": "grey16, value = value_min + png/65535 * (value_max - value_min)",
+      "points_sampled": 51240
+    },
+    {
+      "name": "rowAcentre",
+      "field": "T",
+      "file": "T_rowAcentre.png",
+      "normal_axis": "y",
+      "normal_position_m": 2.8,
+      "u_axis": "x",
+      "v_axis": "z",
+      "u_range_m": [
+        0.0,
+        18.4
+      ],
+      "v_range_m": [
+        0.0,
+        5.6
+      ],
+      "resolution": [
+        512,
+        256
+      ],
+      "value_min": 27.9827,
+      "value_max": 41.5537,
+      "units": "degC",
+      "encoding": "grey16, value = value_min + png/65535 * (value_max - value_min)",
+      "points_sampled": 73154
+    },
+    {
+      "name": "rowAcentre",
+      "field": "U",
+      "file": "U_rowAcentre.png",
+      "normal_axis": "y",
+      "normal_position_m": 2.8,
+      "u_axis": "x",
+      "v_axis": "z",
+      "u_range_m": [
+        0.0,
+        18.4
+      ],
+      "v_range_m": [
+        0.0,
+        5.6
+      ],
+      "resolution": [
+        512,
+        256
+      ],
+      "value_min": -0.0,
+      "value_max": 14.5858,
+      "units": "m/s",
+      "encoding": "grey16, value = value_min + png/65535 * (value_max - value_min)",
+      "points_sampled": 73154
+    },
+    {
+      "name": "hallCentre",
+      "field": "T",
+      "file": "T_hallCentre.png",
+      "normal_axis": "y",
+      "normal_position_m": 4.15,
+      "u_axis": "x",
+      "v_axis": "z",
+      "u_range_m": [
+        0.0,
+        18.4
+      ],
+      "v_range_m": [
+        0.0,
+        5.6
+      ],
+      "resolution": [
+        512,
+        256
+      ],
+      "value_min": 27.9921,
+      "value_max": 42.5016,
+      "units": "degC",
+      "encoding": "grey16, value = value_min + png/65535 * (value_max - value_min)",
+      "points_sampled": 65969
+    },
+    {
+      "name": "hallCentre",
+      "field": "U",
+      "file": "U_hallCentre.png",
+      "normal_axis": "y",
+      "normal_position_m": 4.15,
+      "u_axis": "x",
+      "v_axis": "z",
+      "u_range_m": [
+        0.0,
+        18.4
+      ],
+      "v_range_m": [
+        0.0,
+        5.6
+      ],
+      "resolution": [
+        512,
+        256
+      ],
+      "value_min": -0.0,
+      "value_max": 12.8256,
+      "units": "m/s",
+      "encoding": "grey16, value = value_min + png/65535 * (value_max - value_min)",
+      "points_sampled": 65969
+    }
+  ]
+}

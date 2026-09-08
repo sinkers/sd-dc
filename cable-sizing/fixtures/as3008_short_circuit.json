@@ -1,0 +1,42 @@
+{
+ "_SYNTHETIC": true,
+ "_WARNING": "SYNTHETIC FIXTURE. Invented numbers, not from any standard. Never issue a design from this file.",
+ "standard": "SYNTHETIC",
+ "tables": {
+  "5.2": {
+   "title": "SYNTHETIC short-circuit limits",
+   "verified": false,
+   "complete": true,
+   "notes": [
+    "SYNTHETIC FIXTURE. Invented numbers, not from any standard. Never issue a design from this file."
+   ],
+   "by_material": {
+    "V-75": {
+     "<=300": 160.0,
+     ">300": 140.0
+    },
+    "V-90": {
+     "<=300": 160.0,
+     ">300": 140.0
+    },
+    "TP 90": 250.0,
+    "V-90HT": {
+     "<=300": 160.0,
+     ">300": 140.0
+    },
+    "X-90": 250.0,
+    "X-90UV": 250.0,
+    "X-HF-90": 250.0,
+    "X-HF-110": 250.0,
+    "R-EP-90": 250.0,
+    "R-CPE-90": 250.0,
+    "R-HF-90": 250.0,
+    "R-CSP-90": 250.0,
+    "R-HF-110": 250.0,
+    "R-E-110": 250.0,
+    "PE": 250.0,
+    "LLDPE": 250.0
+   }
+  }
+ }
+}

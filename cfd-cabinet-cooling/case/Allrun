@@ -1,0 +1,69 @@
+#!/bin/sh
+cd "${0%/*}" || exit 1
+. "${WM_PROJECT_DIR:?}/bin/tools/RunFunctions"
+
+# Number of ranks; must match numberOfSubdomains in system/decomposeParDict.
+nProcs=$(getNumberOfProcessors)
+
+# ---------------------------------------------------------------------------
+# Mesh
+# ---------------------------------------------------------------------------
+runApplication blockMesh
+
+# Cut the fan wall unit out of the box; its surface becomes `unitWalls`.
+runApplication -s unit      topoSet -dict system/topoSetDict.unit
+runApplication subsetMesh roomCells -patch unitWalls -overwrite
+
+# subsetMesh creates that patch as type `empty`, which is the 2D-extrusion
+# boundary type and silently wrecks the pressure equation in a 3D case.
+# It is a solid surface, so make it a wall.
+foamDictionary constant/polyMesh/boundary \
+    -entry entry0/unitWalls/type     -set wall
+foamDictionary constant/polyMesh/boundary \
+    -entry entry0/unitWalls/inGroups -set '1(wall)'
+
+# This case is fully 3D; an `empty` patch anywhere means a meshing step went
+# wrong, and the symptom is a silently wrong pressure field rather than a crash.
+if grep -qw empty constant/polyMesh/boundary
+then
+    echo "ERROR: mesh contains an 'empty' patch, which is invalid here" 1>&2
+    exit 1
+fi
+
+# Carve the supply discharge and the top intake out of `unitWalls`.
+runApplication -s patches   topoSet -dict system/topoSetDict.patches
+runApplication createPatch -overwrite
+
+# Cabinet top + containment panel become zero-thickness walls.
+runApplication -s baffles   topoSet -dict system/topoSetDict.baffles
+runApplication createBaffles -overwrite
+
+# Source cell zone and measurement face zones, built on the final mesh.
+runApplication -s zones     topoSet -dict system/topoSetDict.zones
+runApplication -s rowzones  topoSet -dict system/topoSetDict.rowzones
+
+runApplication checkMesh -constant -allTopology
+
+# ---------------------------------------------------------------------------
+# Fields
+# ---------------------------------------------------------------------------
+restore0Dir
+
+# ---------------------------------------------------------------------------
+# Solve
+# ---------------------------------------------------------------------------
+if [ "$nProcs" -gt 1 ]
+then
+    runApplication decomposePar
+    runParallel $(getApplication)
+    runApplication reconstructPar -latestTime
+else
+    runApplication $(getApplication)
+fi
+
+# ---------------------------------------------------------------------------
+touch case.foam
+echo
+echo "Done. Metrics are in postProcessing/ ; open case.foam in ParaView."
+
+#------------------------------------------------------------------------------

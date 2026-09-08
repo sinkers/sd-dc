@@ -1,0 +1,38 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Step 1: everything except the fan wall unit. subsetMesh keeps these cells    |
+| and turns the newly exposed unit surface into the `unitWalls` patch, so the  |
+| supply opening and the top intake become genuine boundary patches with       |
+| nothing behind them.                                                        |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      topoSetDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "simulationParameters"
+
+actions
+(
+    {
+        name    roomCells;
+        type    cellSet;
+        action  new;
+        source  boxToCell;
+        box     (-0.01 -0.01 -0.01) ($roomLengthP $roomWidthP $roomHeightP);
+    }
+
+    // Carve out the fan wall unit itself.
+    {
+        name    roomCells;
+        type    cellSet;
+        action  subtract;
+        source  boxToCell;
+        box     (-0.01 -0.01 -0.01) ($unitDepthM $roomWidthP $unitHeightM);
+    }
+);
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -1,0 +1,48 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# CI runs credential-free. The eight licensed data files (AS/NZS tables and
+# vendor catalogues) are not in the repo, so the value suites skip with exit 0
+# and the synthetic suite carries the load: it points CABLE_SIZING_DATA_DIR at
+# cable-sizing/fixtures/ and sizes a cable end to end on invented numbers. That
+# proves assembly, not correctness — correctness is checked locally against the
+# real data. See PUBLISH-REVIEW.md B5.
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 3.9 is the measured floor for cable-sizing, which is stdlib-only.
+        python: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      # cable-sizing needs nothing. digital-twin needs numpy, websockets and
+      # pytest, and its package must be installed or the tests do not collect.
+      - name: Install digital-twin
+        run: pip install -e './digital-twin[dev]'
+
+      - name: cable-sizing — synthetic smoke (credential-free)
+        working-directory: cable-sizing
+        run: python3 test_synthetic.py
+
+      - name: cable-sizing — AS/NZS 3008 engine (skips without licensed data)
+        working-directory: cable-sizing
+        run: python3 test_cable_sizing.py
+
+      - name: cable-sizing — REST + MCP API (skips without licensed data)
+        working-directory: cable-sizing
+        run: python3 test_api.py
+
+      - name: digital-twin — ROM
+        working-directory: digital-twin
+        run: python -m pytest -q rom/tests

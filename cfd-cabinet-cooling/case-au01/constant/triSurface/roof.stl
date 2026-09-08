@@ -1,0 +1,172 @@
+solid room_roof_s
+ facet normal 0 0.167362 -0.985896
+  outer loop
+   vertex -0.1 0 4.09
+   vertex -0.1 4.1 4.786
+   vertex 24.23 0 4.09
+  endloop
+ endfacet
+ facet normal 0 0.167362 -0.985896
+  outer loop
+   vertex 24.23 0 4.09
+   vertex -0.1 4.1 4.786
+   vertex 24.23 4.1 4.786
+  endloop
+ endfacet
+ facet normal 0 1 -0
+  outer loop
+   vertex 24.23 4.1 4.786
+   vertex -0.1 4.1 4.786
+   vertex 24.23 4.1 4.886
+  endloop
+ endfacet
+ facet normal 0 1 0
+  outer loop
+   vertex -0.1 4.1 4.786
+   vertex -0.1 4.1 4.886
+   vertex 24.23 4.1 4.886
+  endloop
+ endfacet
+ facet normal 0 -0.167362 0.985896
+  outer loop
+   vertex -0.1 4.1 4.886
+   vertex -0.1 0 4.19
+   vertex 24.23 4.1 4.886
+  endloop
+ endfacet
+ facet normal 0 -0.167362 0.985896
+  outer loop
+   vertex 24.23 4.1 4.886
+   vertex -0.1 0 4.19
+   vertex 24.23 0 4.19
+  endloop
+ endfacet
+ facet normal -0 -1 -0
+  outer loop
+   vertex 24.23 0 4.19
+   vertex -0.1 0 4.19
+   vertex 24.23 0 4.09
+  endloop
+ endfacet
+ facet normal 0 -1 0
+  outer loop
+   vertex -0.1 0 4.19
+   vertex -0.1 0 4.09
+   vertex 24.23 0 4.09
+  endloop
+ endfacet
+ facet normal -1 0 0
+  outer loop
+   vertex -0.1 0 4.09
+   vertex -0.1 0 4.19
+   vertex -0.1 4.1 4.786
+  endloop
+ endfacet
+ facet normal -1 -0 0
+  outer loop
+   vertex -0.1 4.1 4.786
+   vertex -0.1 0 4.19
+   vertex -0.1 4.1 4.886
+  endloop
+ endfacet
+ facet normal 1 -0 0
+  outer loop
+   vertex 24.23 0 4.19
+   vertex 24.23 0 4.09
+   vertex 24.23 4.1 4.786
+  endloop
+ endfacet
+ facet normal 1 0 0
+  outer loop
+   vertex 24.23 0 4.19
+   vertex 24.23 4.1 4.786
+   vertex 24.23 4.1 4.886
+  endloop
+ endfacet
+endsolid room_roof_s
+solid room_roof_n
+ facet normal 0 -0.167362 -0.985896
+  outer loop
+   vertex -0.1 4.1 4.786
+   vertex -0.1 8.2 4.09
+   vertex 24.23 4.1 4.786
+  endloop
+ endfacet
+ facet normal 0 -0.167362 -0.985896
+  outer loop
+   vertex 24.23 4.1 4.786
+   vertex -0.1 8.2 4.09
+   vertex 24.23 8.2 4.09
+  endloop
+ endfacet
+ facet normal 0 1 -0
+  outer loop
+   vertex 24.23 8.2 4.09
+   vertex -0.1 8.2 4.09
+   vertex 24.23 8.2 4.19
+  endloop
+ endfacet
+ facet normal 0 1 0
+  outer loop
+   vertex -0.1 8.2 4.09
+   vertex -0.1 8.2 4.19
+   vertex 24.23 8.2 4.19
+  endloop
+ endfacet
+ facet normal -0 0.167362 0.985896
+  outer loop
+   vertex -0.1 8.2 4.19
+   vertex -0.1 4.1 4.886
+   vertex 24.23 8.2 4.19
+  endloop
+ endfacet
+ facet normal 0 0.167362 0.985896
+  outer loop
+   vertex 24.23 8.2 4.19
+   vertex -0.1 4.1 4.886
+   vertex 24.23 4.1 4.886
+  endloop
+ endfacet
+ facet normal -0 -1 -0
+  outer loop
+   vertex 24.23 4.1 4.886
+   vertex -0.1 4.1 4.886
+   vertex 24.23 4.1 4.786
+  endloop
+ endfacet
+ facet normal 0 -1 0
+  outer loop
+   vertex -0.1 4.1 4.886
+   vertex -0.1 4.1 4.786
+   vertex 24.23 4.1 4.786
+  endloop
+ endfacet
+ facet normal -1 0 0
+  outer loop
+   vertex -0.1 8.2 4.09
+   vertex -0.1 4.1 4.786
+   vertex -0.1 8.2 4.19
+  endloop
+ endfacet
+ facet normal -1 0 0
+  outer loop
+   vertex -0.1 4.1 4.786
+   vertex -0.1 4.1 4.886
+   vertex -0.1 8.2 4.19
+  endloop
+ endfacet
+ facet normal 1 0 0
+  outer loop
+   vertex 24.23 4.1 4.786
+   vertex 24.23 8.2 4.09
+   vertex 24.23 8.2 4.19
+  endloop
+ endfacet
+ facet normal 1 0 0
+  outer loop
+   vertex 24.23 4.1 4.886
+   vertex 24.23 4.1 4.786
+   vertex 24.23 8.2 4.19
+  endloop
+ endfacet
+endsolid room_roof_n

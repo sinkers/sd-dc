@@ -1,0 +1,24 @@
+
+====================================================================
+  CABINET COOLING RESULT   (case)
+====================================================================
+  iterations run                 3000
+
+  server intake temp  (mean)       20.18 degC   limit 27 degC
+  server intake temp  (max)        20.22 degC   limit 32 degC
+  server exhaust temp (mean)       36.21 degC
+  rise across the cabinet          16.02 K
+  air returning to the unit        33.67 degC
+
+  fan wall supply                  8.148 kg/s
+  airflow through the servers      7.384 kg/s
+  supply / demand                   1.10
+  heat removed by that airflow     118.9 kW
+
+  containment gap         +0.764 kg/s  cold air BYPASSING to the hot aisle
+
+--------------------------------------------------------------------
+  PASS - intake air is within the ASHRAE A1 recommended range.
+====================================================================
+
+wrote case/metrics.png

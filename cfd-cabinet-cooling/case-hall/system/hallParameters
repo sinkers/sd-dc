@@ -1,0 +1,97 @@
+# Hall specification. Read by make_hall_dicts.py, which generates every
+# OpenFOAM dictionary from it. Plain key = value; lengths in metres.
+#
+#   PLAN VIEW                                    plenum above at z = 4.0
+#   y=7.6 +--------------------------------+
+#         |        cold aisle 2.0          |
+#   y=5.6 +---+------------------------+---+
+#         |   |  ROW B  12 x 36 kW     |   |   <- fronts face y+ , flow -y
+#   y=4.4 |   |========================|   |
+#         |   |  HOT AISLE (contained) |   |
+#   y=3.2 |   |========================|   |
+#         |   |  ROW A  12 x 36 kW     |   |   <- fronts face y- , flow +y
+#   y=2.0 +---+------------------------+---+
+#         |        cold aisle 2.0          |
+#   y=0   +--------------------------------+
+#        x=0 1.6    5.6            12.8  16.8 18.4
+#         [FW-A]  4.0m   pod 7.2m   4.0m  [FW-B]
+
+# ---- hall ----
+cellSize            0.025
+hallWidth           8.35
+sideAisle           2.225    # cold aisle each side of the pod
+plenumFloorZ        4.0     # = fan wall unit height; plenum sits above
+plenumHeight        1.6
+
+# ---- fan walls: Schneider Uniflair FWCV 40L2, one at each end ----
+# The L2 is TWO stacked 40L1 modules (likewise 36L2 = 2 x 36L1). Each module
+# has its own fans and CW control valve, so the failure/maintenance unit is a
+# MODULE: modulesPerUnit 2 gives each module its own patch pair (A1 = lower,
+# A2 = upper of end A) and unitsOff can stop them individually. Water IN/OUT
+# is one connection per L2, so isolating water = both modules (unitsOff A1,A2).
+# Per MODULE (40L1): 237.5 kW net sensible, 62500 m3/h, 4000w x 1600d x 2000h.
+# Rated at RAT 37 C, 30% RH, ESP 70 Pa, EWT/LWT 20/30 C, EU4 filter.
+unitWidth           4.0
+unitDepth           1.6
+unitHeight          4.0     # 2 x 2000 modules
+modulesPerUnit      2
+supplyZ0            0.2     # discharge window PER MODULE, from the module base
+supplyZ1            1.9
+unitAirflow_m3h     62500   # per module
+unitCapacity_kW     237.5   # per module
+supplyTemp_C        28.0
+
+# ---- airflow path (FWCV = front discharge, service-corridor return) ----
+# intakeSide rear puts the return on the unit's BACK face, fed by a return
+# corridor rearGap deep between the bank and the end wall (brochure p.4).
+# intakeSide top is the legacy top-of-unit intake fed from the ceiling plenum.
+# plenumHeight 0 removes the ceiling plenum entirely (rear intake only).
+intakeSide          rear
+rearGap             1.6
+# nUnitsPerEnd splits each end into side-by-side modules, one patch pair each
+# (e.g. 2 x 36L1: nUnitsPerEnd 2, unitWidth 3.6, unitHeight 2.0, airflow/
+# capacity PER MODULE). unitsOff stops modules for N-1 runs, e.g. unitsOff A1.
+nUnitsPerEnd        1
+unitGap             0
+unitsOff
+
+# ---- thermal envelope ----
+# ASHRAE TC9.9 class A2: allowable 10-35 C, recommended 18-27 C.
+# Matches the Supermicro SYS-422GS-NB3RT-ALC operating range of 10-35 C.
+# For class A1 use 32; A3 = 40; A4 = 45. Recommended is 27 for all classes.
+allowableMax_C      35.0
+recommendedMax_C    27.0
+clearance           4.0     # unit face to the containment end
+
+# ---- pod ----
+# 600 x 1200 cabinets, 42U, back to back on a 1500 mm contained hot aisle.
+# Pod = 1.2 + 1.5 + 1.2 = 3.9 m, so a 7.9 m hall keeps 2.0 m cold aisle each side.
+nRacksPerRow        12
+rackPitch           0.6
+rackDepth           1.2
+# 42U of usable height = 42 x 44.45 = 1867 mm. Snapped to the 100 mm cell grid
+# as 1.875 m (+8 mm, 0.4 %) on the 25 mm grid. This is the OPEN front face through which the racks
+# breathe, not the cabinet's external height.
+rackHeight          1.875
+hotAisleWidth       1.5
+rackLoad_kW         36.0
+serverDeltaT_K      15.0    # sets rack airflow demand
+containmentGap      0.1     # unsealed height below the plenum floor
+
+# ---- design fixes under test ----
+# endBulkhead: infill panels flush with the fan wall discharge face, across the
+#   full hall width, so there is no open pocket beside or behind the units for
+#   air to eddy back into. 1 = fitted, 0 = open ends as originally modelled.
+endBulkhead         1
+# sealEndDoors: take the hot aisle containment end doors all the way up to the
+#   plenum floor instead of stopping short by containmentGap. The side panels
+#   keep their gap.
+sealEndDoors        1
+
+# reconstruct: single-process reconstructPar on a 48 M cell mesh is slow and
+#   memory-hungry, and nothing downstream needs it - the per-rack metrics and
+#   the sampled slices are both written during the run. 0 = skip it.
+reconstruct         0
+
+# ---- server fan model ----
+fanStiffness        50

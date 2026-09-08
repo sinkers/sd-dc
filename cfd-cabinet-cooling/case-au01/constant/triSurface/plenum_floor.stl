@@ -1,0 +1,344 @@
+solid deck_s
+  facet normal 0 0 -1
+    outer loop
+      vertex 3.600000 0.000000 3.950000
+      vertex 3.600000 3.200000 3.950000
+      vertex 20.530000 3.200000 3.950000
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 3.600000 0.000000 3.950000
+      vertex 20.530000 3.200000 3.950000
+      vertex 20.530000 0.000000 3.950000
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 3.600000 0.000000 4.000000
+      vertex 20.530000 0.000000 4.000000
+      vertex 20.530000 3.200000 4.000000
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 3.600000 0.000000 4.000000
+      vertex 20.530000 3.200000 4.000000
+      vertex 3.600000 3.200000 4.000000
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 3.600000 0.000000 3.950000
+      vertex 20.530000 0.000000 3.950000
+      vertex 20.530000 0.000000 4.000000
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 3.600000 0.000000 3.950000
+      vertex 20.530000 0.000000 4.000000
+      vertex 3.600000 0.000000 4.000000
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 3.600000 3.200000 3.950000
+      vertex 3.600000 3.200000 4.000000
+      vertex 20.530000 3.200000 4.000000
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 3.600000 3.200000 3.950000
+      vertex 20.530000 3.200000 4.000000
+      vertex 20.530000 3.200000 3.950000
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 3.600000 0.000000 3.950000
+      vertex 3.600000 0.000000 4.000000
+      vertex 3.600000 3.200000 4.000000
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 3.600000 0.000000 3.950000
+      vertex 3.600000 3.200000 4.000000
+      vertex 3.600000 3.200000 3.950000
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 20.530000 0.000000 3.950000
+      vertex 20.530000 3.200000 3.950000
+      vertex 20.530000 3.200000 4.000000
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 20.530000 0.000000 3.950000
+      vertex 20.530000 3.200000 4.000000
+      vertex 20.530000 0.000000 4.000000
+    endloop
+  endfacet
+endsolid deck_s
+solid deck_n
+  facet normal 0 0 -1
+    outer loop
+      vertex 3.600000 5.000000 3.950000
+      vertex 3.600000 8.200000 3.950000
+      vertex 20.530000 8.200000 3.950000
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 3.600000 5.000000 3.950000
+      vertex 20.530000 8.200000 3.950000
+      vertex 20.530000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 3.600000 5.000000 4.000000
+      vertex 20.530000 5.000000 4.000000
+      vertex 20.530000 8.200000 4.000000
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 3.600000 5.000000 4.000000
+      vertex 20.530000 8.200000 4.000000
+      vertex 3.600000 8.200000 4.000000
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 3.600000 5.000000 3.950000
+      vertex 20.530000 5.000000 3.950000
+      vertex 20.530000 5.000000 4.000000
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 3.600000 5.000000 3.950000
+      vertex 20.530000 5.000000 4.000000
+      vertex 3.600000 5.000000 4.000000
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 3.600000 8.200000 3.950000
+      vertex 3.600000 8.200000 4.000000
+      vertex 20.530000 8.200000 4.000000
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 3.600000 8.200000 3.950000
+      vertex 20.530000 8.200000 4.000000
+      vertex 20.530000 8.200000 3.950000
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 3.600000 5.000000 3.950000
+      vertex 3.600000 5.000000 4.000000
+      vertex 3.600000 8.200000 4.000000
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 3.600000 5.000000 3.950000
+      vertex 3.600000 8.200000 4.000000
+      vertex 3.600000 8.200000 3.950000
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 20.530000 5.000000 3.950000
+      vertex 20.530000 8.200000 3.950000
+      vertex 20.530000 8.200000 4.000000
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 20.530000 5.000000 3.950000
+      vertex 20.530000 8.200000 4.000000
+      vertex 20.530000 5.000000 4.000000
+    endloop
+  endfacet
+endsolid deck_n
+solid deck_w
+  facet normal 0 0 -1
+    outer loop
+      vertex 3.600000 3.200000 3.950000
+      vertex 3.600000 5.000000 3.950000
+      vertex 8.435000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 3.600000 3.200000 3.950000
+      vertex 8.435000 5.000000 3.950000
+      vertex 8.435000 3.200000 3.950000
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 3.600000 3.200000 4.000000
+      vertex 8.435000 3.200000 4.000000
+      vertex 8.435000 5.000000 4.000000
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 3.600000 3.200000 4.000000
+      vertex 8.435000 5.000000 4.000000
+      vertex 3.600000 5.000000 4.000000
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 3.600000 3.200000 3.950000
+      vertex 8.435000 3.200000 3.950000
+      vertex 8.435000 3.200000 4.000000
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 3.600000 3.200000 3.950000
+      vertex 8.435000 3.200000 4.000000
+      vertex 3.600000 3.200000 4.000000
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 3.600000 5.000000 3.950000
+      vertex 3.600000 5.000000 4.000000
+      vertex 8.435000 5.000000 4.000000
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 3.600000 5.000000 3.950000
+      vertex 8.435000 5.000000 4.000000
+      vertex 8.435000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 3.600000 3.200000 3.950000
+      vertex 3.600000 3.200000 4.000000
+      vertex 3.600000 5.000000 4.000000
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 3.600000 3.200000 3.950000
+      vertex 3.600000 5.000000 4.000000
+      vertex 3.600000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 8.435000 3.200000 3.950000
+      vertex 8.435000 5.000000 3.950000
+      vertex 8.435000 5.000000 4.000000
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 8.435000 3.200000 3.950000
+      vertex 8.435000 5.000000 4.000000
+      vertex 8.435000 3.200000 4.000000
+    endloop
+  endfacet
+endsolid deck_w
+solid deck_e
+  facet normal 0 0 -1
+    outer loop
+      vertex 15.755000 3.200000 3.950000
+      vertex 15.755000 5.000000 3.950000
+      vertex 20.530000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal 0 0 -1
+    outer loop
+      vertex 15.755000 3.200000 3.950000
+      vertex 20.530000 5.000000 3.950000
+      vertex 20.530000 3.200000 3.950000
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 15.755000 3.200000 4.000000
+      vertex 20.530000 3.200000 4.000000
+      vertex 20.530000 5.000000 4.000000
+    endloop
+  endfacet
+  facet normal 0 0 1
+    outer loop
+      vertex 15.755000 3.200000 4.000000
+      vertex 20.530000 5.000000 4.000000
+      vertex 15.755000 5.000000 4.000000
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 15.755000 3.200000 3.950000
+      vertex 20.530000 3.200000 3.950000
+      vertex 20.530000 3.200000 4.000000
+    endloop
+  endfacet
+  facet normal 0 -1 0
+    outer loop
+      vertex 15.755000 3.200000 3.950000
+      vertex 20.530000 3.200000 4.000000
+      vertex 15.755000 3.200000 4.000000
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 15.755000 5.000000 3.950000
+      vertex 15.755000 5.000000 4.000000
+      vertex 20.530000 5.000000 4.000000
+    endloop
+  endfacet
+  facet normal 0 1 0
+    outer loop
+      vertex 15.755000 5.000000 3.950000
+      vertex 20.530000 5.000000 4.000000
+      vertex 20.530000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 15.755000 3.200000 3.950000
+      vertex 15.755000 3.200000 4.000000
+      vertex 15.755000 5.000000 4.000000
+    endloop
+  endfacet
+  facet normal -1 0 0
+    outer loop
+      vertex 15.755000 3.200000 3.950000
+      vertex 15.755000 5.000000 4.000000
+      vertex 15.755000 5.000000 3.950000
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 20.530000 3.200000 3.950000
+      vertex 20.530000 5.000000 3.950000
+      vertex 20.530000 5.000000 4.000000
+    endloop
+  endfacet
+  facet normal 1 0 0
+    outer loop
+      vertex 20.530000 3.200000 3.950000
+      vertex 20.530000 5.000000 4.000000
+      vertex 20.530000 3.200000 4.000000
+    endloop
+  endfacet
+endsolid deck_e

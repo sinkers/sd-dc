@@ -1,0 +1,20 @@
+# SYNTHETIC TEST FIXTURE - not from any standard. 
+grouping_code,circuits,cf
+default,1,1.00
+default,2,0.85
+default,3,0.79
+default,4,0.75
+default,6,0.72
+default,9,0.70
+t334_perforated_touching_1row,1,0.97
+t334_perforated_touching_1row,2,0.89
+t334_perforated_touching_1row,3,0.87
+t334_perforated_spaced_1row,1,0.97
+t334_perforated_spaced_1row,2,0.93
+t334_perforated_spaced_1row,3,0.91
+t334_unperforated_touching_1row,1,0.95
+t334_unperforated_touching_1row,2,0.84
+t334_ladder_touching_1row,1,1.00
+t334_ladder_touching_1row,2,0.88
+t334_perforated_touching_2row,2,0.85
+t333_ceiling_touching,1,0.95

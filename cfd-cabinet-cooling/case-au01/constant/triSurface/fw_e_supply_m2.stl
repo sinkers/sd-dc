@@ -1,0 +1,16 @@
+solid fw_e_supply_m2
+ facet normal 1 0 0
+  outer loop
+   vertex 20.53 2.1 4
+   vertex 20.53 2.1 2
+   vertex 20.53 6.1 2
+  endloop
+ endfacet
+ facet normal 1 -0 0
+  outer loop
+   vertex 20.53 2.1 4
+   vertex 20.53 6.1 2
+   vertex 20.53 6.1 4
+  endloop
+ endfacet
+endsolid fw_e_supply_m2

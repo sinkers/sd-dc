@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cable Tray System - Project Status</title>
+<style>
+:root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e4e6eb;
+    --muted: #8b8f9a;
+    --accent: #4f8cff;
+    --green: #34d399;
+    --yellow: #fbbf24;
+    --red: #f87171;
+    --orange: #fb923c;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem;
+}
+.container { max-width: 1400px; margin: 0 auto; }
+h1 { font-size: 2rem; margin-bottom: 0.25rem; }
+.subtitle { color: var(--muted); font-size: 0.9rem; margin-bottom: 2rem; }
+h2 { font-size: 1.4rem; margin: 2.5rem 0 1rem; color: var(--accent); }
+h3 { font-size: 1.1rem; margin: 1rem 0 0.5rem; }
+
+.progress-bar {
+    background: var(--border);
+    border-radius: 8px;
+    height: 12px;
+    overflow: hidden;
+    margin: 1rem 0;
+}
+.progress-fill {
+    height: 100%;
+    border-radius: 8px;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+.stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+}
+.stat-card .number { font-size: 2rem; font-weight: 700; color: var(--accent); }
+.stat-card .label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+th, td {
+    padding: 0.6rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+th { color: var(--muted); font-weight: 500; font-size: 0.75rem; text-transform: uppercase; }
+.status-done { color: var(--green); font-weight: 600; }
+.status-partial { color: var(--yellow); font-weight: 600; }
+.status-todo { color: var(--red); font-weight: 600; }
+
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+.gallery-item {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+.gallery-item img {
+    width: 100%;
+    height: 200px;
+    object-fit: contain;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+}
+.gallery-item .caption {
+    padding: 0.6rem 1rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+.gallery-item .desc {
+    padding: 0 1rem 0.6rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.hero-img {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin: 1rem 0;
+}
+
+.route-views {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+}
+.route-views img {
+    width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #fff;
+}
+@media (max-width: 768px) { .route-views { grid-template-columns: 1fr; } }
+
+code {
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 0.8rem;
+    background: #0a0c10;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+}
+pre {
+    background: #0a0c10;
+    border-radius: 8px;
+    padding: 1.25rem;
+    overflow-x: auto;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    margin: 1rem 0;
+}
+pre code { background: none; padding: 0; }
+
+.badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+.badge-done { background: rgba(52, 211, 153, 0.15); color: var(--green); }
+.badge-partial { background: rgba(251, 191, 36, 0.15); color: var(--yellow); }
+.badge-todo { background: rgba(248, 113, 113, 0.15); color: var(--red); }
+
+.next-steps { list-style: none; padding: 0; }
+.next-steps li {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+.next-steps li:last-child { border-bottom: none; }
+.priority {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    min-width: 24px;
+    text-align: center;
+}
+.p1 { background: rgba(248, 113, 113, 0.2); color: var(--red); }
+.p2 { background: rgba(251, 191, 36, 0.2); color: var(--yellow); }
+.p3 { background: rgba(139, 143, 154, 0.2); color: var(--muted); }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+@media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } }
+
+.bom-output {
+    font-family: 'SF Mono', monospace;
+    font-size: 0.72rem;
+    background: #0a0c10;
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.5;
+    color: var(--green);
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Ezystrut Cable Tray System</h1>
+    <p class="subtitle">Project Status Report &mdash; 18 August 2026</p>
+
+    <!-- Overall Progress -->
+    <div class="card">
+        <h3>Overall Progress</h3>
+        <div class="progress-bar"><div class="progress-fill" style="width: 90%"></div></div>
+        <p style="text-align:right; font-size:0.85rem; color:var(--muted)">~90% complete</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="number">8</div>
+            <div class="label">3D Ladder Fittings</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">8</div>
+            <div class="label">STEP Files (Trapeze)</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">26</div>
+            <div class="label">Objects in Route Demo</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">20.9m</div>
+            <div class="label">Demo Route Length</div>
+        </div>
+        <div class="stat-card">
+            <div class="number">18</div>
+            <div class="label">Auto-calculated Supports</div>
+        </div>
+    </div>
+
+    <!-- Connected Route Demo (hero) -->
+    <h2>Connected Route Demo</h2>
+    <p style="color:var(--muted); font-size:0.9rem; margin-bottom:0.5rem;">
+        Full cable ladder route: outdoor posts &rarr; 90&deg; left bend &rarr; building approach &rarr; wall penetration &rarr; internal run &rarr; 90&deg; right bend &rarr; vertical riser down to MSB
+    </p>
+    <img class="hero-img" src="models/status-screenshots/route_isometric.png" alt="Route Demo - Isometric" style="background:#fff;">
+
+    <div class="route-views">
+        <div>
+            <img src="models/status-screenshots/route_top.png" alt="Route - Top View">
+            <p style="text-align:center; color:var(--muted); font-size:0.75rem; margin-top:0.5rem;">Top View (plan)</p>
+        </div>
+        <div>
+            <img src="models/status-screenshots/route_front.png" alt="Route - Front View">
+            <p style="text-align:center; color:var(--muted); font-size:0.75rem; margin-top:0.5rem;">Front View (elevation)</p>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top:1rem;">
+        <h3>Route Script (generates the model above)</h3>
+        <pre><code>from cable_tray_router import CableTrayRoute, NEMA3_600, Direction, FreeCADBuilder
+
+route = CableTrayRoute("TX1_to_MSB1", cable_load_kg_per_m=30)
+route.set_tray(NEMA3_600)
+route.start(x=0, y=0, z=3000, direction=Direction.POS_X)
+route.straight(6000, notes="Outdoor run on 150x150 posts")
+route.horizontal_bend("left", 90)
+route.straight(3000, notes="Approaching data hall west wall")
+route.penetration("Data Hall West Wall", thickness=200)
+route.straight(2000, notes="Internal ceiling run")
+route.horizontal_bend("right", 90)
+route.straight(4000, notes="Internal run to MSB location")
+route.vertical_bend("down", 90)
+route.straight_vertical(1500, "down")
+route.end()
+
+route.calculate_supports(default_support="POST_150")
+route.print_bom()           # Bill of materials
+route.print_supports()      # Support schedule with coordinates
+
+builder = FreeCADBuilder(route)
+builder.build()             # Generates 3D cable ladder geometry</code></pre>
+    </div>
+
+    <div class="two-col" style="margin-top:1rem;">
+        <div class="card">
+            <h3>Auto-generated BOM Output</h3>
+            <div class="bom-output">======================================================================
+BILL OF MATERIALS: TX1_to_MSB1
+======================================================================
+Part Number               Qty  Unit Description
+----------------------------------------------------------------------
+NEMA3-600G                  4  ea   NEMA3 Cable Ladder 600mm straight 6000mm
+NEMA3-600-SPLICE            3  ea   Splice plate
+NEMA3-600-BEND90            2  ea   90&deg; horizontal bend, R=600mm
+NEMA3-600-RISER-EXT         1  ea   90&deg; external riser
+NEMA3-600-TEE               0  ea   T-junction fitting
+FC-COLLAR                   1  ea   Fire collar (AS/NZS 3013)
+POST-150x150-SHS           14  ea   150x150 SHS support post
+BASE-PLATE-400              14  ea   400x400x10 base plate
+======================================================================</div>
+        </div>
+        <div class="card">
+            <h3>Route Summary</h3>
+            <table>
+                <tr><td>Total route length</td><td><strong>20.9 m</strong></td></tr>
+                <tr><td>Horizontal bends</td><td>2 (left + right)</td></tr>
+                <tr><td>Vertical risers</td><td>1 (down)</td></tr>
+                <tr><td>Wall penetrations</td><td>1 (fire-rated)</td></tr>
+                <tr><td>Support posts</td><td>18 calculated</td></tr>
+                <tr><td>Tray self-weight</td><td>6.6 kg/m</td></tr>
+                <tr><td>Cable load</td><td>30 kg/m</td></tr>
+                <tr><td>Total load</td><td>36.6 kg/m</td></tr>
+                <tr><td>Support spacing</td><td>3000 mm (auto from load table)</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Deliverables Table -->
+    <h2>Deliverables</h2>
+    <div class="card">
+        <table>
+            <thead>
+                <tr><th>Deliverable</th><th>File</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Product catalogue & reference index</td>
+                    <td><code>INDEX.md</code></td>
+                    <td><span class="badge badge-done">Done</span></td>
+                </tr>
+                <tr>
+                    <td>Design & installation guidelines</td>
+                    <td><code>GUIDELINES.md</code></td>
+                    <td><span class="badge badge-done">Done</span></td>
+                </tr>
+                <tr>
+                    <td>Cable weight & support spacing data</td>
+                    <td><code>GUIDELINES.md &sect;9</code></td>
+                    <td><span class="badge badge-done">Done</span></td>
+                </tr>
+                <tr>
+                    <td>Scripted routing system (BOM, supports, penetrations)</td>
+                    <td><code>cable_tray_router.py</code></td>
+                    <td><span class="badge badge-done">Done</span></td>
+                </tr>
+                <tr>
+                    <td>Trapeze bracket STEP files (8 parts)</td>
+                    <td><code>models/step-files/</code></td>
+                    <td><span class="badge badge-done">Done</span></td>
+                </tr>
+                <tr>
+                    <td>Cable ladder fittings library (8 fittings)</td>
+                    <td><code>CableLadderFittings.FCStd</code></td>
+                    <td><span class="badge badge-done">Done</span></td>
+                </tr>
+                <tr>
+                    <td>FreeCADBuilder &mdash; ladder geometry</td>
+                    <td><code>cable_tray_router.py</code></td>
+                    <td><span class="badge badge-done">Done</span></td>
+                </tr>
+                <tr>
+                    <td>Connected route demo (full system)</td>
+                    <td><code>CableLadder_Route_Demo.FCStd</code></td>
+                    <td><span class="badge badge-done">Done</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- FreeCAD Fittings Gallery -->
+    <h2>Cable Ladder Fittings Library</h2>
+    <p style="color:var(--muted); margin-bottom:0.5rem; font-size:0.85rem;">NEMA3 600mm cable ladder &mdash; open rungs between side rails, matching Ezystrut catalogue</p>
+
+    <img class="hero-img" src="models/status-screenshots/all_fittings.png" alt="All Fittings Overview" style="background:#fff;">
+
+    <div class="gallery">
+        <div class="gallery-item">
+            <img src="models/status-screenshots/Straight_1500.png" alt="Straight Section">
+            <div class="caption">Straight Section (1500mm)</div>
+            <div class="desc">Two box side rails (50mm H) with 12mm rungs at 250mm spacing</div>
+        </div>
+        <div class="gallery-item">
+            <img src="models/status-screenshots/Bend_90deg.png" alt="90-degree Bend">
+            <div class="caption">90&deg; Horizontal Bend</div>
+            <div class="desc">Curved annular rail arcs (R=300mm) with 4 radial cross-rungs</div>
+        </div>
+        <div class="gallery-item">
+            <img src="models/status-screenshots/Tee_Junction.png" alt="Tee Junction">
+            <div class="caption">Tee Junction</div>
+            <div class="desc">Through-rails with perpendicular branch</div>
+        </div>
+        <div class="gallery-item">
+            <img src="models/status-screenshots/Cross_Junction.png" alt="Cross Junction">
+            <div class="caption">Cross Junction (4-Way)</div>
+            <div class="desc">Two perpendicular through-runs</div>
+        </div>
+        <div class="gallery-item">
+            <img src="models/status-screenshots/Internal_Riser.png" alt="Internal Riser">
+            <div class="caption">Internal Riser</div>
+            <div class="desc">90&deg; vertical bend (descending to horizontal)</div>
+        </div>
+        <div class="gallery-item">
+            <img src="models/status-screenshots/External_Riser.png" alt="External Riser">
+            <div class="caption">External Riser</div>
+            <div class="desc">90&deg; vertical bend (horizontal to ascending)</div>
+        </div>
+        <div class="gallery-item">
+            <img src="models/status-screenshots/Straight_Reducer.png" alt="Straight Reducer">
+            <div class="caption">Straight Reducer (600&rarr;450)</div>
+            <div class="desc">Symmetric taper, both rails converge equally</div>
+        </div>
+        <div class="gallery-item">
+            <img src="models/status-screenshots/Left_Hand_Reducer.png" alt="Left Hand Reducer">
+            <div class="caption">Left-Hand Reducer</div>
+            <div class="desc">One-sided taper, right rail stays fixed</div>
+        </div>
+    </div>
+
+    <!-- Routing Script Capabilities -->
+    <h2>Routing System Capabilities</h2>
+    <div class="two-col">
+        <div class="card">
+            <h3>Route Commands</h3>
+            <table>
+                <tr><td><code>start(x, y, z, direction)</code></td><td class="status-done">Working</td></tr>
+                <tr><td><code>straight(length)</code></td><td class="status-done">Working</td></tr>
+                <tr><td><code>horizontal_bend(turn, angle)</code></td><td class="status-done">Working</td></tr>
+                <tr><td><code>vertical_bend(type, angle)</code></td><td class="status-done">Working</td></tr>
+                <tr><td><code>straight_vertical(length)</code></td><td class="status-done">Working</td></tr>
+                <tr><td><code>penetration(wall, thickness)</code></td><td class="status-done">Working</td></tr>
+                <tr><td><code>over_obstacle(name, clearance)</code></td><td class="status-done">Working</td></tr>
+                <tr><td><code>under_obstacle(name, clearance)</code></td><td class="status-done">Working</td></tr>
+                <tr><td><code>tee(branch_direction)</code></td><td class="status-done">Working</td></tr>
+            </table>
+        </div>
+        <div class="card">
+            <h3>Outputs</h3>
+            <table>
+                <tr><td>Auto support spacing calculation</td><td class="status-done">Working</td></tr>
+                <tr><td>Bill of Materials generation</td><td class="status-done">Working</td></tr>
+                <tr><td>Support schedule with coords</td><td class="status-done">Working</td></tr>
+                <tr><td>Penetration schedule (AS/NZS 3013)</td><td class="status-done">Working</td></tr>
+                <tr><td>Obstacle crossing annotations</td><td class="status-done">Working</td></tr>
+                <tr><td>Route summary printout</td><td class="status-done">Working</td></tr>
+                <tr><td>FreeCAD 3D model (ladder style)</td><td class="status-done">Working</td></tr>
+            </table>
+            <h3 style="margin-top:1.5rem">Pre-configured Tray Specs</h3>
+            <table>
+                <tr><td><code>NEMA3_600</code></td><td>600mm NEMA3 ladder (6m lengths)</td></tr>
+                <tr><td><code>NEMA3_900</code></td><td>900mm NEMA3 ladder (6m lengths)</td></tr>
+                <tr><td><code>ET5_300</code></td><td>300mm ET5 heavy duty (3m)</td></tr>
+                <tr><td><code>ET5_600</code></td><td>600mm ET5 heavy duty (3m)</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Key Specs -->
+    <h2>Reference Data</h2>
+    <div class="two-col">
+        <div class="card">
+            <h3>NEMA3 600mm Cable Ladder</h3>
+            <table>
+                <tr><td>Width (between rails)</td><td>600 mm</td></tr>
+                <tr><td>Overall width</td><td>660 mm</td></tr>
+                <tr><td>Rail height</td><td>100 mm</td></tr>
+                <tr><td>Rung diameter</td><td>12 mm</td></tr>
+                <tr><td>Rung spacing</td><td>250 mm</td></tr>
+                <tr><td>Bend radius</td><td>600 mm (inner)</td></tr>
+                <tr><td>Standard length</td><td>6000 mm</td></tr>
+                <tr><td>Self weight</td><td>6.6 kg/m (39.6 kg per 6m)</td></tr>
+            </table>
+        </div>
+        <div class="card">
+            <h3>Load Ratings &amp; Support Spacing</h3>
+            <table>
+                <thead><tr><th>Span</th><th>Max Load</th><th>Deflection</th></tr></thead>
+                <tr><td>3.0 m</td><td>60 kg/m</td><td>15 mm</td></tr>
+                <tr><td>2.5 m</td><td>80 kg/m</td><td>12 mm</td></tr>
+                <tr><td>2.0 m</td><td>120 kg/m</td><td>8 mm</td></tr>
+                <tr><td>1.5 m</td><td>200 kg/m</td><td>5 mm</td></tr>
+            </table>
+            <h3 style="margin-top:1rem">Standards</h3>
+            <table>
+                <tr><td>AS/NZS 3000</td><td>Wiring Rules cl. 3.9.5</td></tr>
+                <tr><td>AS/NZS 3013</td><td>Fire-rated penetrations</td></tr>
+                <tr><td>AS1397 / AS/NZS4680</td><td>Galvanised finishes</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Remaining / Nice to have -->
+    <h2>Remaining (Nice to Have)</h2>
+    <div class="card">
+        <ul class="next-steps">
+            <li>
+                <span class="priority p2">1</span>
+                <div>
+                    <strong>Refine bend alignment</strong>
+                    <div style="font-size:0.8rem;color:var(--muted)">Small gaps visible between straights and bends in some orientations &mdash; adjust arc center offsets for pixel-perfect flush joins</div>
+                </div>
+            </li>
+            <li>
+                <span class="priority p2">2</span>
+                <div>
+                    <strong>Add Right-Hand Reducer to fittings gallery</strong>
+                    <div style="font-size:0.8rem;color:var(--muted)">Already created in FreeCAD, just needs screenshot in gallery</div>
+                </div>
+            </li>
+            <li>
+                <span class="priority p3">3</span>
+                <div>
+                    <strong>TraceParts STEP library integration</strong>
+                    <div style="font-size:0.8rem;color:var(--muted)">1,789 cable tray models available (OBO Bettermann, nVent CADDY) for higher-fidelity geometry if needed</div>
+                </div>
+            </li>
+            <li>
+                <span class="priority p3">4</span>
+                <div>
+                    <strong>Obstacle avoidance / pathfinding</strong>
+                    <div style="font-size:0.8rem;color:var(--muted)">Auto-route around defined obstacles using shortest-path algorithm</div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- File tree -->
+    <h2>Project Files</h2>
+    <div class="card">
+        <pre style="margin:0; background:transparent; padding:0;"><code style="background:transparent;">cable-tray-ezystrut/
+  INDEX.md                             Product catalogue
+  GUIDELINES.md                        Design &amp; installation guidelines
+  cable_tray_router.py                 Scripted routing system
+  STATUS.html                          This report
+  datasheets/
+    Cable-Tray-and-Accessories-DataSheet.pdf
+    CT-Cable-Tray-DataSheet.pdf
+    Cantilevers-and-Trapezes-DataSheet.pdf
+  models/
+    CableLadderFittings.FCStd          8 ladder fittings library
+    CableLadder_Route_Demo.FCStd       Connected route (26 objects)
+    CableTrayRoute_Example.FCStd       Legacy U-channel route
+    step-files/
+      TB-E4000S/  (4 STEP files)       E4000 slotted trapeze brackets
+      TB-Standard/  (4 STEP files)     Standard trapeze brackets
+    status-screenshots/  (13 PNGs)     Rendered images for this report</code></pre>
+    </div>
+
+    <p style="text-align:center; color:var(--muted); font-size:0.75rem; margin-top:3rem; padding:1rem;">
+        Generated by Claude Code &mdash; 18 Aug 2026 &mdash; cable-tray-ezystrut
+    </p>
+</div>
+</body>
+</html>

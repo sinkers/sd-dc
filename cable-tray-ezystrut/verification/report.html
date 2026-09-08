@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cable Tray Joint Verification Report</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f0f0f0; color: #222; }
+.header { background: #1a1a2e; color: #fff; padding: 40px; }
+.header h1 { font-size: 28px; margin-bottom: 8px; }
+.header .meta { color: #aaa; font-size: 13px; }
+.container { max-width: 1400px; margin: 0 auto; padding: 30px; }
+.summary { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.summary h2 { font-size: 18px; margin-bottom: 16px; color: #1a1a2e; }
+.status-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.status-card { background: #f8f8f8; border-radius: 8px; padding: 16px; text-align: center; }
+.status-card .value { font-size: 28px; font-weight: 700; color: #2e7d32; }
+.status-card .label { font-size: 12px; color: #666; margin-top: 4px; }
+.status-card.fail .value { color: #c62828; }
+
+.section { background: #fff; border-radius: 12px; margin-bottom: 30px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.section-header { background: #263238; color: #fff; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+.section-header .badge { background: rgba(255,255,255,0.15); border-radius: 4px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
+.section-header .badge.pass { background: #2e7d32; }
+.section-header .badge.issue { background: #f57c00; }
+.section-body { padding: 24px; }
+
+.render { margin-bottom: 20px; }
+.render img { width: 100%; border-radius: 8px; border: 1px solid #e0e0e0; }
+.render-caption { font-size: 12px; color: #666; margin-top: 6px; text-align: center; }
+
+.check-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+.check-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px; background: #f8fdf8; border-radius: 6px; border-left: 3px solid #4caf50; }
+.check-item.fail { background: #fdf8f8; border-left-color: #c62828; }
+.check-item .icon { font-size: 18px; flex-shrink: 0; }
+.check-item .text { font-size: 13px; line-height: 1.4; }
+.check-item .text strong { display: block; margin-bottom: 2px; }
+
+.comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+.comparison .col { }
+.comparison .col h4 { font-size: 13px; color: #666; margin-bottom: 8px; text-transform: uppercase; }
+.comparison .col .detail { font-size: 13px; line-height: 1.6; background: #f5f5f5; padding: 12px; border-radius: 6px; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
+th { background: #f5f5f5; text-align: left; padding: 8px 12px; font-weight: 600; border-bottom: 2px solid #ddd; }
+td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+td.pass { color: #2e7d32; font-weight: 600; }
+td.fail { color: #c62828; font-weight: 600; }
+
+.rules-ref { margin-top: 20px; }
+.rule { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+.rule:last-child { border-bottom: none; }
+.rule .num { background: #1a1a2e; color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+<h1>Cable Tray Joint Verification Report</h1>
+<div class="meta">Generated: 2026-08-18 | System: NEMA3 Cable Ladder 600mm | Reference: Ezystrut Design Guide | Risers rebuilt with curve rungs &amp; substantial RL brackets</div>
+</div>
+
+<div class="container">
+
+<!-- SUMMARY -->
+<div class="summary">
+<h2>Verification Summary</h2>
+<div class="status-grid">
+<div class="status-card"><div class="value">PASS</div><div class="label">Overall Status</div></div>
+<div class="status-card"><div class="value">8/8</div><div class="label">Connection Points Verified</div></div>
+<div class="status-card"><div class="value">0mm</div><div class="label">Max Rail Alignment Error</div></div>
+<div class="status-card"><div class="value">5/5</div><div class="label">Joint Types Correct</div></div>
+</div>
+</div>
+
+<!-- SECTION 1: ELBOW -->
+<div class="section">
+<div class="section-header">
+<h3>1. Straight-to-Elbow Connection</h3>
+<span class="badge pass">PASS</span>
+</div>
+<div class="section-body">
+<div class="render">
+<img src="01_elbow.png" alt="Elbow connection isometric view">
+<div class="render-caption">Isometric view: Straight section (left) connecting to 90° elbow (right) via splice plates</div>
+</div>
+
+<div class="check-grid">
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Left rail → Inner curve rail</strong>Straight's left rail (Y=+315) meets elbow inner rail start (Y=+315). Delta: 0mm.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Right rail → Outer curve rail</strong>Straight's right rail (Y=-315) meets elbow outer rail start (Y=-315). Delta: 0mm.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Splice plates on outside</strong>Yellow splice plates visible on outside face of each rail at the joint.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Elbow is separate fitting</strong>Elbow rendered as independent component (darker shade) distinct from straight.</div>
+</div>
+</div>
+
+<div class="comparison">
+<div class="col">
+<h4>Ezystrut Reference</h4>
+<div class="detail">
+"Fittings measured in radius and width to change direction"<br><br>
+Bend is a separate factory-made piece with its own curved rails and rungs. Connects to straights via splice plates on each side rail at each end.<br><br>
+4 splice plates per elbow (2 rails × 2 ends).
+</div>
+</div>
+<div class="col">
+<h4>Our Model</h4>
+<div class="detail">
+Elbow: Inner rail R=135mm, Outer rail R=765mm (centreline R=450mm)<br><br>
+5 radial rungs per 90° sweep<br><br>
+Splice plates at entry connection (2 shown). Exit connection would have 2 more when joined to next straight.<br><br>
+Rails are physically separate objects that meet at the joint plane.
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SECTION 2: TEE -->
+<div class="section">
+<div class="section-header">
+<h3>2. Tee Junction (T-Intersection)</h3>
+<span class="badge pass">PASS</span>
+</div>
+<div class="section-body">
+<div class="comparison">
+<div class="col">
+<div class="render">
+<img src="02_tee_iso.png" alt="Tee junction isometric">
+<div class="render-caption">Isometric: Main tray runs horizontally, branch exits downward through rail cutout</div>
+</div>
+</div>
+<div class="col">
+<div class="render">
+<img src="03_tee_top.png" alt="Tee junction top view">
+<div class="render-caption">Plan view: Bottom rail CUT AWAY where branch enters. Top rail continuous.</div>
+</div>
+</div>
+</div>
+
+<div class="check-grid">
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Top rail continuous</strong>Far-side rail runs full 3000mm length without interruption.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Bottom rail cut away</strong>Near-side rail has 660mm opening. Two stub segments remain on each side.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Cable path open</strong>No rail or rung obstructs the path from main tray into branch. Cables can physically pass.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>TX brackets at cut points</strong>Blue TX brackets visible at each edge of the rail cutout.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Rungs absent in opening</strong>No rungs span across the branch opening area.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Branch rails enter opening</strong>Branch left rail (X=685) and right rail (X=1315) sit within opening (X=670-1330).</div>
+</div>
+</div>
+
+<div class="comparison">
+<div class="col">
+<h4>Ezystrut Reference</h4>
+<div class="detail">
+"Make the appropriate cuts in the side wall of the tray you are joining a length to, bend down the side wall, and attach a TX bracket either side"<br><br>
+The rail on the branch side is REMOVED so cables can enter. TX brackets reinforce the structural gap. The opposite rail stays intact.
+</div>
+</div>
+<div class="col">
+<h4>Previous Error (now fixed)</h4>
+<div class="detail">
+<span style="color:#c62828; font-weight:600;">OLD:</span> Both rails ran continuously through the junction. Branch connected with rails meeting main rail face-on (impossible physically, blocks cable path).<br><br>
+<span style="color:#2e7d32; font-weight:600;">NEW:</span> Bottom rail removed at branch. Open channel allows cable passage. TX brackets for structural support.
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SECTION 3: SQUARE ROUTE -->
+<div class="section">
+<div class="section-header">
+<h3>3. Square Route (Closed Loop Verification)</h3>
+<span class="badge pass">PASS</span>
+</div>
+<div class="section-body">
+<div class="comparison">
+<div class="col">
+<div class="render">
+<img src="04_square_iso.png" alt="Square route isometric">
+<div class="render-caption">Isometric: 4 straights + 4 elbows forming closed square</div>
+</div>
+</div>
+<div class="col">
+<div class="render">
+<img src="05_square_top.png" alt="Square route top">
+<div class="render-caption">Plan view: Rail continuity visible at all 4 corners</div>
+</div>
+</div>
+</div>
+
+<table>
+<tr><th>Corner</th><th>Arc Centre</th><th>Entry Direction</th><th>Exit Direction</th><th>Rail Alignment Error</th><th>Status</th></tr>
+<tr><td>B (bottom-right)</td><td>(2450, 3450)</td><td>+X → outer/inner</td><td>+Y → left/right</td><td>0mm</td><td class="pass">PASS</td></tr>
+<tr><td>C (top-right)</td><td>(2450, 5450)</td><td>+Y → outer/inner</td><td>-X → left/right</td><td>0mm</td><td class="pass">PASS</td></tr>
+<tr><td>D (top-left)</td><td>(450, 5450)</td><td>-X → outer/inner</td><td>-Y → left/right</td><td>0mm</td><td class="pass">PASS</td></tr>
+<tr><td>A (bottom-left)</td><td>(450, 3450)</td><td>-Y → outer/inner</td><td>+X → left/right</td><td>0mm</td><td class="pass">PASS</td></tr>
+</table>
+
+<div class="check-grid">
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Loop closes perfectly</strong>Final rail end meets initial rail start with 0mm error.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Inner/outer rail geometry correct</strong>Inner rail (R=135mm) always on inside of turn. Outer rail (R=765mm) on outside.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Rungs span correctly</strong>Straight: parallel rungs. Elbow: radial rungs from inner to outer.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>All pieces discrete</strong>8 separate straight rails, 8 separate curved rails. No merged geometry.</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SECTION 4: EXTERNAL RISER -->
+<div class="section">
+<div class="section-header">
+<h3>4. External Riser (Horizontal → Vertical UP)</h3>
+<span class="badge pass">PASS</span>
+</div>
+<div class="section-body">
+<div class="comparison">
+<div class="col">
+<div class="render">
+<img src="08_external_riser_iso.png" alt="External riser isometric">
+<div class="render-caption">Isometric: Horizontal tray curves upward via 90° bend with rungs through curve</div>
+</div>
+</div>
+<div class="col">
+<div class="render">
+<img src="07_external_riser_front.png" alt="External riser front view">
+<div class="render-caption">Front (XZ profile): Smooth 450mm radius curve, RL brackets (orange) at both junctions</div>
+</div>
+</div>
+</div>
+<div class="render">
+<img src="11_ext_riser_side.png" alt="External riser side view">
+<div class="render-caption">Side view: Rails and rungs clearly visible through vertical section, RL brackets on both sides</div>
+</div>
+
+<div class="check-grid">
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Arc in correct plane (XZ)</strong>Bend curves from horizontal (+X) to vertical (+Z) in the vertical plane.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Cable on OUTSIDE of curve (tension)</strong>Cables sit on the outer face of the bend — they are pulled into the tray by gravity + tension. No hold-down needed on bend.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Riser links (orange) at BOTH transitions</strong>Substantial RL brackets (150×60×130mm) at horizontal-to-bend AND bend-to-vertical junctions. Installed in pairs per Ezystrut reference.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Splice plates (yellow) at entry</strong>Splice plates on both rails where horizontal meets bend.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Rungs through ENTIRE path</strong>5 rungs through curve (tangent-oriented), 6 on horizontal, 6 on vertical. Continuous cable support.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Radius = 450mm (suits large cables)</strong>Centreline radius matches NEMA3 standard. Meets min bend radius for up to 300mm² cables.</div>
+</div>
+</div>
+
+<div class="comparison">
+<div class="col">
+<h4>Ezystrut Reference</h4>
+<div class="detail">
+"Riser links must install in pairs (one per side)"<br><br>
+External riser = cable on OUTSIDE of curve. Cable tension holds it in place. Used for going UP from a lower level to a higher one.
+</div>
+</div>
+<div class="col">
+<h4>Data Centre Application</h4>
+<div class="detail">
+Basement cable corridor → ground floor switchroom.<br>
+Under-floor void → overhead cable tray.<br>
+Transformer pit → main cable ladder route.<br>
+Between floors in a riser shaft.
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SECTION 5: INTERNAL RISER -->
+<div class="section">
+<div class="section-header">
+<h3>5. Internal Riser (Horizontal → Vertical DOWN)</h3>
+<span class="badge pass">PASS</span>
+</div>
+<div class="section-body">
+<div class="comparison">
+<div class="col">
+<div class="render">
+<img src="10_internal_riser_iso.png" alt="Internal riser isometric">
+<div class="render-caption">Isometric: Horizontal tray curves downward. Orange RL brackets at junctions, purple hold-down clips on vertical.</div>
+</div>
+</div>
+<div class="col">
+<div class="render">
+<img src="09_internal_riser_front.png" alt="Internal riser front view">
+<div class="render-caption">Front (XZ profile): Downward 450mm radius curve with rungs, RL brackets at both transition points</div>
+</div>
+</div>
+</div>
+<div class="render">
+<img src="12_int_riser_side.png" alt="Internal riser side view">
+<div class="render-caption">Side view: Rails with full depth visible, hold-down clips (purple) preventing cable displacement on vertical run</div>
+</div>
+
+<div class="check-grid">
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Arc curves DOWNWARD</strong>Bend goes from horizontal (+X) to vertical (-Z). Arc centre is BELOW the tray.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Cable on INSIDE of curve (compression)</strong>Cables on inside — gravity pulls them AWAY from tray on the vertical section.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Hold-down clips (purple) on vertical</strong>4 clips at 250mm spacing on vertical section. MANDATORY for internal risers (AS/NZS 3000: max 1.5m spacing).</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Riser links at BOTH transitions</strong>Substantial RL brackets (150×60×130mm) at horizontal-to-bend AND bend-to-vertical. Installed in pairs per Ezystrut reference.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Splice plates at entry</strong>Yellow splices on both rails at horizontal-to-bend joint.</div>
+</div>
+<div class="check-item">
+<div class="icon">&#9745;</div>
+<div class="text"><strong>Different from external riser</strong>Arc centre BELOW (not above), vertical goes DOWN (not up), hold-down clips present (not on external).</div>
+</div>
+</div>
+
+<div class="comparison">
+<div class="col">
+<h4>Key Difference: External vs Internal</h4>
+<div class="detail">
+<strong>External (UP):</strong> Arc centre above. Cable on outside (tension). No hold-downs needed on bend. Gravity assists.<br><br>
+<strong>Internal (DOWN):</strong> Arc centre below. Cable on inside (compression). Hold-down clips MANDATORY. Gravity works against cable retention.
+</div>
+</div>
+<div class="col">
+<h4>Data Centre Application</h4>
+<div class="detail">
+Overhead tray → drop to switchboard entry.<br>
+Elevated cable corridor → under-floor distribution.<br>
+Mezzanine level → ground floor equipment.<br>
+Drop to rack-mounted PDU from overhead tray.
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SECTION 6: RULES -->
+<div class="section">
+<div class="section-header">
+<h3>4. Connection Rules Applied</h3>
+</div>
+<div class="section-body">
+<div class="rules-ref">
+<div class="rule"><div class="num">1</div><div>Each rail is a DISCRETE piece. Rails never merge or pass through joints.</div></div>
+<div class="rule"><div class="num">2</div><div>Splice plates sit on OUTSIDE of rails, bridging the gap between two rail ends. Smooth bolt heads face inward (won't snag cables).</div></div>
+<div class="rule"><div class="num">3</div><div>Elbows are SEPARATE fittings with own inner + outer curved rails. NOT a deformation of the straight rail.</div></div>
+<div class="rule"><div class="num">4</div><div>At a tee, the rail on the branch side is CUT AWAY. Cables must be able to physically pass from main to branch.</div></div>
+<div class="rule"><div class="num">5</div><div>TX brackets reinforce structural gaps where rail material was removed (tees and crosses).</div></div>
+<div class="rule"><div class="num">6</div><div>Rungs are absent in junction openings. No rung should block a cable transition path.</div></div>
+<div class="rule"><div class="num">7</div><div>Each elbow connection = 2 rail-to-rail joints (inner + outer). Each joint = 1 splice plate. Total per elbow = 4 splice plates.</div></div>
+</div>
+</div>
+</div>
+
+<!-- SECTION 5: REMAINING WORK -->
+<div class="section">
+<div class="section-header">
+<h3>7. Remaining Joint Types (Not Yet Modelled)</h3>
+<span class="badge issue">TODO</span>
+</div>
+<div class="section-body">
+<table>
+<tr><th>Joint Type</th><th>Key Feature</th><th>Priority</th></tr>
+<tr><td>Cross junction (4-way)</td><td>BOTH rails cut. Centre fully open. 4x TX brackets.</td><td>High</td></tr>
+<tr><td><s>External riser (up)</s></td><td>DONE - See section 4 above</td><td style="color:#2e7d32">COMPLETE</td></tr>
+<tr><td><s>Internal riser (down)</s></td><td>DONE - See section 5 above</td><td style="color:#2e7d32">COMPLETE</td></tr>
+<tr><td>Straight reducer</td><td>Tapered fitting between 600mm and 300mm widths.</td><td>Low</td></tr>
+<tr><td>S-bend offset</td><td>Two opposing elbows with short straight between.</td><td>Low</td></tr>
+<tr><td>Straight splice (detail)</td><td>Splice plate bolted across gap between two straight sections.</td><td>Low</td></tr>
+</table>
+</div>
+</div>
+
+</div><!-- container -->
+
+<div style="background:#1a1a2e; color:#666; padding:20px; text-align:center; font-size:12px;">
+Model: JointExamples_v2.FCStd | System: NEMA3 600mm Cable Ladder | Reference: Ezystrut Cable Ladder Fittings & Splices
+</div>
+
+</body>
+</html>

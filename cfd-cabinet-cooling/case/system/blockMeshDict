@@ -1,0 +1,71 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| A plain box covering the whole hall section. The fan wall unit is cut out of |
+| it by subsetMesh, and the internal panels are inserted by createBaffles, so  |
+| all the geometry lives in system/simulationParameters rather than here.      |
+|                                                                             |
+| Domain is roomWidth wide with symmetry side planes, i.e. one cabinet pitch   |
+| of an effectively infinite row.                                             |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "simulationParameters"
+
+scale   1;
+
+vertices
+(
+    (0            0           0)            // 0
+    ($roomLength  0           0)            // 1
+    ($roomLength  $roomWidth  0)            // 2
+    (0            $roomWidth  0)            // 3
+    (0            0           $roomHeight)  // 4
+    ($roomLength  0           $roomHeight)  // 5
+    ($roomLength  $roomWidth  $roomHeight)  // 6
+    (0            $roomWidth  $roomHeight)  // 7
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) ($nx $ny $nz) simpleGrading (1 1 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    // Both y faces: symmetry, representing identical neighbouring cabinets.
+    sides
+    {
+        type    symmetry;
+        faces
+        (
+            (0 1 5 4)       // y = 0
+            (3 7 6 2)       // y = roomWidth
+        );
+    }
+
+    // Outer shell. The fan wall unit's own surfaces are created later by
+    // subsetMesh as the separate `unitWalls` patch.
+    walls
+    {
+        type    wall;
+        faces
+        (
+            (0 4 7 3)       // x = 0            behind the fan wall unit
+            (1 2 6 5)       // x = roomLength   back of the hot aisle
+            (0 3 2 1)       // z = 0            floor
+            (4 5 6 7)       // z = roomHeight   slab above the return plenum
+        );
+    }
+);
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

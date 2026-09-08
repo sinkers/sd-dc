@@ -1,0 +1,61 @@
+# Example source definition — the shape, not a real vendor.
+#
+# The real registry lives in the private `sddc-collector` repo, because a source
+# definition records how a specific vendor's site is reached and what their terms
+# say. Published, that is a turnkey scraper for a named company.
+#
+# This file is here so the schema is visible without the data.
+
+schema_version: 1
+bucket: ${SDDC_ARTIFACTS_BUCKET}          # objects land under catalogue/<id>/
+
+sources:
+
+  - id: example-vendor
+    name: Example Vendor Pty Ltd — cable support
+    vendor: Example Vendor Pty Ltd
+    category: mechanical.cable-tray       # dotted taxonomy, see PLAN.md §0.1
+    homepage: https://example.com/
+    verified: false                       # true only once someone checked
+    verified_on: null
+
+    # --- how to reach it -------------------------------------------------
+    adapter: html-links                   # or sitemap-static, url-list
+    entrypoints:
+      - {type: page, url: https://example.com/downloads/}
+    include: ["**/assets/**.pdf"]
+    max_urls: 50
+    rps: 0.2                              # be gentle; 5 s between requests
+
+    robots: "User-agent: * / Disallow: /search"
+    robots_note: Products and assets permitted; we touch nothing disallowed.
+
+    # --- FACTS: what the terms say ---------------------------------------
+    # Needs a quoted clause and a URL. Stamped into the provenance sidecar of
+    # every object collected. Never edit this to express an intention.
+    tos_stance: prohibited                # permitted | silent | prohibited | unknown
+    tos_url: https://example.com/legals/
+    tos_clause: >
+      "These materials may not be copied for commercial use or distribution,
+      nor may these materials be modified or reposted to other websites."
+
+    # --- DECISIONS: what we chose to do ----------------------------------
+    collect: true
+    collect_decided_by: someone
+    collect_decided_on: 2026-01-01
+    collect_rationale: >
+      Why collecting is appropriate despite the stance, and what constraints
+      follow from it. A source can be prohibited-and-collected; the point is
+      that the record still says what the terms said.
+
+    redistribute: false                   # almost always false
+    redistribute_rationale: >
+      Why the bytes stay in the private bucket. Transcribed figures are a
+      different matter -- a dimension is a fact, the datasheet is not.
+
+    # --- open questions ---------------------------------------------------
+    open_action:
+      what: Request written permission
+      why: Many vendors publish a route; taking it removes the ambiguity.
+      owner: someone
+      status: not-started

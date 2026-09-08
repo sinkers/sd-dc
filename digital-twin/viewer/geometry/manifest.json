@@ -1,0 +1,4130 @@
+{
+ "units": "m",
+ "up_axis": "z",
+ "source": "cfd-cabinet-cooling/geometry/CFD_Export_RevE",
+ "binary": "geometry.bin",
+ "total_triangles": 4704,
+ "parts": [
+  {
+   "name": "room_floor",
+   "group": "shell",
+   "source": "room_shell.stl",
+   "offset": 0,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     -0.1,
+     -0.1,
+     -0.1
+    ],
+    "max": [
+     24.23,
+     8.3,
+     0.0
+    ],
+    "centre": [
+     12.065,
+     4.1,
+     -0.05
+    ]
+   }
+  },
+  {
+   "name": "room_wall_s",
+   "group": "shell",
+   "source": "room_shell.stl",
+   "offset": 108,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     -0.1,
+     -0.1,
+     0.0
+    ],
+    "max": [
+     24.23,
+     0.0,
+     4.09
+    ],
+    "centre": [
+     12.065,
+     -0.05,
+     2.045
+    ]
+   }
+  },
+  {
+   "name": "room_wall_n",
+   "group": "shell",
+   "source": "room_shell.stl",
+   "offset": 216,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     -0.1,
+     8.2,
+     0.0
+    ],
+    "max": [
+     24.23,
+     8.3,
+     4.09
+    ],
+    "centre": [
+     12.065,
+     8.25,
+     2.045
+    ]
+   }
+  },
+  {
+   "name": "room_wall_w",
+   "group": "shell",
+   "source": "room_shell.stl",
+   "offset": 324,
+   "floats": 144,
+   "triangles": 16,
+   "bbox": {
+    "min": [
+     -0.1,
+     0.0,
+     0.0
+    ],
+    "max": [
+     0.0,
+     8.2,
+     4.786
+    ],
+    "centre": [
+     -0.05,
+     4.1,
+     2.393
+    ]
+   }
+  },
+  {
+   "name": "room_wall_e",
+   "group": "shell",
+   "source": "room_shell.stl",
+   "offset": 468,
+   "floats": 144,
+   "triangles": 16,
+   "bbox": {
+    "min": [
+     24.13,
+     0.0,
+     0.0
+    ],
+    "max": [
+     24.23,
+     8.2,
+     4.786
+    ],
+    "centre": [
+     24.18,
+     4.1,
+     2.393
+    ]
+   }
+  },
+  {
+   "name": "room_roof_s",
+   "group": "shell",
+   "source": "room_shell.stl",
+   "offset": 612,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     -0.1,
+     0.0,
+     4.09
+    ],
+    "max": [
+     24.23,
+     4.1,
+     4.886
+    ],
+    "centre": [
+     12.065,
+     2.05,
+     4.488
+    ]
+   }
+  },
+  {
+   "name": "room_roof_n",
+   "group": "shell",
+   "source": "room_shell.stl",
+   "offset": 720,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     -0.1,
+     4.1,
+     4.09
+    ],
+    "max": [
+     24.23,
+     8.2,
+     4.886
+    ],
+    "centre": [
+     12.065,
+     6.15,
+     4.488
+    ]
+   }
+  },
+  {
+   "name": "rack_A01-NET",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 828,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     8.44,
+     2.0,
+     0.0
+    ],
+    "max": [
+     9.04,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     8.74,
+     2.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A02-NET",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 936,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     9.05,
+     2.0,
+     0.0
+    ],
+    "max": [
+     9.65,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     9.35,
+     2.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A03-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 1044,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     9.66,
+     2.0,
+     0.0
+    ],
+    "max": [
+     10.26,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     9.96,
+     2.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A04-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 1152,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     10.27,
+     2.0,
+     0.0
+    ],
+    "max": [
+     10.87,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     10.57,
+     2.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A05-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 1260,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     10.88,
+     2.0,
+     0.0
+    ],
+    "max": [
+     11.48,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     11.18,
+     2.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A06-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 1368,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     11.49,
+     2.0,
+     0.0
+    ],
+    "max": [
+     12.09,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     11.79,
+     2.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A07-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 1476,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     12.1,
+     2.0,
+     0.0
+    ],
+    "max": [
+     12.7,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     12.4,
+     2.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A08-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 1584,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     12.71,
+     2.0,
+     0.0
+    ],
+    "max": [
+     13.31,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     13.01,
+     2.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A09-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 1692,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     13.32,
+     2.0,
+     0.0
+    ],
+    "max": [
+     13.92,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     13.62,
+     2.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A10-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 1800,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     13.93,
+     2.0,
+     0.0
+    ],
+    "max": [
+     14.53,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     14.23,
+     2.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A11-NET",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 1908,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     14.54,
+     2.0,
+     0.0
+    ],
+    "max": [
+     15.14,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     14.84,
+     2.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A12-NET",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 2016,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     15.15,
+     2.0,
+     0.0
+    ],
+    "max": [
+     15.75,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     15.45,
+     2.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B01-NET",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 2124,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     8.44,
+     5.0,
+     0.0
+    ],
+    "max": [
+     9.04,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     8.74,
+     5.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B02-NET",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 2232,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     9.05,
+     5.0,
+     0.0
+    ],
+    "max": [
+     9.65,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     9.35,
+     5.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B03-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 2340,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     9.66,
+     5.0,
+     0.0
+    ],
+    "max": [
+     10.26,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     9.96,
+     5.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B04-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 2448,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     10.27,
+     5.0,
+     0.0
+    ],
+    "max": [
+     10.87,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     10.57,
+     5.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B05-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 2556,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     10.88,
+     5.0,
+     0.0
+    ],
+    "max": [
+     11.48,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     11.18,
+     5.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B06-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 2664,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     11.49,
+     5.0,
+     0.0
+    ],
+    "max": [
+     12.09,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     11.79,
+     5.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B07-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 2772,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     12.1,
+     5.0,
+     0.0
+    ],
+    "max": [
+     12.7,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     12.4,
+     5.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B08-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 2880,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     12.71,
+     5.0,
+     0.0
+    ],
+    "max": [
+     13.31,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     13.01,
+     5.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B09-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 2988,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     13.32,
+     5.0,
+     0.0
+    ],
+    "max": [
+     13.92,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     13.62,
+     5.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B10-HD",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 3096,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     13.93,
+     5.0,
+     0.0
+    ],
+    "max": [
+     14.53,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     14.23,
+     5.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B11-NET",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 3204,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     14.54,
+     5.0,
+     0.0
+    ],
+    "max": [
+     15.14,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     14.84,
+     5.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B12-NET",
+   "group": "racks",
+   "source": "racks_body.stl",
+   "offset": 3312,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     15.15,
+     5.0,
+     0.0
+    ],
+    "max": [
+     15.75,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     15.45,
+     5.6,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A01-NET_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3420,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     8.44,
+     2.0,
+     0.0
+    ],
+    "max": [
+     9.04,
+     2.0,
+     2.0
+    ],
+    "centre": [
+     8.74,
+     2.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A02-NET_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3438,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     9.05,
+     2.0,
+     0.0
+    ],
+    "max": [
+     9.65,
+     2.0,
+     2.0
+    ],
+    "centre": [
+     9.35,
+     2.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A03-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3456,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     9.66,
+     2.0,
+     0.0
+    ],
+    "max": [
+     10.26,
+     2.0,
+     2.0
+    ],
+    "centre": [
+     9.96,
+     2.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A04-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3474,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     10.27,
+     2.0,
+     0.0
+    ],
+    "max": [
+     10.87,
+     2.0,
+     2.0
+    ],
+    "centre": [
+     10.57,
+     2.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A05-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3492,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     10.88,
+     2.0,
+     0.0
+    ],
+    "max": [
+     11.48,
+     2.0,
+     2.0
+    ],
+    "centre": [
+     11.18,
+     2.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A06-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3510,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     11.49,
+     2.0,
+     0.0
+    ],
+    "max": [
+     12.09,
+     2.0,
+     2.0
+    ],
+    "centre": [
+     11.79,
+     2.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A07-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3528,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     12.1,
+     2.0,
+     0.0
+    ],
+    "max": [
+     12.7,
+     2.0,
+     2.0
+    ],
+    "centre": [
+     12.4,
+     2.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A08-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3546,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     12.71,
+     2.0,
+     0.0
+    ],
+    "max": [
+     13.31,
+     2.0,
+     2.0
+    ],
+    "centre": [
+     13.01,
+     2.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A09-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3564,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     13.32,
+     2.0,
+     0.0
+    ],
+    "max": [
+     13.92,
+     2.0,
+     2.0
+    ],
+    "centre": [
+     13.62,
+     2.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A10-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3582,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     13.93,
+     2.0,
+     0.0
+    ],
+    "max": [
+     14.53,
+     2.0,
+     2.0
+    ],
+    "centre": [
+     14.23,
+     2.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A11-NET_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3600,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     14.54,
+     2.0,
+     0.0
+    ],
+    "max": [
+     15.14,
+     2.0,
+     2.0
+    ],
+    "centre": [
+     14.84,
+     2.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A12-NET_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3618,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     15.15,
+     2.0,
+     0.0
+    ],
+    "max": [
+     15.75,
+     2.0,
+     2.0
+    ],
+    "centre": [
+     15.45,
+     2.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B01-NET_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3636,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     8.44,
+     6.2,
+     0.0
+    ],
+    "max": [
+     9.04,
+     6.2,
+     2.0
+    ],
+    "centre": [
+     8.74,
+     6.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B02-NET_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3654,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     9.05,
+     6.2,
+     0.0
+    ],
+    "max": [
+     9.65,
+     6.2,
+     2.0
+    ],
+    "centre": [
+     9.35,
+     6.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B03-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3672,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     9.66,
+     6.2,
+     0.0
+    ],
+    "max": [
+     10.26,
+     6.2,
+     2.0
+    ],
+    "centre": [
+     9.96,
+     6.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B04-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3690,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     10.27,
+     6.2,
+     0.0
+    ],
+    "max": [
+     10.87,
+     6.2,
+     2.0
+    ],
+    "centre": [
+     10.57,
+     6.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B05-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3708,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     10.88,
+     6.2,
+     0.0
+    ],
+    "max": [
+     11.48,
+     6.2,
+     2.0
+    ],
+    "centre": [
+     11.18,
+     6.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B06-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3726,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     11.49,
+     6.2,
+     0.0
+    ],
+    "max": [
+     12.09,
+     6.2,
+     2.0
+    ],
+    "centre": [
+     11.79,
+     6.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B07-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3744,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     12.1,
+     6.2,
+     0.0
+    ],
+    "max": [
+     12.7,
+     6.2,
+     2.0
+    ],
+    "centre": [
+     12.4,
+     6.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B08-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3762,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     12.71,
+     6.2,
+     0.0
+    ],
+    "max": [
+     13.31,
+     6.2,
+     2.0
+    ],
+    "centre": [
+     13.01,
+     6.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B09-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3780,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     13.32,
+     6.2,
+     0.0
+    ],
+    "max": [
+     13.92,
+     6.2,
+     2.0
+    ],
+    "centre": [
+     13.62,
+     6.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B10-HD_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3798,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     13.93,
+     6.2,
+     0.0
+    ],
+    "max": [
+     14.53,
+     6.2,
+     2.0
+    ],
+    "centre": [
+     14.23,
+     6.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B11-NET_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3816,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     14.54,
+     6.2,
+     0.0
+    ],
+    "max": [
+     15.14,
+     6.2,
+     2.0
+    ],
+    "centre": [
+     14.84,
+     6.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B12-NET_intake",
+   "group": "rack_intake_faces",
+   "source": "racks_intake.stl",
+   "offset": 3834,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     15.15,
+     6.2,
+     0.0
+    ],
+    "max": [
+     15.75,
+     6.2,
+     2.0
+    ],
+    "centre": [
+     15.45,
+     6.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A01-NET_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 3852,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     8.44,
+     3.2,
+     0.0
+    ],
+    "max": [
+     9.04,
+     3.2,
+     2.0
+    ],
+    "centre": [
+     8.74,
+     3.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A02-NET_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 3870,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     9.05,
+     3.2,
+     0.0
+    ],
+    "max": [
+     9.65,
+     3.2,
+     2.0
+    ],
+    "centre": [
+     9.35,
+     3.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A03-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 3888,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     9.66,
+     3.2,
+     0.0
+    ],
+    "max": [
+     10.26,
+     3.2,
+     2.0
+    ],
+    "centre": [
+     9.96,
+     3.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A04-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 3906,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     10.27,
+     3.2,
+     0.0
+    ],
+    "max": [
+     10.87,
+     3.2,
+     2.0
+    ],
+    "centre": [
+     10.57,
+     3.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A05-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 3924,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     10.88,
+     3.2,
+     0.0
+    ],
+    "max": [
+     11.48,
+     3.2,
+     2.0
+    ],
+    "centre": [
+     11.18,
+     3.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A06-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 3942,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     11.49,
+     3.2,
+     0.0
+    ],
+    "max": [
+     12.09,
+     3.2,
+     2.0
+    ],
+    "centre": [
+     11.79,
+     3.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A07-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 3960,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     12.1,
+     3.2,
+     0.0
+    ],
+    "max": [
+     12.7,
+     3.2,
+     2.0
+    ],
+    "centre": [
+     12.4,
+     3.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A08-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 3978,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     12.71,
+     3.2,
+     0.0
+    ],
+    "max": [
+     13.31,
+     3.2,
+     2.0
+    ],
+    "centre": [
+     13.01,
+     3.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A09-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 3996,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     13.32,
+     3.2,
+     0.0
+    ],
+    "max": [
+     13.92,
+     3.2,
+     2.0
+    ],
+    "centre": [
+     13.62,
+     3.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A10-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4014,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     13.93,
+     3.2,
+     0.0
+    ],
+    "max": [
+     14.53,
+     3.2,
+     2.0
+    ],
+    "centre": [
+     14.23,
+     3.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A11-NET_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4032,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     14.54,
+     3.2,
+     0.0
+    ],
+    "max": [
+     15.14,
+     3.2,
+     2.0
+    ],
+    "centre": [
+     14.84,
+     3.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_A12-NET_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4050,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     15.15,
+     3.2,
+     0.0
+    ],
+    "max": [
+     15.75,
+     3.2,
+     2.0
+    ],
+    "centre": [
+     15.45,
+     3.2,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B01-NET_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4068,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     8.44,
+     5.0,
+     0.0
+    ],
+    "max": [
+     9.04,
+     5.0,
+     2.0
+    ],
+    "centre": [
+     8.74,
+     5.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B02-NET_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4086,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     9.05,
+     5.0,
+     0.0
+    ],
+    "max": [
+     9.65,
+     5.0,
+     2.0
+    ],
+    "centre": [
+     9.35,
+     5.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B03-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4104,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     9.66,
+     5.0,
+     0.0
+    ],
+    "max": [
+     10.26,
+     5.0,
+     2.0
+    ],
+    "centre": [
+     9.96,
+     5.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B04-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4122,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     10.27,
+     5.0,
+     0.0
+    ],
+    "max": [
+     10.87,
+     5.0,
+     2.0
+    ],
+    "centre": [
+     10.57,
+     5.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B05-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4140,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     10.88,
+     5.0,
+     0.0
+    ],
+    "max": [
+     11.48,
+     5.0,
+     2.0
+    ],
+    "centre": [
+     11.18,
+     5.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B06-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4158,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     11.49,
+     5.0,
+     0.0
+    ],
+    "max": [
+     12.09,
+     5.0,
+     2.0
+    ],
+    "centre": [
+     11.79,
+     5.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B07-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4176,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     12.1,
+     5.0,
+     0.0
+    ],
+    "max": [
+     12.7,
+     5.0,
+     2.0
+    ],
+    "centre": [
+     12.4,
+     5.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B08-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4194,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     12.71,
+     5.0,
+     0.0
+    ],
+    "max": [
+     13.31,
+     5.0,
+     2.0
+    ],
+    "centre": [
+     13.01,
+     5.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B09-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4212,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     13.32,
+     5.0,
+     0.0
+    ],
+    "max": [
+     13.92,
+     5.0,
+     2.0
+    ],
+    "centre": [
+     13.62,
+     5.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B10-HD_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4230,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     13.93,
+     5.0,
+     0.0
+    ],
+    "max": [
+     14.53,
+     5.0,
+     2.0
+    ],
+    "centre": [
+     14.23,
+     5.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B11-NET_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4248,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     14.54,
+     5.0,
+     0.0
+    ],
+    "max": [
+     15.14,
+     5.0,
+     2.0
+    ],
+    "centre": [
+     14.84,
+     5.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "rack_B12-NET_exhaust",
+   "group": "rack_exhaust_faces",
+   "source": "racks_exhaust.stl",
+   "offset": 4266,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     15.15,
+     5.0,
+     0.0
+    ],
+    "max": [
+     15.75,
+     5.0,
+     2.0
+    ],
+    "centre": [
+     15.45,
+     5.0,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "fanwall_w",
+   "group": "fanwalls",
+   "source": "fanwall_w_body.stl",
+   "offset": 4284,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     2.0,
+     2.1,
+     0.0
+    ],
+    "max": [
+     3.6,
+     6.1,
+     4.0
+    ],
+    "centre": [
+     2.8,
+     4.1,
+     2.0
+    ]
+   }
+  },
+  {
+   "name": "fanwall_e",
+   "group": "fanwalls",
+   "source": "fanwall_e_body.stl",
+   "offset": 4392,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     20.53,
+     2.1,
+     0.0
+    ],
+    "max": [
+     22.13,
+     6.1,
+     4.0
+    ],
+    "centre": [
+     21.33,
+     4.1,
+     2.0
+    ]
+   }
+  },
+  {
+   "name": "fw_w_supply_m1",
+   "group": "supply_faces",
+   "source": "fw_w_supply_m1.stl",
+   "offset": 4500,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     3.6,
+     2.1,
+     0.0
+    ],
+    "max": [
+     3.6,
+     6.1,
+     2.0
+    ],
+    "centre": [
+     3.6,
+     4.1,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "fw_w_supply_m2",
+   "group": "supply_faces",
+   "source": "fw_w_supply_m2.stl",
+   "offset": 4518,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     3.6,
+     2.1,
+     2.0
+    ],
+    "max": [
+     3.6,
+     6.1,
+     4.0
+    ],
+    "centre": [
+     3.6,
+     4.1,
+     3.0
+    ]
+   }
+  },
+  {
+   "name": "fw_e_supply_m1",
+   "group": "supply_faces",
+   "source": "fw_e_supply_m1.stl",
+   "offset": 4536,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     20.53,
+     2.1,
+     0.0
+    ],
+    "max": [
+     20.53,
+     6.1,
+     2.0
+    ],
+    "centre": [
+     20.53,
+     4.1,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "fw_e_supply_m2",
+   "group": "supply_faces",
+   "source": "fw_e_supply_m2.stl",
+   "offset": 4554,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     20.53,
+     2.1,
+     2.0
+    ],
+    "max": [
+     20.53,
+     6.1,
+     4.0
+    ],
+    "centre": [
+     20.53,
+     4.1,
+     3.0
+    ]
+   }
+  },
+  {
+   "name": "fw_w_intake_m1",
+   "group": "intake_faces",
+   "source": "fw_w_intake_m1.stl",
+   "offset": 4572,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     2.0,
+     2.1,
+     0.0
+    ],
+    "max": [
+     2.0,
+     6.1,
+     2.0
+    ],
+    "centre": [
+     2.0,
+     4.1,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "fw_w_intake_m2",
+   "group": "intake_faces",
+   "source": "fw_w_intake_m2.stl",
+   "offset": 4590,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     2.0,
+     2.1,
+     2.0
+    ],
+    "max": [
+     2.0,
+     6.1,
+     4.0
+    ],
+    "centre": [
+     2.0,
+     4.1,
+     3.0
+    ]
+   }
+  },
+  {
+   "name": "fw_e_intake_m1",
+   "group": "intake_faces",
+   "source": "fw_e_intake_m1.stl",
+   "offset": 4608,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     22.13,
+     2.1,
+     0.0
+    ],
+    "max": [
+     22.13,
+     6.1,
+     2.0
+    ],
+    "centre": [
+     22.13,
+     4.1,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "fw_e_intake_m2",
+   "group": "intake_faces",
+   "source": "fw_e_intake_m2.stl",
+   "offset": 4626,
+   "floats": 18,
+   "triangles": 2,
+   "bbox": {
+    "min": [
+     22.13,
+     2.1,
+     2.0
+    ],
+    "max": [
+     22.13,
+     6.1,
+     4.0
+    ],
+    "centre": [
+     22.13,
+     4.1,
+     3.0
+    ]
+   }
+  },
+  {
+   "name": "hac_door_w",
+   "group": "hac",
+   "source": "hac.stl",
+   "offset": 4644,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     8.335,
+     3.2,
+     0.0
+    ],
+    "max": [
+     8.435,
+     5.0,
+     2.0
+    ],
+    "centre": [
+     8.385,
+     4.1,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "hac_door_e",
+   "group": "hac",
+   "source": "hac.stl",
+   "offset": 4752,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     15.755,
+     3.2,
+     0.0
+    ],
+    "max": [
+     15.855,
+     5.0,
+     2.0
+    ],
+    "centre": [
+     15.805,
+     4.1,
+     1.0
+    ]
+   }
+  },
+  {
+   "name": "hac_baffle_a",
+   "group": "hac",
+   "source": "hac.stl",
+   "offset": 4860,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     8.435,
+     3.2,
+     2.0
+    ],
+    "max": [
+     15.755,
+     3.3,
+     3.96
+    ],
+    "centre": [
+     12.095,
+     3.25,
+     2.98
+    ]
+   }
+  },
+  {
+   "name": "hac_baffle_b",
+   "group": "hac",
+   "source": "hac.stl",
+   "offset": 4968,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     8.435,
+     4.9,
+     2.0
+    ],
+    "max": [
+     15.755,
+     5.0,
+     3.96
+    ],
+    "centre": [
+     12.095,
+     4.95,
+     2.98
+    ]
+   }
+  },
+  {
+   "name": "bh_w_s",
+   "group": "bulkheads",
+   "source": "bulkheads_h3000.stl",
+   "offset": 5076,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     3.6,
+     0.0,
+     0.0
+    ],
+    "max": [
+     3.68,
+     2.1,
+     3.0
+    ],
+    "centre": [
+     3.64,
+     1.05,
+     1.5
+    ]
+   }
+  },
+  {
+   "name": "bh_w_n",
+   "group": "bulkheads",
+   "source": "bulkheads_h3000.stl",
+   "offset": 5184,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     3.6,
+     6.1,
+     0.0
+    ],
+    "max": [
+     3.68,
+     8.2,
+     3.0
+    ],
+    "centre": [
+     3.64,
+     7.15,
+     1.5
+    ]
+   }
+  },
+  {
+   "name": "bh_e_s",
+   "group": "bulkheads",
+   "source": "bulkheads_h3000.stl",
+   "offset": 5292,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     20.45,
+     0.0,
+     0.0
+    ],
+    "max": [
+     20.53,
+     2.1,
+     3.0
+    ],
+    "centre": [
+     20.49,
+     1.05,
+     1.5
+    ]
+   }
+  },
+  {
+   "name": "bh_e_n",
+   "group": "bulkheads",
+   "source": "bulkheads_h3000.stl",
+   "offset": 5400,
+   "floats": 108,
+   "triangles": 12,
+   "bbox": {
+    "min": [
+     20.45,
+     6.1,
+     0.0
+    ],
+    "max": [
+     20.53,
+     8.2,
+     3.0
+    ],
+    "centre": [
+     20.49,
+     7.15,
+     1.5
+    ]
+   }
+  },
+  {
+   "name": "gantry",
+   "group": "gantry",
+   "source": "gantry.stl",
+   "offset": 5508,
+   "floats": 36828,
+   "triangles": 4092,
+   "bbox": {
+    "min": [
+     8.335,
+     1.65,
+     1.8099
+    ],
+    "max": [
+     15.855,
+     6.55,
+     3.9599
+    ],
+    "centre": [
+     12.095,
+     4.1,
+     2.8849
+    ]
+   }
+  }
+ ],
+ "racks": {
+  "A01": {
+   "mesh": "rack_A01-NET",
+   "bbox": {
+    "min": [
+     8.44,
+     2.0,
+     0.0
+    ],
+    "max": [
+     9.04,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     8.74,
+     2.6,
+     1.0
+    ]
+   },
+   "row": "A",
+   "position": 1,
+   "intake": {
+    "centre": [
+     8.74,
+     2.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     8.74,
+     3.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "A02": {
+   "mesh": "rack_A02-NET",
+   "bbox": {
+    "min": [
+     9.05,
+     2.0,
+     0.0
+    ],
+    "max": [
+     9.65,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     9.35,
+     2.6,
+     1.0
+    ]
+   },
+   "row": "A",
+   "position": 2,
+   "intake": {
+    "centre": [
+     9.35,
+     2.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     9.35,
+     3.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "A03": {
+   "mesh": "rack_A03-HD",
+   "bbox": {
+    "min": [
+     9.66,
+     2.0,
+     0.0
+    ],
+    "max": [
+     10.26,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     9.96,
+     2.6,
+     1.0
+    ]
+   },
+   "row": "A",
+   "position": 3,
+   "intake": {
+    "centre": [
+     9.96,
+     2.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     9.96,
+     3.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "A04": {
+   "mesh": "rack_A04-HD",
+   "bbox": {
+    "min": [
+     10.27,
+     2.0,
+     0.0
+    ],
+    "max": [
+     10.87,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     10.57,
+     2.6,
+     1.0
+    ]
+   },
+   "row": "A",
+   "position": 4,
+   "intake": {
+    "centre": [
+     10.57,
+     2.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     10.57,
+     3.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "A05": {
+   "mesh": "rack_A05-HD",
+   "bbox": {
+    "min": [
+     10.88,
+     2.0,
+     0.0
+    ],
+    "max": [
+     11.48,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     11.18,
+     2.6,
+     1.0
+    ]
+   },
+   "row": "A",
+   "position": 5,
+   "intake": {
+    "centre": [
+     11.18,
+     2.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     11.18,
+     3.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "A06": {
+   "mesh": "rack_A06-HD",
+   "bbox": {
+    "min": [
+     11.49,
+     2.0,
+     0.0
+    ],
+    "max": [
+     12.09,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     11.79,
+     2.6,
+     1.0
+    ]
+   },
+   "row": "A",
+   "position": 6,
+   "intake": {
+    "centre": [
+     11.79,
+     2.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     11.79,
+     3.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "A07": {
+   "mesh": "rack_A07-HD",
+   "bbox": {
+    "min": [
+     12.1,
+     2.0,
+     0.0
+    ],
+    "max": [
+     12.7,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     12.4,
+     2.6,
+     1.0
+    ]
+   },
+   "row": "A",
+   "position": 7,
+   "intake": {
+    "centre": [
+     12.4,
+     2.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     12.4,
+     3.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "A08": {
+   "mesh": "rack_A08-HD",
+   "bbox": {
+    "min": [
+     12.71,
+     2.0,
+     0.0
+    ],
+    "max": [
+     13.31,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     13.01,
+     2.6,
+     1.0
+    ]
+   },
+   "row": "A",
+   "position": 8,
+   "intake": {
+    "centre": [
+     13.01,
+     2.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     13.01,
+     3.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "A09": {
+   "mesh": "rack_A09-HD",
+   "bbox": {
+    "min": [
+     13.32,
+     2.0,
+     0.0
+    ],
+    "max": [
+     13.92,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     13.62,
+     2.6,
+     1.0
+    ]
+   },
+   "row": "A",
+   "position": 9,
+   "intake": {
+    "centre": [
+     13.62,
+     2.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     13.62,
+     3.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "A10": {
+   "mesh": "rack_A10-HD",
+   "bbox": {
+    "min": [
+     13.93,
+     2.0,
+     0.0
+    ],
+    "max": [
+     14.53,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     14.23,
+     2.6,
+     1.0
+    ]
+   },
+   "row": "A",
+   "position": 10,
+   "intake": {
+    "centre": [
+     14.23,
+     2.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     14.23,
+     3.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "A11": {
+   "mesh": "rack_A11-NET",
+   "bbox": {
+    "min": [
+     14.54,
+     2.0,
+     0.0
+    ],
+    "max": [
+     15.14,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     14.84,
+     2.6,
+     1.0
+    ]
+   },
+   "row": "A",
+   "position": 11,
+   "intake": {
+    "centre": [
+     14.84,
+     2.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     14.84,
+     3.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "A12": {
+   "mesh": "rack_A12-NET",
+   "bbox": {
+    "min": [
+     15.15,
+     2.0,
+     0.0
+    ],
+    "max": [
+     15.75,
+     3.2,
+     1.9999
+    ],
+    "centre": [
+     15.45,
+     2.6,
+     1.0
+    ]
+   },
+   "row": "A",
+   "position": 12,
+   "intake": {
+    "centre": [
+     15.45,
+     2.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     15.45,
+     3.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "B01": {
+   "mesh": "rack_B01-NET",
+   "bbox": {
+    "min": [
+     8.44,
+     5.0,
+     0.0
+    ],
+    "max": [
+     9.04,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     8.74,
+     5.6,
+     1.0
+    ]
+   },
+   "row": "B",
+   "position": 1,
+   "intake": {
+    "centre": [
+     8.74,
+     6.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     8.74,
+     5.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "B02": {
+   "mesh": "rack_B02-NET",
+   "bbox": {
+    "min": [
+     9.05,
+     5.0,
+     0.0
+    ],
+    "max": [
+     9.65,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     9.35,
+     5.6,
+     1.0
+    ]
+   },
+   "row": "B",
+   "position": 2,
+   "intake": {
+    "centre": [
+     9.35,
+     6.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     9.35,
+     5.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "B03": {
+   "mesh": "rack_B03-HD",
+   "bbox": {
+    "min": [
+     9.66,
+     5.0,
+     0.0
+    ],
+    "max": [
+     10.26,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     9.96,
+     5.6,
+     1.0
+    ]
+   },
+   "row": "B",
+   "position": 3,
+   "intake": {
+    "centre": [
+     9.96,
+     6.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     9.96,
+     5.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "B04": {
+   "mesh": "rack_B04-HD",
+   "bbox": {
+    "min": [
+     10.27,
+     5.0,
+     0.0
+    ],
+    "max": [
+     10.87,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     10.57,
+     5.6,
+     1.0
+    ]
+   },
+   "row": "B",
+   "position": 4,
+   "intake": {
+    "centre": [
+     10.57,
+     6.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     10.57,
+     5.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "B05": {
+   "mesh": "rack_B05-HD",
+   "bbox": {
+    "min": [
+     10.88,
+     5.0,
+     0.0
+    ],
+    "max": [
+     11.48,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     11.18,
+     5.6,
+     1.0
+    ]
+   },
+   "row": "B",
+   "position": 5,
+   "intake": {
+    "centre": [
+     11.18,
+     6.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     11.18,
+     5.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "B06": {
+   "mesh": "rack_B06-HD",
+   "bbox": {
+    "min": [
+     11.49,
+     5.0,
+     0.0
+    ],
+    "max": [
+     12.09,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     11.79,
+     5.6,
+     1.0
+    ]
+   },
+   "row": "B",
+   "position": 6,
+   "intake": {
+    "centre": [
+     11.79,
+     6.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     11.79,
+     5.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "B07": {
+   "mesh": "rack_B07-HD",
+   "bbox": {
+    "min": [
+     12.1,
+     5.0,
+     0.0
+    ],
+    "max": [
+     12.7,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     12.4,
+     5.6,
+     1.0
+    ]
+   },
+   "row": "B",
+   "position": 7,
+   "intake": {
+    "centre": [
+     12.4,
+     6.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     12.4,
+     5.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "B08": {
+   "mesh": "rack_B08-HD",
+   "bbox": {
+    "min": [
+     12.71,
+     5.0,
+     0.0
+    ],
+    "max": [
+     13.31,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     13.01,
+     5.6,
+     1.0
+    ]
+   },
+   "row": "B",
+   "position": 8,
+   "intake": {
+    "centre": [
+     13.01,
+     6.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     13.01,
+     5.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "B09": {
+   "mesh": "rack_B09-HD",
+   "bbox": {
+    "min": [
+     13.32,
+     5.0,
+     0.0
+    ],
+    "max": [
+     13.92,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     13.62,
+     5.6,
+     1.0
+    ]
+   },
+   "row": "B",
+   "position": 9,
+   "intake": {
+    "centre": [
+     13.62,
+     6.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     13.62,
+     5.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "B10": {
+   "mesh": "rack_B10-HD",
+   "bbox": {
+    "min": [
+     13.93,
+     5.0,
+     0.0
+    ],
+    "max": [
+     14.53,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     14.23,
+     5.6,
+     1.0
+    ]
+   },
+   "row": "B",
+   "position": 10,
+   "intake": {
+    "centre": [
+     14.23,
+     6.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     14.23,
+     5.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "B11": {
+   "mesh": "rack_B11-NET",
+   "bbox": {
+    "min": [
+     14.54,
+     5.0,
+     0.0
+    ],
+    "max": [
+     15.14,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     14.84,
+     5.6,
+     1.0
+    ]
+   },
+   "row": "B",
+   "position": 11,
+   "intake": {
+    "centre": [
+     14.84,
+     6.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     14.84,
+     5.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  },
+  "B12": {
+   "mesh": "rack_B12-NET",
+   "bbox": {
+    "min": [
+     15.15,
+     5.0,
+     0.0
+    ],
+    "max": [
+     15.75,
+     6.2,
+     1.9999
+    ],
+    "centre": [
+     15.45,
+     5.6,
+     1.0
+    ]
+   },
+   "row": "B",
+   "position": 12,
+   "intake": {
+    "centre": [
+     15.45,
+     6.2,
+     1.0
+    ],
+    "normal": [
+     0.0,
+     1.0,
+     0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   },
+   "exhaust": {
+    "centre": [
+     15.45,
+     5.0,
+     1.0
+    ],
+    "normal": [
+     -0.0,
+     -1.0,
+     -0.0
+    ],
+    "extent": [
+     0.6,
+     0.0,
+     2.0
+    ],
+    "axis": "y",
+    "area": 1.2
+   }
+  }
+ },
+ "modules": {
+  "W1": {
+   "end": "west",
+   "supply": {
+    "centre": [
+     3.6,
+     4.1,
+     1.0
+    ],
+    "normal": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "extent": [
+     0.0,
+     4.0,
+     2.0
+    ],
+    "axis": "x",
+    "area": 8.0
+   },
+   "intake": {
+    "centre": [
+     2.0,
+     4.1,
+     1.0
+    ],
+    "normal": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "extent": [
+     0.0,
+     4.0,
+     2.0
+    ],
+    "axis": "x",
+    "area": 8.0
+   }
+  },
+  "W2": {
+   "end": "west",
+   "supply": {
+    "centre": [
+     3.6,
+     4.1,
+     3.0
+    ],
+    "normal": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "extent": [
+     0.0,
+     4.0,
+     2.0
+    ],
+    "axis": "x",
+    "area": 8.0
+   },
+   "intake": {
+    "centre": [
+     2.0,
+     4.1,
+     3.0
+    ],
+    "normal": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "extent": [
+     0.0,
+     4.0,
+     2.0
+    ],
+    "axis": "x",
+    "area": 8.0
+   }
+  },
+  "E1": {
+   "end": "east",
+   "supply": {
+    "centre": [
+     20.53,
+     4.1,
+     1.0
+    ],
+    "normal": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "extent": [
+     0.0,
+     4.0,
+     2.0
+    ],
+    "axis": "x",
+    "area": 8.0
+   },
+   "intake": {
+    "centre": [
+     22.13,
+     4.1,
+     1.0
+    ],
+    "normal": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "extent": [
+     0.0,
+     4.0,
+     2.0
+    ],
+    "axis": "x",
+    "area": 8.0
+   }
+  },
+  "E2": {
+   "end": "east",
+   "supply": {
+    "centre": [
+     20.53,
+     4.1,
+     3.0
+    ],
+    "normal": [
+     -1.0,
+     0.0,
+     0.0
+    ],
+    "extent": [
+     0.0,
+     4.0,
+     2.0
+    ],
+    "axis": "x",
+    "area": 8.0
+   },
+   "intake": {
+    "centre": [
+     22.13,
+     4.1,
+     3.0
+    ],
+    "normal": [
+     1.0,
+     0.0,
+     0.0
+    ],
+    "extent": [
+     0.0,
+     4.0,
+     2.0
+    ],
+    "axis": "x",
+    "area": 8.0
+   }
+  }
+ },
+ "fanwall_bodies": {
+  "west": {
+   "min": [
+    2.0,
+    2.1,
+    0.0
+   ],
+   "max": [
+    3.6,
+    6.1,
+    4.0
+   ],
+   "centre": [
+    2.8,
+    4.1,
+    2.0
+   ]
+  },
+  "east": {
+   "min": [
+    20.53,
+    2.1,
+    0.0
+   ],
+   "max": [
+    22.13,
+    6.1,
+    4.0
+   ],
+   "centre": [
+    21.33,
+    4.1,
+    2.0
+   ]
+  }
+ },
+ "room": {
+  "x": [
+   0.0,
+   24.13
+  ],
+  "y": [
+   0.0,
+   8.2
+  ],
+  "eave": 4.09,
+  "apex": 4.7860000000000005
+ },
+ "hot_aisle": {
+  "x": [
+   8.435,
+   15.755
+  ],
+  "y": [
+   3.2,
+   5.0
+  ],
+  "baffle_z": [
+   2.0,
+   3.96
+  ],
+  "open_top": true
+ }
+}

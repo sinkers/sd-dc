@@ -1,0 +1,21 @@
+# SYNTHETIC TEST FIXTURE - not from any standard. 
+construction,size_mm2,x_ohm_per_km
+multicore,1.5,0.08
+multicore,2.5,0.08
+multicore,4,0.08
+multicore,6,0.08
+multicore,10,0.08
+multicore,16,0.08
+multicore,25,0.08
+multicore,35,0.08
+multicore,50,0.08
+multicore,70,0.08
+multicore,95,0.08
+multicore,120,0.08
+multicore,150,0.08
+multicore,185,0.08
+multicore,240,0.08
+multicore,300,0.08
+multicore,400,0.08
+multicore,500,0.08
+multicore,630,0.08

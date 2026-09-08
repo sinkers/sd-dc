@@ -1,0 +1,46 @@
+
+  thermal envelope: ASHRAE A2  (allowable 35 C, recommended 27 C)
+
+====================================================================
+  HALL COOLING RESULT   (case-hall)
+====================================================================
+  IT load                           864 kW   (24 racks x 36 kW)
+  fan wall capacity                 950 kW   (91 % utilised)
+  supply air                       28.0 degC
+
+  rack intake, coldest rack       28.02 degC
+  rack intake, mean of racks      28.48 degC
+  rack intake, hottest rack       29.45 degC   limit 35 (allowable)
+  worst peak on any rack face     33.88 degC
+  spread across the hall           1.42 K
+
+  total supply                    84.78 kg/s
+  total through racks             72.63 kg/s   (86 % of supply)
+  airflow spread rack to rack      39.1 %
+  return air to the units          38.18 degC   (rated RAT 37)
+
+--------------------------------------------------------------------
+  PASS - every rack is within the ASHRAE A2 allowable range on both
+         mean and peak. Headroom to allowable: 1.12 K on the worst face.
+         Note: the 28 degC supply is itself above the 27 degC recommended
+         limit, so this design uses the allowable envelope by choice.
+====================================================================
+
+    rack   mean C   peak C  flow kg/s     rack   mean C   peak C  flow kg/s
+     A00    29.29    33.51      2.272      B00    29.10    32.93      2.707
+     A01    28.02    28.08      3.405      B01    28.23    28.52      3.455
+     A02    28.17    28.28      3.234      B02    28.29    28.36      3.183
+     A03    28.27    28.30      3.165      B03    28.34    28.61      2.944
+     A04    28.28    28.33      3.174      B04    28.30    28.54      3.256
+     A05    28.30    28.34      3.192      B05    28.29    28.35      3.107
+     A06    28.31    28.37      3.142      B06    28.35    28.62      2.954
+     A07    28.32    28.39      3.033      B07    28.51    29.00      2.603
+     A08    28.28    28.32      3.159      B08    28.50    30.75      2.914
+     A09    28.28    28.73      3.105      B09    28.48    31.31      2.999
+     A10    28.32    30.44      3.420      B10    28.44    31.92      3.300
+     A11    29.42    33.61      2.412      B11    29.45    33.88      2.498
+
+  achieved rack dT 11.84 K (nameplate 15 K) -> exhaust 39.8 degC
+
+wrote case-hall/hall_racks.png
+wrote case-hall/hall_plan.png

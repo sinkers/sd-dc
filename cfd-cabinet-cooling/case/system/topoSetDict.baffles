@@ -1,0 +1,65 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Step 3: solid internal surfaces, collected into ONE face zone that           |
+| createBaffles turns into zero-thickness adiabatic walls.                     |
+|                                                                             |
+|   - plenum floor       (z = unitHeight, x = unitDepth .. cabinetX1)          |
+|   - cabinet top        (z = cabinetHeight, x = cabinetX0 .. cabinetX1)       |
+|   - containment panel  (x = cabinetX1, z = cabinetHeight .. containmentTopZ) |
+|                                                                             |
+| Deliberately left open:                                                      |
+|   - cabinet front / rear below cabinetHeight  -> server air path             |
+|   - x = cabinetX1 above containmentTopZ       -> containment leakage gap     |
+|   - z = unitHeight beyond cabinetX1           -> hot aisle riser into plenum |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      topoSetDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#include "simulationParameters"
+
+actions
+(
+    // Plenum floor: separates the cold aisle below from the return plenum above.
+    // Stops at cabinetX1 so the hot aisle stays open to the plenum.
+    {
+        name    internalWallFaces;
+        type    faceSet;
+        action  new;
+        source  boxToFace;
+        box     ($unitDepthM $rowY0M $unitHeightM) ($cabinetX1P $rowY1P $unitHeightP);
+    }
+
+    // Cabinet top panel.
+    {
+        name    internalWallFaces;
+        type    faceSet;
+        action  add;
+        source  boxToFace;
+        box     ($cabinetX0M $rowY0M $cabinetHeightM) ($cabinetX1P $rowY1P $cabinetHeightP);
+    }
+
+    // Containment panel from the cabinet top up to containmentTopZ.
+    // Selects nothing when containmentTopZ == cabinetHeight (no containment).
+    {
+        name    internalWallFaces;
+        type    faceSet;
+        action  add;
+        source  boxToFace;
+        box     ($cabinetX1M $rowY0M $cabinetHeightM) ($cabinetX1P $rowY1P $containmentTopZP);
+    }
+
+    {
+        name    internalWallsZone;
+        type    faceZoneSet;
+        action  new;
+        source  setToFaceZone;
+        faceSet internalWallFaces;
+    }
+);
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

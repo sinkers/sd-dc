@@ -1,0 +1,16 @@
+{
+  "name": "one training run, cooling untouched",
+  "description": "Baseline auto-mode behaviour: ramp, sustained grind, checkpoint dips, an eval pause. Nothing is wrong with the cooling, so this is the reference trace for what a healthy hall looks like under a swinging GPU load.",
+  "duration_s": 3600,
+  "sample_s": 15,
+  "mode": "auto",
+  "seed": 3,
+  "settle": true,
+  "profile": {
+    "checkpoint_interval_s": 420.0,
+    "checkpoint_duration_s": 45.0,
+    "eval_every_n_checkpoints": 3,
+    "straggler_rate_per_hour": 2.0
+  },
+  "commands": []
+}

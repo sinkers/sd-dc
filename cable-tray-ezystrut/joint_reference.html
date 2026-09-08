@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cable Tray Joint Reference - Ezystrut</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; padding: 40px; }
+h1 { font-size: 28px; margin-bottom: 8px; }
+.subtitle { color: #666; margin-bottom: 40px; font-size: 14px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1400px; margin: 0 auto; }
+.card { background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden; }
+.card-header { background: #cc0000; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+.card-header .num { background: rgba(255,255,255,0.2); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+.card-header h2 { font-size: 16px; font-weight: 600; }
+.card-body { padding: 20px; }
+.diagram { background: #1a1a2e; border-radius: 8px; padding: 20px; margin-bottom: 16px; min-height: 180px; display: flex; align-items: center; justify-content: center; }
+.diagram svg { max-width: 100%; height: auto; }
+.meta { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; }
+.meta-item { background: #f8f8f8; border-radius: 6px; padding: 10px 12px; }
+.meta-item .label { font-weight: 600; color: #666; font-size: 11px; text-transform: uppercase; margin-bottom: 4px; }
+.meta-item .value { color: #222; line-height: 1.4; }
+.meta-item.full { grid-column: 1 / -1; }
+.systems { display: flex; gap: 6px; flex-wrap: wrap; }
+.sys-tag { background: #e8e8e8; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+.sys-tag.et5 { background: #dcedc8; color: #33691e; }
+.sys-tag.nema { background: #bbdefb; color: #0d47a1; }
+.sys-tag.ct { background: #fff3e0; color: #e65100; }
+.legend { max-width: 1400px; margin: 40px auto 30px; background: #fff; border-radius: 12px; padding: 20px 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.legend h3 { margin-bottom: 12px; font-size: 14px; }
+.legend-items { display: flex; gap: 24px; flex-wrap: wrap; font-size: 13px; }
+.legend-item { display: flex; align-items: center; gap: 8px; }
+.legend-swatch { width: 24px; height: 14px; border-radius: 3px; }
+.prohibited { max-width: 1400px; margin: 30px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden; }
+.prohibited-header { background: #b71c1c; color: #fff; padding: 16px 24px; }
+.prohibited-body { padding: 20px 24px; }
+.prohibited-item { border-bottom: 1px solid #eee; padding: 12px 0; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; font-size: 13px; }
+.prohibited-item:last-child { border-bottom: none; }
+.prohibited-item .wrong { color: #b71c1c; font-weight: 600; }
+.prohibited-item .why { color: #666; }
+.prohibited-item .correct { color: #2e7d32; }
+</style>
+</head>
+<body>
+
+<h1>Cable Tray Joint Reference</h1>
+<p class="subtitle">Ezystrut ET5 / NEMA3 / CT Systems — Every connection type with correct construction method</p>
+
+<div class="legend">
+<h3>Colour Key (matching FreeCAD model)</h3>
+<div class="legend-items">
+<div class="legend-item"><div class="legend-swatch" style="background:#b0b0b0"></div>Cable tray sections</div>
+<div class="legend-item"><div class="legend-swatch" style="background:#e6c619"></div>Splice plates (S)</div>
+<div class="legend-item"><div class="legend-swatch" style="background:#4caf50"></div>Radius plates (RP)</div>
+<div class="legend-item"><div class="legend-swatch" style="background:#2196f3"></div>TX brackets (tee/cross)</div>
+<div class="legend-item"><div class="legend-swatch" style="background:#ff7043"></div>Riser links (RL)</div>
+<div class="legend-item"><div class="legend-swatch" style="background:#78909c"></div>CT fittings (factory)</div>
+</div>
+</div>
+
+<div class="grid">
+
+<!-- JOINT 1 -->
+<div class="card">
+<div class="card-header"><div class="num">1</div><h2>Straight Splice</h2></div>
+<div class="card-body">
+<div class="diagram">
+<svg width="400" height="120" viewBox="0 0 400 120">
+<!-- Tray 1 -->
+<rect x="20" y="40" width="160" height="6" fill="#b0b0b0"/>
+<rect x="20" y="40" width="6" height="50" fill="#b0b0b0"/>
+<rect x="174" y="40" width="6" height="50" fill="#b0b0b0"/>
+<rect x="20" y="84" width="160" height="6" fill="#b0b0b0"/>
+<!-- Gap -->
+<rect x="180" y="40" width="8" height="50" fill="none" stroke="#666" stroke-dasharray="2"/>
+<!-- Tray 2 -->
+<rect x="188" y="40" width="160" height="6" fill="#b0b0b0"/>
+<rect x="188" y="40" width="6" height="50" fill="#b0b0b0"/>
+<rect x="342" y="40" width="6" height="50" fill="#b0b0b0"/>
+<rect x="188" y="84" width="160" height="6" fill="#b0b0b0"/>
+<!-- Splice plates (yellow, on outside) -->
+<rect x="130" y="36" width="100" height="4" fill="#e6c619" rx="1"/>
+<rect x="130" y="90" width="100" height="4" fill="#e6c619" rx="1"/>
+<!-- Labels -->
+<text x="90" y="110" font-size="10" fill="#999" text-anchor="middle">TRAY 1</text>
+<text x="184" y="25" font-size="9" fill="#e6c619" text-anchor="middle">SPLICE (outside)</text>
+<text x="280" y="110" font-size="10" fill="#999" text-anchor="middle">TRAY 2</text>
+<text x="184" y="70" font-size="8" fill="#666" text-anchor="middle">5mm gap</text>
+</svg>
+</div>
+<div class="meta">
+<div class="meta-item"><div class="label">Systems</div><div class="systems"><span class="sys-tag et5">ET3/ET5</span><span class="sys-tag nema">NEMA</span><span class="sys-tag ct">CT</span></div></div>
+<div class="meta-item"><div class="label">Hardware</div><div class="value">2× splice plates + SBH/CNH bolts</div></div>
+<div class="meta-item full"><div class="label">Use In Data Centre</div><div class="value">Every straight run longer than one tray length (3m ET / 6m NEMA). Main corridors, within data halls, risers.</div></div>
+<div class="meta-item full"><div class="label">Rule</div><div class="value">Splice sits on OUTSIDE of rails. Smooth bolt heads face INSIDE (won't damage cables). Gap 3-5mm between tray ends.</div></div>
+</div>
+</div>
+</div>
+
+<!-- JOINT 2 -->
+<div class="card">
+<div class="card-header"><div class="num">2</div><h2>90° Horizontal Bend (NEMA — Factory Fitting)</h2></div>
+<div class="card-body">
+<div class="diagram">
+<svg width="400" height="180" viewBox="0 0 400 180">
+<!-- Straight in -->
+<rect x="20" y="70" width="100" height="6" fill="#b0b0b0"/>
+<rect x="20" y="70" width="6" height="40" fill="#b0b0b0"/>
+<rect x="20" y="104" width="100" height="6" fill="#b0b0b0"/>
+<rect x="114" y="70" width="6" height="40" fill="#b0b0b0"/>
+<!-- Splice 1 -->
+<rect x="105" y="66" width="30" height="4" fill="#e6c619" rx="1"/>
+<rect x="105" y="110" width="30" height="4" fill="#e6c619" rx="1"/>
+<!-- Bend fitting (arc approximation) -->
+<path d="M 135 70 Q 135 10, 200 10" fill="none" stroke="#78909c" stroke-width="6"/>
+<path d="M 135 110 Q 175 50, 240 50" fill="none" stroke="#78909c" stroke-width="6"/>
+<!-- Splice 2 -->
+<rect x="195" y="6" width="4" height="30" fill="#e6c619" rx="1"/>
+<rect x="235" y="6" width="4" height="30" fill="#e6c619" rx="1"/>
+<!-- Straight out (vertical direction) -->
+<rect x="200" y="10" width="6" height="100" fill="none"/>
+<rect x="200" y="10" width="40" height="6" fill="#b0b0b0"/>
+<rect x="200" y="10" width="6" height="100" fill="#b0b0b0"/>
+<rect x="234" y="10" width="6" height="100" fill="#b0b0b0"/>
+<!-- Labels -->
+<text x="70" y="130" font-size="9" fill="#999" text-anchor="middle">STRAIGHT IN</text>
+<text x="120" y="150" font-size="9" fill="#e6c619" text-anchor="middle">SPLICE</text>
+<text x="170" y="45" font-size="9" fill="#78909c">BEND FITTING</text>
+<text x="255" y="60" font-size="9" fill="#999">STRAIGHT OUT</text>
+<text x="255" y="25" font-size="9" fill="#e6c619">SPLICE</text>
+</svg>
+</div>
+<div class="meta">
+<div class="meta-item"><div class="label">Systems</div><div class="systems"><span class="sys-tag nema">NEMA</span><span class="sys-tag ct">CT</span></div></div>
+<div class="meta-item"><div class="label">Hardware</div><div class="value">1× bend fitting + 4× splice plates (NEMA) or taper-fit (CT)</div></div>
+<div class="meta-item"><div class="label">Radius</div><div class="value">NEMA: 300/450mm standard. CT: 150mm fixed.</div></div>
+<div class="meta-item full"><div class="label">Critical Rule</div><div class="value">Bend is a SEPARATE piece. THREE components: Straight → [splice] → Bend → [splice] → Straight. Never model as one continuous piece.</div></div>
+</div>
+</div>
+</div>
+
+<!-- JOINT 3 -->
+<div class="card">
+<div class="card-header"><div class="num">3</div><h2>90° Horizontal Bend (ET5 — Field Fabricated)</h2></div>
+<div class="card-body">
+<div class="diagram">
+<svg width="400" height="160" viewBox="0 0 400 160">
+<!-- Continuous base (key difference - one piece!) -->
+<path d="M 20 90 L 180 90 Q 250 90, 250 30 L 250 10" fill="none" stroke="#b0b0b0" stroke-width="6"/>
+<!-- Side rails (with cuts shown) -->
+<rect x="20" y="80" width="150" height="40" fill="none" stroke="#b0b0b0" stroke-width="2"/>
+<!-- Cut marks in rail -->
+<line x1="170" y1="80" x2="170" y2="120" stroke="#cc0000" stroke-width="2" stroke-dasharray="4"/>
+<line x1="220" y1="50" x2="220" y2="10" stroke="#cc0000" stroke-width="2" stroke-dasharray="4"/>
+<!-- RP underneath (green) -->
+<path d="M 160 96 Q 220 96, 240 50" fill="none" stroke="#4caf50" stroke-width="8" opacity="0.6"/>
+<!-- Splice plates at cuts -->
+<rect x="160" y="76" width="25" height="4" fill="#e6c619" rx="1"/>
+<rect x="160" y="120" width="25" height="4" fill="#e6c619" rx="1"/>
+<!-- Labels -->
+<text x="90" y="140" font-size="9" fill="#999" text-anchor="middle">CONTINUOUS BASE</text>
+<text x="200" y="110" font-size="9" fill="#4caf50">RP underneath</text>
+<text x="170" y="73" font-size="8" fill="#cc0000">cut</text>
+<text x="165" y="137" font-size="8" fill="#e6c619">splice at cut</text>
+<text x="280" y="50" font-size="9" fill="#999">EXIT</text>
+</svg>
+</div>
+<div class="meta">
+<div class="meta-item"><div class="label">Systems</div><div class="systems"><span class="sys-tag et5">ET3/ET5</span></div></div>
+<div class="meta-item"><div class="label">Hardware</div><div class="value">1× Radius Plate (RP) + 2-4× splice plates at rail cuts</div></div>
+<div class="meta-item full"><div class="label">Key Difference from Joint 2</div><div class="value">NO separate bend piece. Tray base is CONTINUOUS (one piece, bent in place). Only the RAILS are cut. RP supports the curve from underneath. Any angle possible.</div></div>
+<div class="meta-item full"><div class="label">Use In Data Centre</div><div class="value">All ET system bends. Custom angles for non-standard geometry. Variable radius (set by RP position from cut).</div></div>
+</div>
+</div>
+</div>
+
+<!-- JOINT 4 -->
+<div class="card">
+<div class="card-header"><div class="num">4</div><h2>Tee Junction (T-intersection)</h2></div>
+<div class="card-body">
+<div class="diagram">
+<svg width="400" height="160" viewBox="0 0 400 160">
+<!-- Main run -->
+<rect x="20" y="50" width="360" height="6" fill="#b0b0b0"/>
+<rect x="20" y="50" width="6" height="40" fill="#b0b0b0"/>
+<rect x="20" y="84" width="360" height="6" fill="#b0b0b0"/>
+<rect x="374" y="50" width="6" height="40" fill="#b0b0b0"/>
+<!-- Cut in bottom rail -->
+<rect x="170" y="84" width="60" height="6" fill="#1a1a2e"/>
+<!-- Branch going down -->
+<rect x="170" y="90" width="6" height="60" fill="#b0b0b0"/>
+<rect x="224" y="90" width="6" height="60" fill="#b0b0b0"/>
+<rect x="170" y="144" width="60" height="6" fill="#b0b0b0"/>
+<!-- TX brackets (blue) -->
+<rect x="165" y="82" width="5" height="20" fill="#2196f3"/>
+<rect x="230" y="82" width="5" height="20" fill="#2196f3"/>
+<!-- Labels -->
+<text x="200" y="40" font-size="9" fill="#999" text-anchor="middle">MAIN RUN (continuous)</text>
+<text x="200" y="140" font-size="9" fill="#999" text-anchor="middle">BRANCH</text>
+<text x="152" y="98" font-size="8" fill="#2196f3">TX</text>
+<text x="238" y="98" font-size="8" fill="#2196f3">TX</text>
+<text x="200" y="80" font-size="8" fill="#cc0000" text-anchor="middle">rail cut</text>
+</svg>
+</div>
+<div class="meta">
+<div class="meta-item"><div class="label">Systems</div><div class="systems"><span class="sys-tag et5">ET3/ET5</span><span class="sys-tag nema">NEMA</span><span class="sys-tag ct">CT</span></div></div>
+<div class="meta-item"><div class="label">Hardware</div><div class="value">ET: 2× TX brackets. NEMA: tee fitting + splices. CT: CTT + WIZZ.</div></div>
+<div class="meta-item full"><div class="label">Construction (ET)</div><div class="value">Cut main tray rail to create opening. Bend cut flap DOWN. Insert branch. TX bracket bolts across joint on both sides of cut. Main base remains unbroken.</div></div>
+<div class="meta-item full"><div class="label">Use In Data Centre</div><div class="value">Main corridor feeding branches to each rack row. Sub-main tray splitting to PDU feeds. BMS tray branching to zones.</div></div>
+</div>
+</div>
+</div>
+
+<!-- JOINT 5 -->
+<div class="card">
+<div class="card-header"><div class="num">5</div><h2>Cross Junction (4-way)</h2></div>
+<div class="card-body">
+<div class="diagram">
+<svg width="400" height="160" viewBox="0 0 400 160">
+<!-- Horizontal arms -->
+<rect x="20" y="60" width="140" height="5" fill="#b0b0b0"/>
+<rect x="240" y="60" width="140" height="5" fill="#b0b0b0"/>
+<rect x="20" y="95" width="140" height="5" fill="#b0b0b0"/>
+<rect x="240" y="95" width="140" height="5" fill="#b0b0b0"/>
+<!-- Vertical arms -->
+<rect x="165" y="10" width="5" height="45" fill="#b0b0b0"/>
+<rect x="165" y="105" width="5" height="45" fill="#b0b0b0"/>
+<rect x="230" y="10" width="5" height="45" fill="#b0b0b0"/>
+<rect x="230" y="105" width="5" height="45" fill="#b0b0b0"/>
+<!-- TX brackets at all 4 cuts -->
+<rect x="158" y="55" width="4" height="15" fill="#2196f3"/>
+<rect x="158" y="90" width="4" height="15" fill="#2196f3"/>
+<rect x="237" y="55" width="4" height="15" fill="#2196f3"/>
+<rect x="237" y="90" width="4" height="15" fill="#2196f3"/>
+<!-- Centre open area -->
+<rect x="170" y="65" width="60" height="30" fill="#1a1a2e" rx="3"/>
+<text x="200" y="84" font-size="8" fill="#666" text-anchor="middle">OPEN</text>
+<!-- Labels -->
+<text x="200" y="155" font-size="9" fill="#999" text-anchor="middle">4× TX brackets at cuts</text>
+</svg>
+</div>
+<div class="meta">
+<div class="meta-item"><div class="label">Systems</div><div class="systems"><span class="sys-tag et5">ET3/ET5</span><span class="sys-tag nema">NEMA</span><span class="sys-tag ct">CT</span></div></div>
+<div class="meta-item"><div class="label">Hardware</div><div class="value">ET: 4× TX brackets. NEMA: cross fitting + 8× splices. CT: CTC + WIZZ.</div></div>
+<div class="meta-item full"><div class="label">Use In Data Centre</div><div class="value">Where N-S and E-W cable routes cross. Central distribution nodes above MSB. Major corridor intersections.</div></div>
+</div>
+</div>
+</div>
+
+<!-- JOINT 6 -->
+<div class="card">
+<div class="card-header"><div class="num">6</div><h2>External Riser (Up)</h2></div>
+<div class="card-body">
+<div class="diagram">
+<svg width="400" height="160" viewBox="0 0 400 160">
+<!-- Horizontal section -->
+<rect x="20" y="110" width="180" height="5" fill="#b0b0b0"/>
+<rect x="20" y="110" width="5" height="35" fill="#b0b0b0"/>
+<rect x="20" y="140" width="180" height="5" fill="#b0b0b0"/>
+<rect x="195" y="110" width="5" height="35" fill="#b0b0b0"/>
+<!-- Riser link (orange) -->
+<rect x="200" y="90" width="30" height="8" fill="#ff7043" rx="2"/>
+<rect x="200" y="90" width="8" height="55" fill="#ff7043" rx="2"/>
+<!-- Vertical section -->
+<rect x="230" y="15" width="5" height="100" fill="#b0b0b0"/>
+<rect x="230" y="15" width="80" height="5" fill="#b0b0b0"/>
+<rect x="305" y="15" width="5" height="100" fill="#b0b0b0"/>
+<rect x="230" y="110" width="80" height="5" fill="#b0b0b0"/>
+<!-- Cable path indicator -->
+<path d="M 100 125 L 195 125 Q 225 125, 260 80 L 260 30" fill="none" stroke="#ffab40" stroke-width="2" stroke-dasharray="4"/>
+<!-- Labels -->
+<text x="100" y="155" font-size="9" fill="#999" text-anchor="middle">HORIZONTAL</text>
+<text x="275" y="60" font-size="9" fill="#999" text-anchor="middle">VERTICAL</text>
+<text x="215" y="85" font-size="8" fill="#ff7043">RL</text>
+<text x="300" y="130" font-size="8" fill="#ffab40">cable path</text>
+</svg>
+</div>
+<div class="meta">
+<div class="meta-item"><div class="label">Systems</div><div class="systems"><span class="sys-tag et5">ET3/ET5</span><span class="sys-tag nema">NEMA</span><span class="sys-tag ct">CT</span></div></div>
+<div class="meta-item"><div class="label">Hardware</div><div class="value">ET: 2× Riser Links (RL). NEMA: external riser fitting + splices. CT: CTER.</div></div>
+<div class="meta-item full"><div class="label">Rule</div><div class="value">Cable on OUTSIDE of bend (tension). Support within 300mm of direction change. Riser link on EACH side rail.</div></div>
+<div class="meta-item full"><div class="label">Use In Data Centre</div><div class="value">Basement to ground floor transition. Under-floor to overhead. Transformer pit up to cable corridor.</div></div>
+</div>
+</div>
+</div>
+
+<!-- JOINT 7 -->
+<div class="card">
+<div class="card-header"><div class="num">7</div><h2>Internal Riser (Down)</h2></div>
+<div class="card-body">
+<div class="diagram">
+<svg width="400" height="160" viewBox="0 0 400 160">
+<!-- Horizontal section (elevated) -->
+<rect x="20" y="25" width="180" height="5" fill="#b0b0b0"/>
+<rect x="20" y="25" width="5" height="35" fill="#b0b0b0"/>
+<rect x="20" y="55" width="180" height="5" fill="#b0b0b0"/>
+<rect x="195" y="25" width="5" height="35" fill="#b0b0b0"/>
+<!-- Riser link (orange) -->
+<rect x="200" y="55" width="30" height="8" fill="#ff7043" rx="2"/>
+<rect x="222" y="55" width="8" height="55" fill="#ff7043" rx="2"/>
+<!-- Vertical section (going down) -->
+<rect x="230" y="60" width="5" height="90" fill="#b0b0b0"/>
+<rect x="230" y="60" width="80" height="5" fill="#b0b0b0"/>
+<rect x="305" y="60" width="5" height="90" fill="#b0b0b0"/>
+<rect x="230" y="145" width="80" height="5" fill="#b0b0b0"/>
+<!-- Hold-down clips -->
+<rect x="250" y="90" width="40" height="3" fill="#9c27b0"/>
+<rect x="250" y="120" width="40" height="3" fill="#9c27b0"/>
+<!-- Cable path -->
+<path d="M 100 40 L 195 40 Q 260 40, 260 80 L 260 140" fill="none" stroke="#ffab40" stroke-width="2" stroke-dasharray="4"/>
+<!-- Labels -->
+<text x="100" y="15" font-size="9" fill="#999" text-anchor="middle">HORIZONTAL (elevated)</text>
+<text x="290" y="105" font-size="9" fill="#999" text-anchor="middle">DOWN</text>
+<text x="215" y="52" font-size="8" fill="#ff7043">RL</text>
+<text x="310" y="92" font-size="8" fill="#9c27b0">hold-down</text>
+</svg>
+</div>
+<div class="meta">
+<div class="meta-item"><div class="label">Systems</div><div class="systems"><span class="sys-tag et5">ET3/ET5</span><span class="sys-tag nema">NEMA</span><span class="sys-tag ct">CT</span></div></div>
+<div class="meta-item"><div class="label">Hardware</div><div class="value">2× RL + hold-down clips (HD) every 1.5m on vertical</div></div>
+<div class="meta-item full"><div class="label">Key Difference from Joint 6</div><div class="value">Cable on INSIDE of bend (compression). Gravity pulls cable away from tray on vertical section — hold-down clips MANDATORY.</div></div>
+<div class="meta-item full"><div class="label">Use In Data Centre</div><div class="value">Overhead tray dropping to switchboard. Drops to rack PDUs. Tray entering under-floor void.</div></div>
+</div>
+</div>
+</div>
+
+<!-- JOINT 8 -->
+<div class="card">
+<div class="card-header"><div class="num">8</div><h2>CT Taper-Fit (Telescope Connection)</h2></div>
+<div class="card-body">
+<div class="diagram">
+<svg width="400" height="120" viewBox="0 0 400 120">
+<!-- CT tray 1 (with taper out) -->
+<rect x="20" y="50" width="170" height="4" fill="#b0b0b0"/>
+<rect x="20" y="50" width="4" height="20" fill="#b0b0b0"/>
+<rect x="20" y="66" width="170" height="4" fill="#b0b0b0"/>
+<!-- Taper zone -->
+<polygon points="190,48 220,50 220,54 190,54" fill="#e6c619"/>
+<polygon points="190,66 220,66 220,72 190,70" fill="#e6c619"/>
+<!-- CT fitting (slightly different shade) -->
+<rect x="190" y="50" width="170" height="4" fill="#78909c"/>
+<rect x="190" y="50" width="4" height="20" fill="#78909c"/>
+<rect x="190" y="66" width="170" height="4" fill="#78909c"/>
+<rect x="356" y="50" width="4" height="20" fill="#78909c"/>
+<!-- Screw indicators -->
+<circle cx="205" cy="60" r="3" fill="#e6c619" stroke="#333" stroke-width="0.5"/>
+<circle cx="215" cy="60" r="3" fill="#e6c619" stroke="#333" stroke-width="0.5"/>
+<!-- Labels -->
+<text x="100" y="90" font-size="9" fill="#999" text-anchor="middle">CT STRAIGHT</text>
+<text x="207" y="45" font-size="8" fill="#e6c619" text-anchor="middle">taper overlap</text>
+<text x="300" y="90" font-size="9" fill="#78909c" text-anchor="middle">CT FITTING (CTB/CTT/etc)</text>
+<text x="210" y="100" font-size="8" fill="#333" text-anchor="middle">WIZZ screws through base</text>
+</svg>
+</div>
+<div class="meta">
+<div class="meta-item"><div class="label">Systems</div><div class="systems"><span class="sys-tag ct">CT only</span></div></div>
+<div class="meta-item"><div class="label">Hardware</div><div class="value">M6×10 screws + M6 flanged nuts (WIZZ). Min 2 per joint.</div></div>
+<div class="meta-item"><div class="label">Dimensions</div><div class="value">Overlap: 30-50mm. Side wall: 20mm. Fixed 150mm radius.</div></div>
+<div class="meta-item full"><div class="label">Key Feature</div><div class="value">NO splice plates needed. Taper-folded edges ARE the connection — one end folds IN, other folds OUT. They telescope together. Screws fix through perforated base.</div></div>
+</div>
+</div>
+</div>
+
+<!-- JOINT 9 -->
+<div class="card">
+<div class="card-header"><div class="num">9</div><h2>Straight Reducer (Width Transition)</h2></div>
+<div class="card-body">
+<div class="diagram">
+<svg width="400" height="120" viewBox="0 0 400 120">
+<!-- Wide tray -->
+<rect x="20" y="30" width="100" height="5" fill="#b0b0b0"/>
+<rect x="20" y="30" width="5" height="60" fill="#b0b0b0"/>
+<rect x="20" y="85" width="100" height="5" fill="#b0b0b0"/>
+<rect x="115" y="30" width="5" height="60" fill="#b0b0b0"/>
+<!-- Splice -->
+<rect x="108" y="26" width="25" height="4" fill="#e6c619"/>
+<rect x="108" y="90" width="25" height="4" fill="#e6c619"/>
+<!-- Reducer (trapezoid) -->
+<polygon points="133,30 270,45 270,75 133,90" fill="#78909c" opacity="0.7"/>
+<rect x="133" y="30" width="137" height="5" fill="#78909c"/>
+<rect x="133" y="85" width="137" height="5" fill="#78909c"/>
+<!-- Splice -->
+<rect x="262" y="41" width="25" height="4" fill="#e6c619"/>
+<rect x="262" y="75" width="25" height="4" fill="#e6c619"/>
+<!-- Narrow tray -->
+<rect x="280" y="45" width="100" height="5" fill="#b0b0b0"/>
+<rect x="280" y="45" width="5" height="30" fill="#b0b0b0"/>
+<rect x="280" y="70" width="100" height="5" fill="#b0b0b0"/>
+<rect x="375" y="45" width="5" height="30" fill="#b0b0b0"/>
+<!-- Labels -->
+<text x="70" y="110" font-size="9" fill="#999" text-anchor="middle">600mm</text>
+<text x="200" y="60" font-size="9" fill="#78909c" text-anchor="middle">REDUCER</text>
+<text x="330" y="95" font-size="9" fill="#999" text-anchor="middle">300mm</text>
+</svg>
+</div>
+<div class="meta">
+<div class="meta-item"><div class="label">Systems</div><div class="systems"><span class="sys-tag nema">NEMA</span><span class="sys-tag et5">ET (field-cut)</span></div></div>
+<div class="meta-item"><div class="label">Hardware</div><div class="value">1× reducer fitting + 4× splice plates (2 per end)</div></div>
+<div class="meta-item full"><div class="label">Use In Data Centre</div><div class="value">Where cable count reduces after branches peel off. Main corridor (900mm) tapering as it passes each row. Approaching switchboard entry.</div></div>
+</div>
+</div>
+</div>
+
+<!-- JOINT 10 -->
+<div class="card">
+<div class="card-header"><div class="num">10</div><h2>Offset / S-Bend (Lateral Shift)</h2></div>
+<div class="card-body">
+<div class="diagram">
+<svg width="400" height="140" viewBox="0 0 400 140">
+<!-- Entry straight -->
+<rect x="20" y="90" width="100" height="5" fill="#b0b0b0"/>
+<rect x="20" y="90" width="5" height="30" fill="#b0b0b0"/>
+<rect x="20" y="115" width="100" height="5" fill="#b0b0b0"/>
+<!-- RP 1 -->
+<rect x="110" y="120" width="40" height="6" fill="#4caf50" rx="2"/>
+<!-- Angled section -->
+<line x1="120" y1="100" x2="250" y2="40" stroke="#b0b0b0" stroke-width="6"/>
+<line x1="120" y1="115" x2="250" y2="55" stroke="#b0b0b0" stroke-width="6"/>
+<!-- RP 2 -->
+<rect x="240" y="58" width="40" height="6" fill="#4caf50" rx="2"/>
+<!-- Exit straight (offset) -->
+<rect x="270" y="30" width="110" height="5" fill="#b0b0b0"/>
+<rect x="270" y="30" width="5" height="30" fill="#b0b0b0"/>
+<rect x="270" y="55" width="110" height="5" fill="#b0b0b0"/>
+<rect x="375" y="30" width="5" height="30" fill="#b0b0b0"/>
+<!-- Offset dimension -->
+<line x1="10" y1="100" x2="10" y2="40" stroke="#666" stroke-width="1" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+<text x="15" y="70" font-size="8" fill="#666">offset</text>
+<!-- Labels -->
+<text x="70" y="135" font-size="9" fill="#999" text-anchor="middle">ENTRY</text>
+<text x="130" y="133" font-size="8" fill="#4caf50" text-anchor="middle">RP</text>
+<text x="260" y="75" font-size="8" fill="#4caf50" text-anchor="middle">RP</text>
+<text x="330" y="22" font-size="9" fill="#999" text-anchor="middle">EXIT (parallel, offset)</text>
+</svg>
+</div>
+<div class="meta">
+<div class="meta-item"><div class="label">Systems</div><div class="systems"><span class="sys-tag et5">ET3/ET5</span><span class="sys-tag nema">NEMA</span></div></div>
+<div class="meta-item"><div class="label">Hardware</div><div class="value">ET: 2× RP + 4× splices. NEMA: 2× bend fittings + 6× splices.</div></div>
+<div class="meta-item full"><div class="label">Use In Data Centre</div><div class="value">Routing around columns, dodging ductwork, shifting tray alignment between rooms, accommodating structural beams. Entry and exit are PARALLEL but laterally offset.</div></div>
+</div>
+</div>
+</div>
+
+</div><!-- end grid -->
+
+<!-- PROHIBITED CONNECTIONS -->
+<div class="prohibited">
+<div class="prohibited-header"><h3>Prohibited Connections (What NOT to Model)</h3></div>
+<div class="prohibited-body">
+<div class="prohibited-item" style="font-weight:600; border-bottom: 2px solid #eee;">
+<div class="wrong">WRONG</div><div class="why">WHY IT FAILS</div><div class="correct">CORRECT METHOD</div>
+</div>
+<div class="prohibited-item">
+<div class="wrong">Butt two tray ends together (no splice)</div>
+<div class="why">No structural connection. Falls apart. No earth continuity.</div>
+<div class="correct">Splice plates on outside of both rails.</div>
+</div>
+<div class="prohibited-item">
+<div class="wrong">Merge bend directly into straight (shared edge)</div>
+<div class="why">Two raised side rails cannot physically mate edge-to-edge.</div>
+<div class="correct">ET: cut+RP (continuous base). NEMA: splice between separate pieces.</div>
+</div>
+<div class="prohibited-item">
+<div class="wrong">CT fitting with non-150mm radius</div>
+<div class="why">ALL CT fittings manufactured at fixed 150mm. Cannot modify.</div>
+<div class="correct">Use ET/NEMA system if larger radius needed.</div>
+</div>
+<div class="prohibited-item">
+<div class="wrong">Mix CT with ET3/ET5 in same run</div>
+<div class="why">Different profiles (20mm vs 50/85mm sides). Incompatible interfaces.</div>
+<div class="correct">One system per run. End plate at system transitions.</div>
+</div>
+<div class="prohibited-item">
+<div class="wrong">Bend tighter than cable minimum radius</div>
+<div class="why">Insulation damage, reduced capacity, potential fault.</div>
+<div class="correct">Fitting radius must be ≥ largest cable's min bend radius.</div>
+</div>
+<div class="prohibited-item">
+<div class="wrong">No support within 300mm of direction change</div>
+<div class="why">AS/NZS 3000 cl. 3.9.5 non-compliant. Joint failure risk.</div>
+<div class="correct">Support bracket within 300mm of EVERY bend, tee, riser, termination.</div>
+</div>
+</div>
+</div>
+
+</body>
+</html>

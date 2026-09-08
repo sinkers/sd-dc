@@ -1,0 +1,18 @@
+# SYNTHETIC TEST FIXTURE - not from any standard. 
+arrangement,resistivity_km_w,cf
+buried_direct,0.8,1.1
+buried_direct,1.2,1.0
+buried_direct,1.5,0.94
+buried_direct,2.0,0.87
+buried_conduit_shared,0.8,1.1
+buried_conduit_shared,1.2,1.0
+buried_conduit_shared,1.5,0.94
+buried_conduit_shared,2.0,0.87
+buried_conduit_single_way,0.8,1.1
+buried_conduit_single_way,1.2,1.0
+buried_conduit_single_way,1.5,0.94
+buried_conduit_single_way,2.0,0.87
+buried_conduit,0.8,1.1
+buried_conduit,1.2,1.0
+buried_conduit,1.5,0.94
+buried_conduit,2.0,0.87

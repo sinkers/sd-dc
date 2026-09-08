@@ -1,0 +1,16 @@
+{
+  "name": "west fan wall trips mid training run",
+  "description": "The showpiece. A training job is grinding at full B300 load when both west 40L1 modules drop out. Installed capacity falls to 475 kW against 742 kW of IT, so the hall has no steady state: watch the west zones starve, the gap flow reverse, and the verdict walk from PASS to FAIL. Then the operator sheds the job to 20 kW/rack and it recovers.",
+  "duration_s": 2400,
+  "sample_s": 20,
+  "mode": "auto",
+  "seed": 7,
+  "settle": true,
+  "commands": [
+    {"t": 600, "cmd": "set_unit", "unit": "W1", "on": false},
+    {"t": 660, "cmd": "set_unit", "unit": "W2", "on": false},
+    {"t": 1500, "cmd": "set_load", "target": "global", "kw": 20.0},
+    {"t": 2100, "cmd": "set_unit", "unit": "W1", "on": true},
+    {"t": 2100, "cmd": "set_unit", "unit": "W2", "on": true}
+  ]
+}

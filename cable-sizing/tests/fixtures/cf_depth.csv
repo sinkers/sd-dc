@@ -1,0 +1,13 @@
+# SYNTHETIC TEST FIXTURE - not from any standard. 
+table,axis_value,depth_m,cf
+3.46,small,0.5,1.00
+3.46,small,0.8,0.97
+3.46,small,1.2,0.95
+3.46,large,0.5,1.00
+3.46,large,0.8,0.96
+3.46,large,1.0,0.92
+3.46,large,1.2,0.93
+3.47,single_core,0.5,1.00
+3.47,single_core,1.0,0.93
+3.47,multicore,0.5,1.00
+3.47,multicore,1.0,0.94

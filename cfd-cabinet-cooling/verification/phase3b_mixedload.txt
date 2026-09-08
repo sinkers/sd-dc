@@ -1,0 +1,37 @@
+
+====================================================================
+  CABINET COOLING RESULT   (case)
+====================================================================
+  iterations run                 3000
+
+  server intake temp  (mean)       22.19 degC   limit 27 degC
+  server intake temp  (max)        36.97 degC   limit 32 degC
+  server exhaust temp (mean)       38.39 degC
+  rise across the cabinet          16.20 K
+  air returning to the unit        37.25 degC
+
+  fan wall supply                  6.645 kg/s
+  airflow through the servers      7.161 kg/s
+  supply / demand                   0.93
+  heat removed by that airflow     116.6 kW
+
+  containment gap         -0.515 kg/s  hot air RECIRCULATING to the cold aisle
+
+--------------------------------------------------------------------
+  PASS (marginal) - mean intake is fine but the worst-case
+         intake of 37.0 degC exceeds the 32 degC allowable limit.
+====================================================================
+
+wrote case/metrics.png
+
+ cab     kW  intake mean  intake peak  flow kg/s  verdict
+--------------------------------------------------------------
+   0     45       22.06C       36.97C      1.777  MARGINAL
+   1     30       21.99C       36.54C      1.788  MARGINAL
+   2     30       22.29C       36.47C      1.793  MARGINAL
+   3     15       22.43C       36.26C      1.803  MARGINAL
+--------------------------------------------------------------
+worst cabinet: 0  (peak intake 36.97 degC)
+spread across the row: 0.44 K on the mean, 0.71 K on the peak
+
+wrote case/row.png

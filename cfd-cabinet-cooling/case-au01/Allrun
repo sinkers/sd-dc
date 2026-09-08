@@ -1,0 +1,65 @@
+#!/bin/sh
+cd "${0%/*}" || exit 1
+. "${WM_PROJECT_DIR:?}/bin/tools/RunFunctions"
+
+# Without this a failed mesh step is followed straight into the solve, and the
+# run produces plausible numbers from the wrong mesh.
+set -e
+
+runApplication blockMesh
+
+nProcs=$(getNumberOfProcessors)
+
+if [ "$nProcs" -gt 1 ]
+then
+    # snappyHexMesh, topoSet and createPatch all run on the decomposed mesh, so
+    # the 7.6M cell background mesh is never handled serially.
+    runApplication decomposePar
+    runParallel snappyHexMesh -overwrite
+
+    runParallel -s patches topoSet -dict system/topoSetDict.patches
+    runParallel createPatch -overwrite
+    # Close the rack tops and row ends before the cell zones are made: without
+    # this a rack draws air in over its top and bypasses the intake face.
+    runParallel -s baffles topoSet -dict system/topoSetDict.baffles
+    runParallel createBaffles -overwrite
+
+    runParallel -s racks   topoSet -dict system/topoSetDict.racks
+
+    runParallel checkMesh -constant
+    restore0Dir -processor
+    runParallel $(getApplication)
+
+    if [ "$(awk '/^reconstruct/{print $2}' system/au01Parameters)" != "0" ]
+    then
+        # The mesh only ever existed decomposed: snappyHexMesh wrote it into the
+        # processor directories and constant/polyMesh at the case root is still
+        # the plain blockMesh box. Reconstructing fields onto that stale mesh
+        # gives nonsense, so the mesh has to be reconstructed first.
+        runApplication reconstructParMesh -constant -mergeTol 1e-8
+        runApplication reconstructPar -latestTime
+    else
+        echo "reconstructPar skipped (reconstruct 0); metrics and slices are already written"
+    fi
+else
+    runApplication snappyHexMesh -overwrite
+    runApplication -s patches topoSet -dict system/topoSetDict.patches
+    runApplication createPatch -overwrite
+    runApplication -s baffles topoSet -dict system/topoSetDict.baffles
+    runApplication createBaffles -overwrite
+    runApplication -s racks   topoSet -dict system/topoSetDict.racks
+    runApplication checkMesh -constant
+    restore0Dir
+    runApplication $(getApplication)
+fi
+
+# subsetMesh used to leave exposed patches as type `empty`, which silently
+# wrecks the pressure equation in 3D. snappyHexMesh should not do that, but the
+# consequence is bad enough and quiet enough to keep checking for.
+if grep -qw empty constant/polyMesh/boundary 2>/dev/null
+then echo "ERROR: mesh contains an 'empty' patch" 1>&2; exit 1
+fi
+
+touch case.foam
+echo
+echo "Done. Metrics in postProcessing/ ; open case.foam in ParaView."

@@ -1,0 +1,146 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Single point of control for every tunable quantity in this case, geometry    |
+| included. Edit here, not in the individual dictionaries.                     |
+|                                                                             |
+| Changing any geometry value changes the MESH, so re-run ./run.sh rather      |
+| than restarting the solver. Keep every length a multiple of cellSize.        |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      simulationParameters;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// ---------------------------------------------------------------------------
+// PRIMARY OPTIMISATION KNOBS
+// ---------------------------------------------------------------------------
+
+// Discharge velocity [m/s] across the fan wall supply opening (2.0 x 0.6 m).
+// 1.41 m/s == 1.69 m3/s == 100 % of the server airflow demand below.
+fanWallVelocity         1.41;
+
+// Fan wall supply air temperature [K].  293.15 K = 20 degC.
+supplyTemp              293.15;
+
+// Total heat dissipated to air inside the cabinet [W].
+heatLoad                30000;
+
+// ---------------------------------------------------------------------------
+// GEOMETRY
+// ---------------------------------------------------------------------------
+//
+//   z=3.4  ceiling ______________ RETURN PLENUM ______________
+//   z=2.6         |intake|########## plenum floor ##########|  |
+//                 |      |                          +------+  |
+//   z=2.4         | FAN  |                          |cont. |  | HOT
+//   z=2.2         | WALL |              +-----------+------+  | AISLE
+//                 | UNIT |              |  CABINET  |#####    |
+//   supply  ==>   |======|  COLD AISLE  |   30 kW   |#####    |
+//   z=0.0         |______|______________|___________|_________|
+//               x=0    x=0.8          x=4.8       x=6.0     x=7.2
+//                      |<--- 4.0 m --->|
+//
+// Hot air leaves the contained hot aisle upward into the return plenum, tracks
+// back over the cold aisle, and drops into the intake on top of the fan wall
+// unit. The only way it can reach the cold aisle directly is the containment
+// gap, which is what the study is about.
+
+cellSize                0.05;   // uniform cell size [m]
+
+// ---- row extent in y --------------------------------------------------------
+// nCabinets 1 + endClearance 0 + symmetry sides == the original 2D slab, which
+// is kept as the fast regression case. Widen nCabinets for a real 3D row.
+cabinetPitch            0.6;    // one 600 mm rack
+nCabinets               4;      // cabinets modelled along the row
+endClearance            0;      // open room beyond each row end [m]; 0 = symmetry
+
+unitDepth               0.8;    // fan wall unit depth  [m]
+unitHeight              2.6;    // fan wall unit height = plenum floor level [m]
+supplyZ0                0.4;    // bottom of the supply opening on the unit face
+supplyZ1                2.4;    // top of the supply opening
+
+coldAisleDepth          4.0;    // unit face to cabinet front [m]
+cabinetDepth            1.2;
+cabinetHeight           2.2;
+hotAisleDepth           1.2;
+plenumHeight            0.8;    // return plenum depth above the plenum floor
+
+// Top of the containment panel that closes the gap between the cabinet top and
+// the plenum floor:
+//   2.6 (== unitHeight) fully sealed, no leakage path at all
+//   2.4                 0.2 m open gap                        (DEFAULT)
+//   2.2 (== cabinetHeight) no containment above the cabinet
+// Note: at exactly unitHeight the containmentGap face zone is empty, so the
+// containmentGapFlow metric has nothing to measure (it is zero by definition).
+containmentTopZ         2.4;
+
+// ---------------------------------------------------------------------------
+// SERVER FAN MODEL
+// ---------------------------------------------------------------------------
+// The cabinet interior is a cellZone carrying a momentum source that behaves
+// like a bank of constant-speed server fans:   S = C * (Utarget - U)
+// Cabinet free area is 0.6 m (w) x 2.2 m (h) = 1.32 m2, so
+//   1.29 m/s  ->  1.70 m3/s  ->  ~2.0 kg/s  ->  dT = 30 kW / (2.0 * 1005) = 15 K
+
+cabinetTargetVelocity   1.29;   // [m/s]  target through-cabinet velocity
+cabinetFanStiffness     50;     // [kg/(m3 s)] how hard the fans hold that target
+
+// ---------------------------------------------------------------------------
+// DERIVED GEOMETRY - do not edit
+// ---------------------------------------------------------------------------
+rowWidth        #eval "$nCabinets * $cabinetPitch";
+roomWidth       #eval "$rowWidth + 2*$endClearance";
+rowY0           #eval "$endClearance";
+rowY1           #eval "$endClearance + $rowWidth";
+
+cabinetX0       #eval "$unitDepth + $coldAisleDepth";
+cabinetX1       #eval "$cabinetX0 + $cabinetDepth";
+roomLength      #eval "$cabinetX1 + $hotAisleDepth";
+roomHeight      #eval "$unitHeight + $plenumHeight";
+
+nx              #eval "round($roomLength / $cellSize)";
+ny              #eval "round($roomWidth  / $cellSize)";
+nz              #eval "round($roomHeight / $cellSize)";
+
+// Half-cell tolerances for the topoSet selection boxes.
+unitDepthM      #eval "$unitDepth - 0.01";
+unitDepthP      #eval "$unitDepth + 0.01";
+unitHeightM     #eval "$unitHeight - 0.01";
+unitHeightP     #eval "$unitHeight + 0.01";
+supplyZ0M       #eval "$supplyZ0 - 0.01";
+supplyZ1P       #eval "$supplyZ1 + 0.01";
+cabinetX0M      #eval "$cabinetX0 - 0.01";
+cabinetX0P      #eval "$cabinetX0 + 0.01";
+cabinetX1M      #eval "$cabinetX1 - 0.01";
+cabinetX1P      #eval "$cabinetX1 + 0.01";
+cabinetHeightM  #eval "$cabinetHeight - 0.01";
+cabinetHeightP  #eval "$cabinetHeight + 0.01";
+roomWidthP      #eval "$roomWidth  + 0.01";
+sliceY          #eval "0.5 * $roomWidth";   // centreline sampling plane
+rowY0M          #eval "$rowY0 - 0.01";
+rowY0P          #eval "$rowY0 + 0.01";
+rowY1M          #eval "$rowY1 - 0.01";
+rowY1P          #eval "$rowY1 + 0.01";
+roomLengthP     #eval "$roomLength + 0.01";
+roomHeightP     #eval "$roomHeight + 0.01";
+containmentTopZM #eval "$containmentTopZ - 0.01";
+containmentTopZP #eval "$containmentTopZ + 0.01";
+
+// ---------------------------------------------------------------------------
+// DERIVED PHYSICS - do not edit
+// ---------------------------------------------------------------------------
+
+cabinetFanSu            #eval "$cabinetFanStiffness * $cabinetTargetVelocity";
+cabinetFanSp            #eval "-1.0 * $cabinetFanStiffness";
+
+// Backflow temperature guess at the intake [K] (supply + 15 K).
+returnTempGuess         #eval "$supplyTemp + 15.0";
+
+// Inlet turbulence: 5 % intensity, 0.1 m mixing length.
+inletK                  #eval "1.5 * pow(0.05 * $fanWallVelocity, 2)";
+inletOmega              #eval "sqrt($inletK) / (pow(0.09, 0.25) * 0.1)";
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

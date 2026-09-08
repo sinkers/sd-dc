@@ -1,0 +1,14 @@
+# SYNTHETIC TEST FIXTURE - not from any standard. 
+table,reference_ambient_air_c,reference_ambient_soil_c,reference_soil_resistivity_km_w,reference_depth_m,max_conductor_c
+3.9,40,25,1.2,0.5,75
+3.10,40,25,1.2,0.5,90
+3.11,40,25,1.2,0.5,110
+3.12,40,25,1.2,0.5,75
+3.13,40,25,1.2,0.5,90
+3.14,40,25,1.2,0.5,110
+3.15,40,25,1.2,0.5,75
+3.16,40,25,1.2,0.5,90
+3.17,40,25,1.2,0.5,110
+3.18,40,25,1.2,0.5,75
+3.19,40,25,1.2,0.5,90
+3.20,40,25,1.2,0.5,110

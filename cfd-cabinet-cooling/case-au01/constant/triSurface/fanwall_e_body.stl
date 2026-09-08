@@ -1,0 +1,86 @@
+solid fanwall_e
+ facet normal -1 0 0
+  outer loop
+   vertex 20.53 2.1 0
+   vertex 20.53 2.1 4
+   vertex 20.53 6.1 0
+  endloop
+ endfacet
+ facet normal -1 0 0
+  outer loop
+   vertex 20.53 6.1 0
+   vertex 20.53 2.1 4
+   vertex 20.53 6.1 4
+  endloop
+ endfacet
+ facet normal 1 0 0
+  outer loop
+   vertex 22.13 2.1 4
+   vertex 22.13 2.1 0
+   vertex 22.13 6.1 0
+  endloop
+ endfacet
+ facet normal 1 -0 0
+  outer loop
+   vertex 22.13 2.1 4
+   vertex 22.13 6.1 0
+   vertex 22.13 6.1 4
+  endloop
+ endfacet
+ facet normal 0 -1 0
+  outer loop
+   vertex 22.13 2.1 0
+   vertex 22.13 2.1 4
+   vertex 20.53 2.1 0
+  endloop
+ endfacet
+ facet normal 0 -1 0
+  outer loop
+   vertex 20.53 2.1 0
+   vertex 22.13 2.1 4
+   vertex 20.53 2.1 4
+  endloop
+ endfacet
+ facet normal 0 1 0
+  outer loop
+   vertex 22.13 6.1 4
+   vertex 22.13 6.1 0
+   vertex 20.53 6.1 0
+  endloop
+ endfacet
+ facet normal 0 1 0
+  outer loop
+   vertex 22.13 6.1 4
+   vertex 20.53 6.1 0
+   vertex 20.53 6.1 4
+  endloop
+ endfacet
+ facet normal 0 0 -1
+  outer loop
+   vertex 20.53 6.1 0
+   vertex 22.13 6.1 0
+   vertex 20.53 2.1 0
+  endloop
+ endfacet
+ facet normal 0 0 -1
+  outer loop
+   vertex 20.53 2.1 0
+   vertex 22.13 6.1 0
+   vertex 22.13 2.1 0
+  endloop
+ endfacet
+ facet normal 0 0 1
+  outer loop
+   vertex 22.13 6.1 4
+   vertex 20.53 6.1 4
+   vertex 20.53 2.1 4
+  endloop
+ endfacet
+ facet normal 0 0 1
+  outer loop
+   vertex 22.13 6.1 4
+   vertex 20.53 2.1 4
+   vertex 22.13 2.1 4
+  endloop
+ endfacet
+endsolid fanwall_e

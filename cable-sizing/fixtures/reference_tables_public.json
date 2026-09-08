@@ -1,0 +1,198 @@
+{
+  "_README": "PUBLIC half of the AS/NZS 3000 reference tables. Structure, provenance, clause numbers and units only -- no reproduced table bodies, with the single exception of the clause 3.6.2 voltage drop limits, which are three published figures rather than a table. The bodies live in reference_tables.json, which is gitignored and fetched from private storage. See tables.py.",
+  "earth_sizes_as3000_table_5_1": {
+    "title": "Minimum earthing conductor size vs active conductor size",
+    "standard": "AS/NZS 3000:2018 clause 5.3.3 (referenced from clause 3.5.3); table within Section 5",
+    "units": {
+      "key": "active mm2",
+      "value": "earth mm2"
+    },
+    "verified": false,
+    "source": "secondary-source: derived or from published summaries, NOT the printed standard",
+    "note": "Safety-critical. Highest priority for verification. LOCATING IT: AS/NZS 3000 clause 3.5.3 states the earthing conductor size is determined in accordance with CLAUSE 5.3.3 -- confirmed from the printed standard. Look in Section 5 at clause 5.3.3, NOT clause 5.1. CONFIRMED DATAPOINT: a 240 mm2 active takes a 95 mm2 earth, which matches the value encoded here. OPEN QUESTIONS for whoever reads the printed table: (1) secondary sources say the table does not specify aluminium earth sizes, yet large_conductor_fraction below carries an aluminium value -- confirm how aluminium earths are actually derived; (2) secondary sources say the table is only enforced up to 120 mm2 copper / 240 mm2 aluminium, but the data here runs to 630 mm2 -- confirm the real upper bound and what governs above it.",
+    "data_location": "reference_tables.json (private)",
+    "data_entries": 20
+  },
+  "ambient_rating_factors_air": {
+    "title": "Rating factor vs air ambient temperature",
+    "standard": "AS/NZS 3008.1.1",
+    "basis": {
+      "conductor_max_temp_c": 90,
+      "reference_ambient_c": 40,
+      "medium": "air"
+    },
+    "units": {
+      "key": "ambient C",
+      "value": "factor"
+    },
+    "verified": false,
+    "source": "../cables/cable_catalog.json derating_factors.ambient_temp",
+    "note": "Only valid for 90 C conductors on a 40 C air basis. Outside its range the engine falls back to a closed form that runs optimistic by up to 9%. Verified tables for other insulations and for soil would remove that fallback.",
+    "data_location": "reference_tables.json (private)",
+    "data_entries": 5
+  },
+  "grouping_rating_factors": {
+    "title": "Rating factor vs number of grouped circuits",
+    "standard": "AS/NZS 3008.1.1",
+    "basis": {
+      "arrangement": "single layer, touching, perforated tray or ladder in air"
+    },
+    "units": {
+      "key": "circuits",
+      "value": "factor"
+    },
+    "verified": false,
+    "source": "../cables/cable_catalog.json derating_factors.grouping",
+    "note": "Single arrangement only. Multi-tier, spaced and enclosed grouping are not modelled; the engine holds the last value beyond 9 circuits.",
+    "data_location": "reference_tables.json (private)",
+    "data_entries": 9
+  },
+  "ac_dc_resistance_ratio": {
+    "title": "AC/DC resistance ratio at 50 Hz vs conductor area",
+    "standard": "derived; compare AS/NZS 3008.1.1 Tables 4.5-4.11",
+    "units": {
+      "key": "area mm2",
+      "value": "ratio"
+    },
+    "verified": false,
+    "source": "derived from ../cables/cable_catalog.json XLPE_SDI_CU r_ac / r_dc at 90 C",
+    "note": "SUPERSEDED 2026-09-04. Was derived from a manufacturer catalogue. The standard tabulates a.c. resistance directly against conductor temperature, so no ratio is applied any more. The '1.252 vs 1.120 at 630 mm2' disagreement resolves to 1.197 from Tables 4.5(A) and 4.6(A).",
+    "superseded_by": "as3008_impedance_tables.json Tables 4.5 to 4.13",
+    "in_use": false,
+    "data_location": "reference_tables.json (private)",
+    "data_entries": 14
+  },
+  "reactance_ohm_km": {
+    "title": "Conductor reactance by cable type, formation and area",
+    "standard": "AS/NZS 3008.1.1 Tables 4.1-4.2",
+    "units": {
+      "key": "area mm2",
+      "value": "ohm/km"
+    },
+    "verified": false,
+    "source": "NOT POPULATED -- engine falls back to a single nominal value",
+    "note": "SUPERSEDED 2026-09-04. Never populated; the engine fell back to a single nominal 0.08 ohm/km. AS/NZS 3008.1.1:2025 Tables 4.1 to 4.4 were read from the printed standard and now supply reactance by construction, formation and insulation, with the NOTE 1 spacing correction. The old nominal understated flat-touching single-core reactance by up to 50%.",
+    "nominal_provenance": {
+      "single_core": "catalogue XLPE_SDI_CU range 0.069-0.095, midpoint rounded",
+      "multicore": "derived from AS/NZS 3000:2018 Table C8, 16-95 mm2 mean 0.107"
+    },
+    "superseded_by": "as3008_impedance_tables.json Tables 4.1 to 4.4",
+    "in_use": false,
+    "data_location": "reference_tables.json (private)",
+    "data_entries": 4
+  },
+  "limiting_temperatures_as3000_table_3_2": {
+    "title": "Limiting temperatures for insulated cables",
+    "standard": "AS/NZS 3000:2018 Table 3.2",
+    "units": {
+      "normal_use_c": "C",
+      "max_permissible_c": "C",
+      "min_ambient_c": "C"
+    },
+    "verified": true,
+    "source": "AS/NZS 3000:2018 Table 3.2, read from the printed standard 2026-08-21",
+    "note": "Current-carrying capacities are based on the NORMAL USE temperature; that is what the engine uses as the rating basis and as the ceiling for the operating-temperature calculation. max_permissible_c is higher for V-90 and V-90HT only where the cable is protected against severe mechanical damage (see the standard's note), so it is recorded but not applied automatically. min_ambient_c is captured for completeness and is not yet checked by the engine. null means refer to manufacturer's information. Short-circuit limit temperatures are NOT in this table -- they come from AS/NZS 3008 Table 53 (2017) / Table 5.2 (2025) and remain unverified.",
+    "edition": "AS/NZS 3000:2018",
+    "data_location": "reference_tables.json (private)",
+    "data_entries": 21
+  },
+  "min_conductor_size_as3000_table_3_3": {
+    "title": "Nominal minimum cross-sectional area of conductors",
+    "standard": "AS/NZS 3000:2018 Table 3.3 (clause 3.5.1)",
+    "units": {
+      "area_mm2": "mm2"
+    },
+    "verified": true,
+    "source": "AS/NZS 3000:2018 Table 3.3, read from the printed standard 2026-08-21",
+    "note": "Absolute floor on conductor size, independent of current or voltage drop. Exception 1: smaller conductors may be used on socket-outlet subcircuits based on suitability. Exception 2: does not limit extra-low voltage or switchboard wiring. The engine applies the 'other_circuits' copper floor of 1 mm2 by default; set Installation.circuit_use to pick another row.",
+    "edition": "AS/NZS 3000:2018",
+    "data_location": "reference_tables.json (private)",
+    "data_entries": 7
+  },
+  "voltage_drop_limits_as3000_clause_3_6_2": {
+    "title": "Maximum permissible voltage drop",
+    "standard": "AS/NZS 3000:2018 clause 3.6.2",
+    "units": {
+      "percent": "% of nominal voltage at the point of supply"
+    },
+    "verified": true,
+    "source": "AS/NZS 3000:2018 clause 3.6.2, read from the printed standard 2026-08-21",
+    "note": "The limit applies CUMULATIVELY from the point of supply to any point in the installation, not per cable segment. size_feeder() checks a single segment; use voltage_drop_budget() to verify a whole path. Exception 1: for final subcircuits with distributed load, half the protective device rating may be used as the design current. Exception 3 gives the 7% figure. Clause 3.6.3 confirms parallel conductors are assessed as one conductor carrying the circuit current divided by the number in parallel.",
+    "edition": "AS/NZS 3000:2018",
+    "data": {
+      "standard_supply_pct": 5.0,
+      "dedicated_onsite_substation_pct": 7.0,
+      "standalone_system_total_pct": 11.0
+    }
+  },
+  "conductor_colours_as3000_table_3_4": {
+    "title": "Conductor colours for installation wiring",
+    "standard": "AS/NZS 3000:2018 Table 3.4",
+    "verified": true,
+    "source": "AS/NZS 3000:2018 Table 3.4, read from the printed standard 2026-08-21",
+    "note": "For 3D model generation and cable schedules. Green/yellow must have one colour covering 30-70% of the surface. In New Zealand domestic installations the only permitted neutral colour is black. Australian/NZ and European core identification colours must not be mixed in the same enclosure or multi-core cable.",
+    "edition": "AS/NZS 3000:2018",
+    "data_location": "reference_tables.json (private)",
+    "data_entries": 4
+  },
+  "conduit_fill_as3000_table_c10": {
+    "title": "Maximum number of single-core sheathed cables installed in conduit",
+    "standard": "AS/NZS 3000:2018 Table C10",
+    "edition": "AS/NZS 3000:2018",
+    "verified": true,
+    "source": "AS/NZS 3000:2018, read from the printed standard 2026-08-21",
+    "note": "Heavy duty rigid UPVC and Corflo columns captured. The medium duty corrugated and medium duty rigid columns were cut off at the right edge of the source image and are NOT captured. '>100' means more than 100 cables fit; the accessor treats it as 100, which is conservative.",
+    "data_location": "reference_tables.json (private)",
+    "data_entries": 2
+  },
+  "conduit_fill_as3000_table_c11": {
+    "title": "Maximum number of two-core and earth cables installed in conduit",
+    "standard": "AS/NZS 3000:2018 Table C11",
+    "edition": "AS/NZS 3000:2018",
+    "verified": true,
+    "source": "AS/NZS 3000:2018, read from the printed standard 2026-08-21",
+    "note": "As Table C10: medium duty columns cut off at the right edge and NOT captured.",
+    "data_location": "reference_tables.json (private)",
+    "data_entries": 3
+  },
+  "conduit_fill_as3000_table_c12": {
+    "title": "Maximum number of four-core and earth cables installed in conduit",
+    "standard": "AS/NZS 3000:2018 Table C12",
+    "edition": "AS/NZS 3000:2018",
+    "verified": true,
+    "source": "AS/NZS 3000:2018, read from the printed standard 2026-08-21",
+    "note": "As Table C10: medium duty columns cut off at the right edge and NOT captured.",
+    "data_location": "reference_tables.json (private)",
+    "data_entries": 3
+  },
+  "vd_simplified_as3000_table_c8": {
+    "title": "Voltage drop, simplified method -- Am per %Vd",
+    "standard": "AS/NZS 3000:2018 Table C8 (Appendix C4)",
+    "edition": "AS/NZS 3000:2018",
+    "verified": true,
+    "source": "AS/NZS 3000:2018, read from the printed standard 2026-08-21",
+    "units": {
+      "key": "conductor mm2",
+      "value": "ampere-metres per % voltage drop"
+    },
+    "note": "Derived by the standard as (10 x Vo)/Vc using Vc from AS/NZS 3008.1.1 for common PVC/PVC cables at 75 C, at 230 V single-phase and 400 V three-phase. Used here as an INDEPENDENT CROSS-CHECK on the engine's voltage drop, not as a data source. Clause C4.1 confirms percentage drops for consumer mains, submains and final subcircuits are ADDED TOGETHER -- the basis of voltage_drop_budget().",
+    "basis": {
+      "insulation": "PVC/PVC",
+      "conductor_temp_c": 75,
+      "single_phase_v": 230,
+      "three_phase_v": 400
+    },
+    "data_location": "reference_tables.json (private)",
+    "data_entries": 12
+  },
+  "aluminium_earthing_as3000_clause_5_3_2_1_2": {
+    "title": "Conditions for aluminium conductors used as earthing conductors",
+    "standard": "AS/NZS 3000:2018 clause 5.3.2.1.2",
+    "edition": "AS/NZS 3000:2018",
+    "verified": true,
+    "source": "AS/NZS 3000:2018, read from the printed standard 2026-08-21",
+    "note": "Answers one of the open questions: aluminium IS permitted as an earthing conductor, subject to these conditions. Note this is clause 5.3.2.1.2, distinct from the sizing rules at clause 5.3.3 which are still outstanding.",
+    "data_location": "reference_tables.json (private)",
+    "data_entries": 7
+  }
+}

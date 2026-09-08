@@ -1,0 +1,64 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| Steady-state schemes. limitedLinear (2nd order, bounded) on the transported |
+| scalars; this is accurate enough to rank airflow options against each other.|
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSchemes;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{
+    default         steadyState;
+}
+
+gradSchemes
+{
+    default         Gauss linear;
+    limited         cellLimited Gauss linear 1;
+    grad(U)         $limited;
+    grad(k)         $limited;
+    grad(omega)     $limited;
+}
+
+divSchemes
+{
+    default         none;
+
+    div(phi,U)      bounded Gauss limitedLinearV 1;
+    div(phi,K)      bounded Gauss limitedLinear 1;
+    div(phi,h)      bounded Gauss limitedLinear 1;
+    div(phi,e)      bounded Gauss limitedLinear 1;
+    div(phi,Ekp)    bounded Gauss limitedLinear 1;
+    div(phi,k)      bounded Gauss limitedLinear 1;
+    div(phi,omega)  bounded Gauss limitedLinear 1;
+    div(phid,p)     bounded Gauss limitedLinear 1;
+
+    div(((rho*nuEff)*dev2(T(grad(U))))) Gauss linear;
+}
+
+laplacianSchemes
+{
+    default         Gauss linear corrected;
+}
+
+interpolationSchemes
+{
+    default         linear;
+}
+
+snGradSchemes
+{
+    default         corrected;
+}
+
+wallDist
+{
+    method          meshWave;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

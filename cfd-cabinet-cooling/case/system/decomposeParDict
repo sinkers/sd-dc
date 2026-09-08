@@ -1,0 +1,6 @@
+/*--------------------------------*- C++ -*----------------------------------*/
+FoamFile { version 2.0; format ascii; class dictionary; object decomposeParDict; }
+// 8 ranks is the measured optimum on this laptop; see COMPUTE-OPTIONS.md.
+// Rule of thumb: ranks ~ cells/20000, capped by physical cores.
+numberOfSubdomains  8;
+method              scotch;
