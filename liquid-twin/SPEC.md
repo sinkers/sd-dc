@@ -1,6 +1,8 @@
 # Liquid twin — two-loop DLC cooling system
 
-**Status:** Phases 0-1 built, plus the geometry and review viewer from Phase 4. Sections 4.1-4.4 (elements), 9 and the
+**Status:** Phases 0-1 built and joined to the geometry, plus the review viewer
+from Phase 4. 118 tests. What §9 promised - one source for the physics and the
+picture - is now load-bearing rather than aspirational. Sections 4.1-4.4 (elements), 9 and the
 hydraulic half of 12 are implemented and tested; see README.md for what
 changed once the physics was actually run.
 

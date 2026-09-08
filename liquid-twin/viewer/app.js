@@ -51,8 +51,48 @@ const meshOfKey = new Map();
 
 function colourOf(part) {
   if (part.group === 'valve') return manifest.valve_colour;
+  if (part.group === 'meter') return manifest.meter_colour;
   if (part.group === 'pipe') return manifest.service_colour[part.tag];
   return manifest.kind_colour[part.group] || [0.5, 0.5, 0.5];
+}
+
+/* Pipes are drawn as one merged mesh per service, so recolouring them by flow
+ * or velocity cannot be a material swap. It is a per-vertex colour update over
+ * the triangle range each segment owns, which the merge already records. */
+function ensureVertexColours(g) {
+  const geom = g.mesh.geometry;
+  if (geom.getAttribute('color')) return geom.getAttribute('color');
+  const n = geom.getAttribute('position').count;
+  const attr = new THREE.BufferAttribute(new Float32Array(n * 3), 3);
+  geom.setAttribute('color', attr);
+  return attr;
+}
+
+function paintRange(attr, range, rgb) {
+  const from = range.first * 3;
+  const to = from + range.count * 3;
+  for (let v = from; v < to; v++) attr.setXYZ(v, rgb[0], rgb[1], rgb[2]);
+}
+
+/* Blue -> green -> amber -> red, for a normalised 0..1 value. Deliberately not
+ * a rainbow: the ends have to read as "low" and "high" at a glance, and a
+ * rainbow's yellow is brighter than its red, which inverts the reading. */
+function ramp(x) {
+  const stops = [
+    [0.00, [0.18, 0.40, 0.72]],
+    [0.35, [0.24, 0.72, 0.62]],
+    [0.70, [0.88, 0.72, 0.28]],
+    [1.00, [0.85, 0.28, 0.26]],
+  ];
+  x = Math.max(0, Math.min(1, x));
+  for (let i = 1; i < stops.length; i++) {
+    if (x <= stops[i][0]) {
+      const [a, ca] = stops[i - 1], [b, cb] = stops[i];
+      const f = (x - a) / (b - a);
+      return ca.map((c, j) => c + (cb[j] - c) * f);
+    }
+  }
+  return stops[stops.length - 1][1];
 }
 
 function groupKey(part) {
@@ -121,12 +161,17 @@ async function load() {
   // and the layout module use, which matters as soon as anything is picked.
   camera.up.set(0, 0, 1);
 
-  fitCamera(min, max);
-
   buildUI();
+  buildHydraulicsUI();
   document.getElementById('loading').remove();
   document.getElementById('left').hidden = false;
   document.getElementById('right').hidden = false;
+  document.getElementById('hydraulics').hidden = false;
+
+  // Fit last, once the panels are laid out. freeBand() measures them, and
+  // measuring an element that is still `hidden` returns a zero rect - so
+  // fitting before this point silently fell back to the whole viewport.
+  fitCamera(min, max);
 }
 
 /* Frame the whole plant.
@@ -137,6 +182,23 @@ async function load() {
  * sphere is mostly empty air above and below, and fitting that sphere to the
  * narrower field of view left the model floating in a third of the window.
  * Projecting the corners costs a dozen lines and uses the whole viewport. */
+/* The horizontal band left free by the side panels, as {centre, width} in CSS
+ * pixels. The panels overlay the canvas rather than shrinking it, so a fit that
+ * uses the full viewport hides a third of the plant behind them - which it did. */
+function freeBand() {
+  let left = 0, right = innerWidth;
+  for (const id of ['left']) {
+    const el = document.getElementById(id);
+    if (el && !el.hidden) left = Math.max(left, el.getBoundingClientRect().right + 12);
+  }
+  for (const id of ['right', 'hydraulics']) {
+    const el = document.getElementById(id);
+    if (el && !el.hidden) right = Math.min(right, el.getBoundingClientRect().left - 12);
+  }
+  const width = Math.max(240, right - left);
+  return { centre: (left + right) / 2, width };
+}
+
 function fitCamera(min, max) {
   const dir = new THREE.Vector3(0.62, -0.72, 0.31).normalize();
   const up = new THREE.Vector3(0, 0, 1);
@@ -160,16 +222,31 @@ function fitCamera(min, max) {
   // Fit at the box centre, not its near face. Adding halfD here - which looked
   // like the safe thing, since the near corner is closer than the centre and so
   // projects larger - pushed the camera back by the plant's own 19 m depth and
-  // left the model using 57 % of the window. The 1.12 margin already covers the
+  // left the model using 57 % of the window. The margin already covers the
   // perspective growth; halfD belongs in the near plane, below, and nowhere else.
+  //
+  // The panels overlay the canvas rather than shrinking it, so fitting to the
+  // full viewport hides the plant behind them. Fit to the band they leave free
+  // instead, then pan the view into that band's centre.
+  const band = freeBand();
+  const shrink = innerWidth / band.width;
   const distance = Math.max(halfH / Math.tan(vFov / 2),
-                            halfW / Math.tan(hFov / 2)) * 1.22;
+                            halfW * shrink / Math.tan(hFov / 2)) * 1.08;
 
-  camera.position.copy(dir.clone().multiplyScalar(distance));
+  // `right` is cross(dir, up), and the camera looks from `dir` back toward the
+  // origin - so its forward is -dir and cross(forward, up) is -right. That makes
+  // this vector screen-LEFT, not screen-right, which is why panning by -shift
+  // pushed the plant the wrong way and part of it behind the panel it was meant
+  // to clear. Panning by +shift along a screen-left axis moves the view left.
+  const visibleWidth = 2 * distance * Math.tan(hFov / 2);
+  const shift = (band.centre - innerWidth / 2) / innerWidth * visibleWidth;
+  const pan = right.clone().multiplyScalar(shift);
+
+  camera.position.copy(dir.clone().multiplyScalar(distance)).add(pan);
   camera.near = Math.max(0.1, distance - halfD * 3);
   camera.far = distance + halfD * 6 + 50;
   camera.updateProjectionMatrix();
-  controls.target.set(0, 0, 0);
+  controls.target.copy(pan);
   controls.minDistance = Math.max(halfW, halfH) * 0.1;
   controls.maxDistance = distance * 3;
   controls.update();
@@ -179,10 +256,11 @@ function fitCamera(min, max) {
 
 function buildUI() {
   const order = ['pipe:facility_supply', 'pipe:facility_return',
-                 'pipe:tcs_supply', 'pipe:tcs_return', 'valve',
-                 'rack', 'cdu', 'chiller'];
+                 'pipe:tcs_supply', 'pipe:tcs_return', 'valve', 'meter',
+                 'rack', 'cdu', 'pump', 'chiller'];
   const labels = {
-    valve: 'Control valves', rack: 'AI racks', cdu: 'CDUs', chiller: 'HT chillers',
+    valve: 'Control valves', meter: 'CDU flow meters', rack: 'AI racks',
+    cdu: 'CDUs', pump: 'Chilled water pumps', chiller: 'HT chillers',
   };
   const host = document.getElementById('toggles');
   for (const k of order) {
@@ -212,7 +290,9 @@ function buildUI() {
   const n = g => manifest.parts.filter(p => p.group === g).length;
   document.getElementById('counts').innerHTML = [
     ['Chillers', `${n('chiller')} (N+1)`],
+    ['Chilled water pumps', n('pump')],
     ['CDUs', `${n('cdu')} (3 pods × 3)`],
+    ['Flow meters', n('meter')],
     ['Liquid-cooled racks', n('rack')],
     ['Control valves', n('valve')],
     ['Pipe runs', `${n('pipe')} · ${totalPipe.toFixed(0)} m`],
@@ -228,6 +308,22 @@ function buildUI() {
   document.getElementById('crossover').textContent = `${ch.crossover_c.toFixed(1)} °C`;
   document.getElementById('ambMax').textContent = `${ch.rd110_ambient_max_c} °C`;
   document.getElementById('chillerNote').textContent = ch.note;
+
+  const modes = [
+    ['service', 'Service', 'the four loops, at their design temperatures'],
+    ['flow', 'Flow', 'mass flow, scaled per service'],
+    ['velocity', 'Velocity', 'against a 3 m/s ceiling'],
+    ['dp', 'Pressure drop', 'per run, scaled per service'],
+  ];
+  const cb = document.getElementById('colourBy');
+  for (const [key, name, note] of modes) {
+    const el = document.createElement('label');
+    el.className = 'toggle';
+    el.innerHTML = `<input type="radio" name="cb" value="${key}"${key === 'service' ? ' checked' : ''}>
+      <span class="t">${name}<br><small>${note}</small></span>`;
+    el.querySelector('input').onchange = () => setColourMode(key);
+    cb.appendChild(el);
+  }
 
   const slider = document.getElementById('amb');
   slider.oninput = () => setAmbient(parseFloat(slider.value));
@@ -329,6 +425,172 @@ function drawChart(marker) {
   ctx.fillText('free cooling', pad + 4, pad + 11);
 }
 
+/* ---------- hydraulics ---------- */
+
+let scenarioIndex = 0;
+let colourMode = 'service';
+
+function scenario() { return manifest.scenarios[scenarioIndex]; }
+
+function buildHydraulicsUI() {
+  const sel = document.getElementById('scenario');
+  manifest.scenarios.forEach((s, i) => {
+    const o = document.createElement('option');
+    o.value = i;
+    o.textContent = s.label;
+    sel.appendChild(o);
+  });
+  sel.onchange = () => { scenarioIndex = +sel.value; renderHydraulics(); };
+  renderHydraulics();
+}
+
+function rows(pairs) {
+  return pairs.map(([a, b, cls]) =>
+    `<div class="row"><span>${a}</span><span class="${cls || ''}">${b}</span></div>`).join('');
+}
+
+function renderHydraulics() {
+  const s = scenario();
+  const v = document.getElementById('verdict');
+  v.textContent = s.heat.verdict;
+  v.className = 'verdict v-' + s.heat.verdict;
+  document.getElementById('verdictWhy').textContent = s.heat.verdict_reason;
+  document.getElementById('scenarioNote').textContent = s.note;
+
+  // Circuits: solved flow against design, and the pressure band.
+  document.getElementById('circuits').innerHTML = Object.values(s.circuits).map(c => {
+    const pct = c.total_flow_kgs / c.design_flow_kgs * 100;
+    const cls = pct < 90 ? 'bad' : pct < 98 ? 'warn' : '';
+    const spread = c.pump_flow_spread > 0.5
+      ? `<em>pump spread ${c.pump_flow_spread.toFixed(1)} kg/s — the pumps are not sharing</em>` : '';
+    const rev = c.reverse_flow_branches.length
+      ? `<em class="bad">reverse flow: ${c.reverse_flow_branches.slice(0, 3).join(', ')}</em>` : '';
+    const fast = c.over_velocity.length
+      ? `<em class="bad">over ${c.velocity_limit_ms} m/s: ${
+          c.over_velocity.slice(0, 2).map(o => `${o.branch} ${o.velocity_ms}`).join(', ')}</em>`
+      : `<em>peak velocity ${c.max_velocity_ms} m/s of ${c.velocity_limit_ms} allowed</em>`;
+    return `<div class="seg">
+      <b>${c.circuit}</b><span class="${cls}">${c.total_flow_kgs.toFixed(1)} kg/s</span>
+      <em>${pct.toFixed(0)} % of ${c.design_flow_kgs.toFixed(1)} design ·
+          ${c.pressure_min_kpa.toFixed(0)}–${c.pressure_max_kpa.toFixed(0)} kPa ·
+          ${c.temperature_c} °C</em>${fast}${spread}${rev}</div>`;
+  }).join('');
+
+  // Flow meters, one row per CDU rather than one per meter: 18 rows pushed the
+  // pumps below the fold, and the pair on a CDU is what a reader compares
+  // anyway - the two sides of one plate should carry the same duty.
+  const meters = {};
+  for (const c of Object.values(s.circuits)) {
+    for (const [tag, m] of Object.entries(c.meters)) meters[tag] = m;
+  }
+  const n = manifest.parts.filter(p => p.group === 'cdu').length;
+  document.getElementById('meters').innerHTML = Array.from({ length: n }, (_, i) => {
+    const id = String(i + 1).padStart(2, '0');
+    const f = meters[`FM-F${id}`], tcs = meters[`FM-T${id}`];
+    const dead = q => Math.abs(q ?? 0) < 5;
+    const fmt = (m, cls) => m
+      ? `<span class="${cls}">${m.q_m3h.toFixed(0)}</span>`
+      : `<span class="dim">—</span>`;
+    return `<div class="row"><span>CDU-${i + 1}</span><span>
+      ${fmt(f, dead(f?.q_m3h) ? 'bad' : '')} <small style="color:var(--dim)">fac</small>
+      &nbsp;·&nbsp;
+      ${fmt(tcs, dead(tcs?.q_m3h) ? 'bad' : '')} <small style="color:var(--dim)">tcs m³/h</small>
+      </span></div>`;
+  }).join('');
+
+  // Pumps: chiller-side CWPs first, then the CDU integral pumps.
+  const pumps = [];
+  for (const c of Object.values(s.circuits)) {
+    for (const [name, p] of Object.entries(c.pumps)) pumps.push([name, p]);
+  }
+  pumps.sort((a, b) => (a[0].startsWith('CWP') ? 0 : 1) - (b[0].startsWith('CWP') ? 0 : 1)
+                       || a[0].localeCompare(b[0]));
+  document.getElementById('pumps').innerHTML = pumps.map(([name, p]) => {
+    const off = p.speed === 0;
+    const label = name.replace('_UNIT', '').replace('_PLATE_TCS', ' pump');
+    // CWP-4 is the N+1 standby and is not in the solved network at all, which is
+    // why it has no row here. Saying so beats leaving a reader to wonder.
+    return `<div class="seg">
+      <b>${label}${off ? ' — off' : ''}</b>
+      <span class="${off ? 'bad' : ''}">${p.q_m3h.toFixed(0)} m³/h</span>
+      <em>${p.suction_kpa.toFixed(0)} → ${p.discharge_kpa.toFixed(0)} kPa ·
+          ${p.head_m.toFixed(1)} m · ${p.shaft_kw ?? 0} kW shaft${
+            p.speed !== 1 ? ` · ${(p.speed * 100).toFixed(0)} % speed` : ''}</em></div>`;
+  }).join('') +
+    `<div class="row"><span>CWP-4</span><span style="color:var(--dim)">standby, N+1</span></div>`;
+
+  // Electrical load to heat to liquid.
+  const h = s.heat, e = h.electrical;
+  const liqPct = e.to_liquid_kw / e.it_electrical_kw * 100;
+  document.getElementById('heat').innerHTML =
+    rows([['IT electrical', `${e.it_electrical_kw.toFixed(0)} kW`]]) +
+    `<div class="sankey">
+       <i style="width:${liqPct}%;background:#3ba3d0"></i>
+       <i style="width:${100 - liqPct}%;background:#c98a4a"></i>
+     </div>` +
+    rows([
+      ['→ liquid', `${e.to_liquid_kw.toFixed(0)} kW (${liqPct.toFixed(0)} %)`],
+      ['→ air', `${e.to_air_kw.toFixed(0)} kW`],
+      ['Carried by liquid', `${h.carried_by_liquid_kw.toFixed(0)} kW`],
+      ['+ pump work in fluid', `${h.pump_hydraulic_kw.toFixed(0)} kW`],
+      ['= rejected at chillers', `${h.rejected_at_chillers_kw.toFixed(0)} kW`],
+      ['Pump shaft power', `${h.pump_shaft_kw.toFixed(0)} kW`],
+      ['Worst rack', h.worst_rack],
+      ['its rise', h.worst_delta_t_k === null
+        ? `starved — no steady state`
+        : `${h.worst_delta_t_k.toFixed(1)} K vs ${h.design_delta_t_k} design`,
+        h.worst_delta_t_k === null ? 'bad' : h.worst_delta_t_k > 13 ? 'warn' : ''],
+      ['its outlet', h.racks[h.worst_rack].outlet_c === null
+        ? '—'
+        : `${h.racks[h.worst_rack].outlet_c.toFixed(1)} °C`,
+        h.racks[h.worst_rack].over_limit ? 'bad' : ''],
+    ]);
+
+  applyColourMode();
+}
+
+function setColourMode(mode) {
+  colourMode = mode;
+  applyColourMode();
+}
+
+function applyColourMode() {
+  const flows = scenario().segment_flow;
+  for (const [key, g] of groups) {
+    if (!key.startsWith('pipe:')) continue;
+    const mat = g.mesh.material;
+    if (colourMode === 'service') {
+      mat.vertexColors = false;
+      const c = manifest.service_colour[key.slice(5)];
+      mat.color.setRGB(c[0], c[1], c[2]);
+      mat.needsUpdate = true;
+      continue;
+    }
+    // Scale per service, not across the whole plant: a DN50 rack drop and a
+    // DN150 main differ by an order of magnitude in flow, and one global scale
+    // paints every drop the same colour and tells the reader nothing.
+    const vals = g.ranges.map(r => metric(flows[r.part.name]));
+    const hi = Math.max(...vals.filter(v => v !== null), 1e-9);
+    const attr = ensureVertexColours(g);
+    g.ranges.forEach((r, i) => {
+      const val = vals[i];
+      paintRange(attr, r, val === null ? [0.22, 0.24, 0.26] : ramp(val / hi));
+    });
+    attr.needsUpdate = true;
+    mat.vertexColors = true;
+    mat.color.setRGB(1, 1, 1);
+    mat.needsUpdate = true;
+  }
+}
+
+function metric(row) {
+  if (!row) return null;
+  if (colourMode === 'flow') return Math.abs(row.m_dot_kgs);
+  if (colourMode === 'velocity') return Math.abs(row.velocity_ms ?? 0);
+  if (colourMode === 'dp') return Math.abs(row.dp_kpa);
+  return null;
+}
+
 /* ---------- picking ---------- */
 
 renderer.domElement.addEventListener('click', ev => {
@@ -349,18 +611,71 @@ renderer.domElement.addEventListener('click', ev => {
 
   const bits = [`<strong>${p.name}</strong>`];
   if (p.label) bits.push(p.label);
+  const flows = scenario().segment_flow;
   if (p.group === 'pipe') {
     bits.push(`DN${p.dn} · ${p.length_m} m · ${p.elbows} elbow${p.elbows === 1 ? '' : 's'} · ` +
               `${manifest.services[p.tag].label}`);
+    const f = flows[p.name];
+    if (f) {
+      bits.push(`<strong>${f.m_dot_kgs.toFixed(2)} kg/s</strong> · ${f.q_m3h.toFixed(1)} m³/h` +
+                (f.velocity_ms !== null ? ` · ${f.velocity_ms.toFixed(2)} m/s` : '') +
+                ` · Δp ${f.dp_kpa.toFixed(1)} kPa`);
+    }
     bits.push(`<span style="color:var(--dim)">${p.from} → ${p.to}` +
-              (p.valve ? ` · valve ${p.valve}` : '') + `</span>`);
+              (p.valve ? ` · valve ${p.valve}` : '') +
+              (p.meter ? ` · meter ${p.meter}` : '') + `</span>`);
   } else if (p.group === 'valve') {
     bits.push(`Control valve on ${p.on_segment} · DN${p.dn}`);
+    const vb = findBranchByValve(p.name);
+    if (vb) {
+      bits.push(`lift ${(vb.valve_position * 100).toFixed(0)} % · ` +
+                `Δp ${vb.dp_kpa.toFixed(1)} kPa · authority ${vb.valve_authority}`);
+    }
+  } else if (p.group === 'meter') {
+    const m = findMeter(p.name);
+    bits.push(`Flow meter on ${p.on_segment} · DN${p.dn}`);
+    if (m) bits.push(`<strong>${m.l_per_s.toFixed(1)} L/s</strong> · ${m.q_m3h.toFixed(1)} m³/h`);
+  } else if (p.group === 'pump') {
+    const pm = findPump(p.name);
+    if (pm) {
+      bits.push(`<strong>${pm.q_m3h.toFixed(0)} m³/h</strong> · ${pm.head_m.toFixed(1)} m head`);
+      bits.push(`${pm.suction_kpa.toFixed(0)} → ${pm.discharge_kpa.toFixed(0)} kPa · ` +
+                `${pm.shaft_kw ?? 0} kW shaft · ${(pm.speed * 100).toFixed(0)} % speed`);
+    }
+  } else if (p.group === 'rack') {
+    const r = scenario().heat.racks[p.name];
+    if (r) {
+      bits.push(`<strong>${r.duty_kw} kW to liquid</strong> · ${r.m_dot_kgs.toFixed(2)} kg/s ` +
+                `(${(r.flow_fraction * 100).toFixed(0)} % of design)`);
+      bits.push(r.starved
+        ? `<span style="color:var(--mech)">starved — no steady state</span>`
+        : `rise ${r.delta_t_k.toFixed(1)} K → outlet ${r.outlet_c.toFixed(1)} °C` +
+          (r.over_limit ? ` <span style="color:var(--mech)">over limit</span>` : ''));
+    }
   }
   if (p.pod !== null && p.pod !== undefined) bits.push(`<span style="color:var(--dim)">Pod ${p.pod + 1}</span>`);
   box.innerHTML = bits.join('<br>');
   box.style.display = 'block';
 });
+
+function findMeter(tag) {
+  for (const c of Object.values(scenario().circuits)) if (c.meters[tag]) return c.meters[tag];
+  return null;
+}
+
+function findPump(name) {
+  for (const c of Object.values(scenario().circuits)) {
+    for (const [k, v] of Object.entries(c.pumps)) if (k.startsWith(name)) return v;
+  }
+  return null;
+}
+
+function findBranchByValve(tag) {
+  for (const c of Object.values(scenario().circuits)) {
+    for (const b of Object.values(c.branches)) if (b.valve === tag) return b;
+  }
+  return null;
+}
 
 addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;

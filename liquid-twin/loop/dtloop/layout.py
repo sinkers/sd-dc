@@ -51,6 +51,18 @@ CHILLER_L, CHILLER_W, CHILLER_H = 12000, 2500, 2600   # Uniflair XRAF4242A EHT
 CHILLER_COUNT = 4                                  # N+1
 CHILLER_PITCH_Y = 7000
 
+# Chilled water pumps. RD110_3.3 lists seven CWPs across the two water systems,
+# "to be sized upon design implementation"; four of them serve the HT circuit,
+# one per chiller, which is the arrangement drawn here.
+PUMP_W, PUMP_D, PUMP_H = 1500, 1000, 1400
+PUMP_X = 16800
+
+# Flow meters, one per CDU per side. Drawn as a short collar on the pipe rather
+# than a box beside it, because that is what a magnetic or ultrasonic meter is:
+# a spool piece in the line.
+FM_LENGTH = 300
+FM_RADIUS_FACTOR = 1.45
+
 RACK_X0 = 2000
 CDU_X0 = 9000
 CDU_PITCH_X = 1600
@@ -63,12 +75,52 @@ FACILITY_HEADER_Z = 4400   # above the TCS headers, so crossings are clear
 RACK_TOP_Z = RACK_H
 POD_DEPTH = RACK_D + HOT_AISLE_W + RACK_D
 
-# Header sizes. DN150 is the only callout on RD110_3.2; the rest are sized here
-# on the design velocity in loop_params.json and are engineering judgement, not
-# RD110 figures.
-DN_FACILITY_MAIN = 150
-DN_TCS_HEADER = 150
-DN_RACK_DROP = 50
+# Pipe sizes.
+#
+# DN150 is the only callout on RD110_3.2, and applying it to the facility mains
+# as well as the branch runs was wrong: the mains carry all 540 m3/h, which at
+# DN150 is 8.5 m/s. That is four times a sensible design velocity, and it was
+# the flow display that caught it - the number had been sitting in
+# loop_params.json as hydraulic.design_velocity_ms, unused, the whole time.
+#
+# Everything is now sized against V_MAX. RD110's DN150 turns out to be
+# consistent with the chiller branches and the TCS headers at about 2.8 m/s;
+# only the mains needed to go up, to DN300 at 2.1 m/s.
+V_MAX = 3.0  # m/s. Common upper bound for chilled water. Grade L.
+
+# Standard DN ladder, ISO 6708.
+DN_LADDER = (25, 32, 40, 50, 65, 80, 100, 125, 150, 200, 250, 300, 350, 400, 500)
+
+
+def size_dn(q_m3s: float, v_max: float = V_MAX) -> int:
+    """Smallest standard DN whose bore keeps velocity at or below `v_max`.
+
+    Uses the DN as the bore, which is a simplification - real DN300 schedule 10
+    has a 307 mm inside diameter, not 300 - but the error is under 3 % and
+    always on the conservative side of the velocity check.
+    """
+    import math as _math
+    for dn in DN_LADDER:
+        area = _math.pi * (dn / 1000.0) ** 2 / 4.0
+        if q_m3s / area <= v_max:
+            return dn
+    return DN_LADDER[-1]
+
+
+# Design flows, from the RD110 duty at a 10 K rise on both loops. Repeated here
+# rather than imported from plant.py, because plant.py imports this module and
+# a cycle for four constants is not worth it. test_layout pins them together.
+_Q_FACILITY_M3S = 540.2 / 3600.0
+_Q_CHILLER_BRANCH_M3S = 180.1 / 3600.0
+_Q_TCS_POD_M3S = 179.3 / 3600.0
+_Q_CDU_M3S = 60.0 / 3600.0
+_Q_RACK_M3S = 11.2 / 3600.0
+
+DN_FACILITY_MAIN = size_dn(_Q_FACILITY_M3S)     # 300
+DN_CHILLER_BRANCH = size_dn(_Q_CHILLER_BRANCH_M3S)  # 150 - matches RD110
+DN_TCS_HEADER = size_dn(_Q_TCS_POD_M3S)         # 150 - matches RD110
+DN_CDU_TIE = size_dn(_Q_CDU_M3S)                # 100
+DN_RACK_DROP = size_dn(_Q_RACK_M3S)             # 50
 
 
 @dataclass(frozen=True)
@@ -91,6 +143,8 @@ class Equipment:
     size: tuple[float, float, float]
     label: str = ""
     pod: int | None = None
+    # Set on pumps and flow meters: the branch whose solved flow they report.
+    reads_branch: str = ""
 
     def centre(self) -> Point:
         return Point(
@@ -117,6 +171,7 @@ class Segment:
     from_node: str = ""
     to_node: str = ""
     valve: str = ""  # RD110 tag, where the segment carries one
+    meter: str = ""  # flow meter tag, where the segment carries one
     pod: int | None = None
 
     def length_mm(self) -> float:
@@ -259,21 +314,37 @@ def build_layout() -> LoopLayout:
                    Point(FACILITY_X_RETURN, y_hi, FACILITY_HEADER_Z)),
     ))
 
-    # Chiller connections. CV01..CV04 in RD110_3.2 are the control valves on
-    # these circuits, one per chiller.
+    # Chiller connections, each through its own pump. CV01..CV04 in RD110_3.2
+    # are the control valves on these circuits, one per chiller.
     for i in range(CHILLER_COUNT):
         cy = i * CHILLER_PITCH_Y + CHILLER_W / 2
         tag = f"CH{i + 1}"
+        pump = f"CWP-{i + 1}"
+        eq.append(Equipment(
+            name=pump, kind="pump",
+            origin=Point(PUMP_X, cy - PUMP_D / 2, 0),
+            size=(PUMP_W, PUMP_D, PUMP_H),
+            label="Chilled water pump, HT circuit",
+            reads_branch=f"{pump}_UNIT",
+        ))
         seg.append(Segment(
-            name=f"{tag}_SUPPLY", service="facility_supply", dn=DN_FACILITY_MAIN,
-            from_node=f"chiller{i + 1}_out", to_node="chiller_hdr_supply",
-            valve=f"CV{i + 1:02d}",
+            name=f"{tag}_TO_PUMP", service="facility_supply", dn=DN_CHILLER_BRANCH,
+            from_node=f"chiller{i + 1}_out", to_node=f"pump{i + 1}_in",
             waypoints=route(Point(CHILLER_X0 + 500, cy, CHILLER_H),
                        Point(CHILLER_X0 + 500, cy, FACILITY_HEADER_Z),
+                       Point(PUMP_X + PUMP_W, cy, FACILITY_HEADER_Z),
+                       Point(PUMP_X + PUMP_W, cy, PUMP_H)),
+        ))
+        seg.append(Segment(
+            name=f"{tag}_PUMP_OUT", service="facility_supply", dn=DN_CHILLER_BRANCH,
+            from_node=f"pump{i + 1}_out", to_node="chiller_hdr_supply",
+            valve=f"CV{i + 1:02d}",
+            waypoints=route(Point(PUMP_X, cy, PUMP_H),
+                       Point(PUMP_X, cy, FACILITY_HEADER_Z),
                        Point(FACILITY_X_SUPPLY, cy, FACILITY_HEADER_Z)),
         ))
         seg.append(Segment(
-            name=f"{tag}_RETURN", service="facility_return", dn=DN_FACILITY_MAIN,
+            name=f"{tag}_RETURN", service="facility_return", dn=DN_CHILLER_BRANCH,
             from_node="chiller_hdr_return", to_node=f"chiller{i + 1}_in",
             waypoints=route(Point(FACILITY_X_RETURN, cy + 900, FACILITY_HEADER_Z),
                        Point(CHILLER_X0 + 1600, cy + 900, FACILITY_HEADER_Z),
@@ -344,7 +415,8 @@ def _add_pod(lay: LoopLayout, pod: int, y0: float) -> None:
         cx = CDU_X0 + i * CDU_PITCH_X + CDU_W / 2
         cy = y0 + POD_DEPTH / 2
         seg.append(Segment(
-            name=f"CDU{n}_FAC_IN", service="facility_supply", dn=100,
+            name=f"CDU{n}_FAC_IN", service="facility_supply", dn=DN_CDU_TIE,
+            meter=f"FM-F{n:02d}",
             from_node="cdu_hdr_supply", to_node=f"cdu{n}_fac_in",
             waypoints=route(Point(FACILITY_X_SUPPLY, cy - 200, FACILITY_HEADER_Z),
                        Point(cx - 200, cy - 200, FACILITY_HEADER_Z),
@@ -352,7 +424,7 @@ def _add_pod(lay: LoopLayout, pod: int, y0: float) -> None:
             pod=pod,
         ))
         seg.append(Segment(
-            name=f"CDU{n}_FAC_OUT", service="facility_return", dn=100,
+            name=f"CDU{n}_FAC_OUT", service="facility_return", dn=DN_CDU_TIE,
             from_node=f"cdu{n}_fac_out", to_node="cdu_hdr_return",
             waypoints=route(Point(cx + 200, cy + 200, CDU_H),
                        Point(cx + 200, cy + 200, FACILITY_HEADER_Z),
@@ -360,7 +432,8 @@ def _add_pod(lay: LoopLayout, pod: int, y0: float) -> None:
             pod=pod,
         ))
         seg.append(Segment(
-            name=f"CDU{n}_TCS_OUT", service="tcs_supply", dn=100,
+            name=f"CDU{n}_TCS_OUT", service="tcs_supply", dn=DN_CDU_TIE,
+            meter=f"FM-T{n:02d}",
             from_node=f"cdu{n}_tcs_out", to_node=f"pod{pod + 1}_cdu_out",
             waypoints=route(Point(cx, cy - 300, CDU_H),
                        Point(cx, cy - 300, TCS_HEADER_Z),
@@ -369,7 +442,7 @@ def _add_pod(lay: LoopLayout, pod: int, y0: float) -> None:
             pod=pod,
         ))
         seg.append(Segment(
-            name=f"CDU{n}_TCS_IN", service="tcs_return", dn=100,
+            name=f"CDU{n}_TCS_IN", service="tcs_return", dn=DN_CDU_TIE,
             from_node=f"pod{pod + 1}_cdu_in", to_node=f"cdu{n}_tcs_in",
             waypoints=route(Point(x_start, tcs_return_y, TCS_HEADER_Z),
                        Point(x_start, cy + 300, TCS_HEADER_Z),
@@ -412,13 +485,14 @@ def _pcv_tag(pod: int, row: str, i: int) -> str:
 
 def summary(lay: LoopLayout) -> str:
     lo, hi = lay.bounds()
-    counts = {k: len(lay.by_kind(k)) for k in ("chiller", "cdu", "rack")}
+    counts = {k: len(lay.by_kind(k)) for k in ("chiller", "pump", "cdu", "rack")}
     lines = [
-        f"{lay.name}: {counts['chiller']} chillers, {counts['cdu']} CDUs, "
-        f"{counts['rack']} racks",
+        f"{lay.name}: {counts['chiller']} chillers, {counts['pump']} pumps, "
+        f"{counts['cdu']} CDUs, {counts['rack']} racks",
         f"  {len(lay.segments)} pipe segments, {lay.total_pipe_m():.1f} m total, "
         f"{sum(s.elbows() for s in lay.segments)} elbows",
-        f"  valves: {len([s for s in lay.segments if s.valve])}",
+        f"  valves: {len([s for s in lay.segments if s.valve])}, "
+        f"flow meters: {len([s for s in lay.segments if s.meter])}",
         f"  extent: {(hi.x - lo.x) / 1000:.1f} x {(hi.y - lo.y) / 1000:.1f} x "
         f"{(hi.z - lo.z) / 1000:.1f} m",
     ]

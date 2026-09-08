@@ -191,6 +191,65 @@ that exports STEP, the packer that builds the browser bundle, and — from Phase
 — the hydraulic solver. That is §9 of the spec made real: a layout change moves
 the physics and the picture together, because there is only one of them.
 
+### Flow rates and pressure
+
+The Phase 1 solver now runs on the actual layout, which is what having one
+source for geometry and physics was for. Four independent circuits — the
+facility loop and one TCS loop per pod, because they meet only across the CDU
+plates:
+
+| circuit | flow | design | pressure | peak velocity |
+|---|---|---|---|---|
+| facility | 152.7 kg/s | 152.3 | 205–434 kPa | 2.83 m/s |
+| pod 1–3 | 50.6 kg/s each | 50.7 | 246–474 kPa | 2.82 m/s |
+
+**18 CDU flow meters** (FM-F01..09 facility side, FM-T01..09 secondary) at
+~60 m³/h each, **4 chilled water pumps** on the chiller side reporting suction,
+discharge, head and shaft power, and per-rack control valve authority. Click any
+pipe for its flow, velocity and Δp; any rack for its duty and temperature rise.
+
+Pipes recolour by flow, velocity or pressure drop, scaled per service — a DN40
+rack drop and a DN300 main differ by an order of magnitude, and one global scale
+paints every drop the same colour and says nothing.
+
+**The pumps are derived, not guessed.** RD110 lists its chilled water pumps as
+"to be sized upon design implementation", so `size_pumps` solves the circuit
+once with the pumps as pure resistances, reads the head the system actually
+needs at design flow, and fits a curve through it. Change a pipe size and the
+pump follows.
+
+### Electrical load → heat → liquid
+
+Every watt into a rack leaves as heat; the 87/13 split is not an efficiency, it
+is a routing question — which coolant carries it out.
+
+| | |
+|---|---|
+| IT electrical | 7,536 kW (6,816 AI + 720 networking) |
+| → liquid | 5,930 kW (78.7 % of IT) |
+| → air | 1,606 kW |
+| Carried by liquid | 5,930 kW |
+| + pump work in fluid | 68 kW |
+| **= rejected at chillers** | **5,998 kW** |
+
+That last line matters: the pumps put their shaft power into the fluid, so a
+plant sized on the IT load alone is short by the pumping.
+
+And because flow is an output, each rack's temperature rise is whatever its
+*solved* flow forces — `ΔT = Q/(ṁ·cp)`:
+
+| scenario | verdict | worst rack |
+|---|---|---|
+| Design | PASS | 10.0 K rise, 50.0 °C out |
+| One rack valve shut | **FAIL** | P1A01 starved |
+| One rack valve at 50 % lift | **FAIL** | 28 % flow → 35.4 K → 75.4 °C |
+| One CDU tripped | PASS | 12.4 K → 52.4 °C |
+| One CWP tripped | PASS | pumps unbalanced by 59 kg/s |
+| Pumps at 80 % speed | PASS | 12.5 K, and 34 % of the pump power |
+
+Half lift on an equal-percentage valve is not half flow — it is 28 %, and it
+cooks the rack. That is the characteristic doing exactly what it is for.
+
 ### Free cooling, and when the compressors start
 
 The chillers are **Uniflair XRAF4242A EHT free-cooling** units. Below a crossover
@@ -224,6 +283,35 @@ The liquid load is **87 % of the AI racks**, not of RD110's whole IT figure:
 so applying 87 % to all 7,536 kW gives 6,556 kW — which would *exceed* N+1
 capacity (6,225 kW at RD110's Paris rating) and start a capacity argument that
 the correct sum does not support. A test pins it.
+
+### What showing the flow caught
+
+Two bugs and a sizing error, all found by making the numbers visible:
+
+1. **8.5 m/s in the facility mains.** RD110_3.2's only DN callout is DN150, and
+   I had applied it to the mains as well as the branches — 540 m³/h through
+   DN150. Four times the design velocity that was sitting unused in
+   `loop_params.json` the whole time. Sizing on velocity gives DN300 for the
+   mains (RD110's DN150 is right for the branches, at 2.8 m/s), and dropped the
+   facility pump from 42.9 m of head and 30 kW to **23.0 m and 16.8 kW** — a
+   44 % cut in facility pumping power. A test now guards the velocity limit.
+
+2. **A tripped CDU backflowed.** With its pump stopped and no non-return valve,
+   the solver drove flow *backwards* through the dead plate — FM-T01 read
+   −62 m³/h — and the pod's apparent total went *up*, because two working CDUs
+   were short-circuiting through the third. A correct solution of the network as
+   drawn, and a nonsense as a plant. `CheckValve` exists because of it.
+
+3. **Losing a pump appeared to increase flow.** Reporting circuit total as one
+   pump's flow times their count is right only while every pump is doing the
+   same thing — and the scenarios that matter are exactly the ones where they
+   are not. With CWP-3 off, the survivors ride up their curves and the shortcut
+   read 193 kg/s against a 152 kg/s design.
+
+A fourth, less a bug than a lie: a starved rack reported ΔT = 6,820 K.
+Arithmetically correct, because `Q/(ṁ·cp)` diverges as flow goes to zero, and
+useless — there *is* no steady state, the rack is heating up. It now reports
+"starved" and leaves the transient to Phase 2.
 
 ### What the geometry is not
 

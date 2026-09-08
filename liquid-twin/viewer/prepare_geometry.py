@@ -48,11 +48,14 @@ sys.path.insert(0, str(ROOT / "loop"))
 
 from dtloop.chiller import rd110_plant  # noqa: E402
 from dtloop.layout import (  # noqa: E402
+    FM_LENGTH,
+    FM_RADIUS_FACTOR,
     SERVICES,
     Point,
     build_layout,
     summary,
 )
+from dtloop.plant import electrical_balance, run_scenarios, segment_flows  # noqa: E402
 
 # RD110's liquid load. 87 % of the AI racks only - the 48 networking racks at
 # 15 kW are air-cooled, so applying 87 % to RD110's whole 7,536 kW IT figure
@@ -83,8 +86,10 @@ KIND_COLOUR = {
     "rack": [0.35, 0.35, 0.40],
     "cdu": [0.55, 0.55, 0.60],
     "chiller": [0.45, 0.50, 0.55],
+    "pump": [0.62, 0.48, 0.34],
 }
 VALVE_COLOUR = [0.90, 0.80, 0.20]
+METER_COLOUR = [0.55, 0.85, 0.95]
 
 
 class Blob:
@@ -203,6 +208,22 @@ def valve(blob: Blob, waypoints: list[Point], dn: int) -> int:
     return prism(blob, start, direction, VALVE_BODY_L, dn / 2.0 * VALVE_BODY_R)
 
 
+def meter(blob: Blob, waypoints: list[Point], dn: int) -> int:
+    """A flow meter: a short collar a quarter of the way along the first leg.
+
+    Drawn as a spool piece in the line rather than a box beside it, because that
+    is what a magnetic or ultrasonic meter is. Offset from the valve position so
+    the two do not overlap on a run that carries both.
+    """
+    a, b = waypoints[0], waypoints[1]
+    direction, length = _leg(a, b)
+    if direction is None or length < FM_LENGTH * 2.0:
+        return 0
+    off = max(0.0, length * 0.25 - FM_LENGTH / 2)
+    start = tuple((a.x, a.y, a.z)[i] + direction[i] * off for i in range(3))
+    return prism(blob, start, direction, FM_LENGTH, dn / 2.0 * FM_RADIUS_FACTOR)
+
+
 def main() -> int:
     lay = build_layout()
     problems = lay.validate()
@@ -246,11 +267,29 @@ def main() -> int:
                     "byteOffset": offset, "triangles": tris,
                     "on_segment": s.name, "dn": s.dn, "pod": s.pod,
                 })
+        if s.meter:
+            offset = blob.tell()
+            tris = meter(blob, s.waypoints, s.dn)
+            if tris:
+                parts.append({
+                    "name": s.meter, "group": "meter", "tag": s.service,
+                    "byteOffset": offset, "triangles": tris,
+                    "on_segment": s.name, "dn": s.dn, "pod": s.pod,
+                })
 
     # The chiller mode table. Computed here rather than in the browser so the
     # physics has one implementation and JavaScript only looks things up.
     plant = rd110_plant()
     sweep = plant.sweep(LIQUID_LOAD_KW, RETURN_WATER_C, lo=-10.0, hi=48.0, step=0.5)
+
+    # Hydraulics. Solved here, in Python, and handed over as a table per
+    # scenario - the same arrangement as the chiller sweep, and for the same
+    # reason: one implementation of the physics, and JavaScript only looks
+    # things up. Four circuits (facility plus one per pod), because the loops are
+    # hydraulically separate and meet only across the CDU plates.
+    scenarios = run_scenarios(lay)
+    for row in scenarios:
+        row["segment_flow"] = segment_flows(row)
 
     lo, hi = lay.bounds()
     manifest = {
@@ -266,6 +305,9 @@ def main() -> int:
         "service_colour": SERVICE_COLOUR,
         "kind_colour": KIND_COLOUR,
         "valve_colour": VALVE_COLOUR,
+        "meter_colour": METER_COLOUR,
+        "electrical": electrical_balance(),
+        "scenarios": scenarios,
         "chillers": {
             "model": "Uniflair XRAF4242A EHT free-cooling chiller",
             "units": len(plant.units),
@@ -292,6 +334,14 @@ def main() -> int:
     print(f"wrote geometry.bin  {len(blob.buf) / 1e6:.2f} MB, "
           f"{manifest['total_triangles']} triangles")
     print(f"wrote manifest.json {len(parts)} parts")
+    d = scenarios[0]["circuits"]
+    print(f"hydraulics: facility {d['facility']['total_flow_kgs']:.1f} kg/s, "
+          f"pods {', '.join(f'{d[k]['total_flow_kgs']:.1f}' for k in ('pod1','pod2','pod3'))} kg/s; "
+          f"{len(scenarios)} scenarios")
+    print(f"heat: {scenarios[0]['heat']['electrical']['it_electrical_kw']:.0f} kW IT -> "
+          f"{scenarios[0]['heat']['carried_by_liquid_kw']:.0f} kW liquid + "
+          f"{scenarios[0]['heat']['pump_hydraulic_kw']:.0f} kW pumping = "
+          f"{scenarios[0]['heat']['rejected_at_chillers_kw']:.0f} kW rejected")
     print(f"chillers: {plant.running} of {len(plant.units)} running, "
           f"{plant.capacity_kw:.0f} kW against a {LIQUID_LOAD_KW:.0f} kW liquid load; "
           f"free cooling below {plant.crossover_ambient_c(LIQUID_LOAD_KW, RETURN_WATER_C):.1f} C")

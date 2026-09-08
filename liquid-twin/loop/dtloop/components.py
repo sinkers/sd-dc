@@ -226,6 +226,39 @@ REVERSE_STEEPNESS = 2.0
 
 
 @dataclass
+class CheckValve(Element):
+    """A non-return valve: cheap forwards, effectively shut backwards.
+
+    Added because the solver found the reason for it. With a CDU's pump stopped
+    and no check valve, the network happily drove flow *backwards* through the
+    dead plate - FM-T01 read minus 62 m3/h - and the pod's apparent total went
+    up, because two working CDUs were short-circuiting through the third. That
+    is a correct solution of the network as drawn and a nonsense as a plant, and
+    the fix is the one a real plant already has: a non-return valve on each pump
+    discharge.
+
+    Implemented as a sign-dependent loss coefficient. Continuous in value at
+    zero flow - both branches give zero - with a step in the derivative, which
+    Newton tolerates the same way it tolerates the M_LAM kink.
+    """
+
+    k_forward: float
+    k_reverse: float = 1.0e10
+    name: str = "check_valve"
+
+    @classmethod
+    def from_rating(cls, dp_pa: float, m_dot: float, name: str = "check_valve",
+                    **kw) -> "CheckValve":
+        if m_dot <= 0:
+            raise ValueError("rated flow must be positive")
+        return cls(k_forward=dp_pa / (m_dot * m_dot), name=name, **kw)
+
+    def evaluate(self, m_dot: float, t_c: float) -> tuple[float, float]:
+        k = self.k_forward if m_dot >= 0.0 else self.k_reverse
+        return _quadratic_loss(k, m_dot)
+
+
+@dataclass
 class PumpCurve:
     """Head curve in datasheet units: H[m] = h0 + h1*Q + h2*Q^2, Q in m3/h.
 

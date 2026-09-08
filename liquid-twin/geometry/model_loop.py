@@ -49,7 +49,13 @@ REPO_LOOP = os.path.join(ROOT, "loop")
 if REPO_LOOP not in sys.path:
     sys.path.insert(0, REPO_LOOP)
 
-from dtloop.layout import SERVICES, build_layout, summary  # noqa: E402
+from dtloop.layout import (  # noqa: E402
+    FM_LENGTH,
+    FM_RADIUS_FACTOR,
+    SERVICES,
+    build_layout,
+    summary,
+)
 
 OUT_DIR = os.path.join(ROOT, "models")
 
@@ -64,8 +70,10 @@ KIND_COLOUR = {
     "rack": (0.35, 0.35, 0.40),
     "cdu": (0.55, 0.55, 0.60),
     "chiller": (0.45, 0.50, 0.55),
+    "pump": (0.62, 0.48, 0.34),
 }
 VALVE_COLOUR = (0.90, 0.80, 0.20)
+METER_COLOUR = (0.55, 0.85, 0.95)
 
 VALVE_BODY_R = 1.9   # multiple of pipe radius, so a valve reads at a glance
 VALVE_BODY_L = 220.0  # mm
@@ -123,6 +131,19 @@ def valve_solid(segment):
     )
 
 
+def meter_solid(segment):
+    """A short collar a quarter along the first leg - a spool piece in the line."""
+    a, b = segment.waypoints[0], segment.waypoints[1]
+    d = vec(b).sub(vec(a))
+    if d.Length < FM_LENGTH * 2.0:
+        return None
+    direction = FreeCAD.Vector(d).normalize()
+    off = max(0.0, d.Length * 0.25 - FM_LENGTH / 2)
+    start = vec(a).add(FreeCAD.Vector(direction).multiply(off))
+    return Part.makeCylinder(segment.dn / 2.0 * FM_RADIUS_FACTOR, FM_LENGTH,
+                             start, direction)
+
+
 def add(doc, name, shape, colour, label=""):
     obj = doc.addObject("Part::Feature", name)
     obj.Shape = shape
@@ -161,6 +182,11 @@ def build():
             if body is not None:
                 objects.append(add(doc, s.valve, body, VALVE_COLOUR,
                                    f"{s.valve} on {s.name}"))
+        if s.meter:
+            body = meter_solid(s)
+            if body is not None:
+                objects.append(add(doc, s.meter, body, METER_COLOUR,
+                                   f"{s.meter} flow meter on {s.name}"))
 
     doc.recompute()
     print(f"built {len(objects)} objects in {time.time() - t0:.1f} s")
