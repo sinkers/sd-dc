@@ -53,6 +53,14 @@ id -u "$APP_USER" >/dev/null 2>&1 || sudo useradd --system --home "$APP_DIR" --s
 sudo mkdir -p "$APP_DIR"
 sudo chown -R "$APP_USER:$APP_USER" "$APP_DIR"
 
+log "preparing the drop-in route directory"
+# The glob in the Caddyfile must match at least one file, so a placeholder keeps
+# a box with no other components installed from failing to start Caddy.
+sudo mkdir -p /etc/caddy/sites.d
+[ -f /etc/caddy/sites.d/00-placeholder.caddy ] || \
+  echo "# Drop-in routes live here, one file per component." \
+    | sudo tee /etc/caddy/sites.d/00-placeholder.caddy >/dev/null
+
 log "writing the Caddyfile for $DOMAIN"
 sudo tee /etc/caddy/Caddyfile >/dev/null <<CADDY
 # Automatic HTTPS: Caddy obtains and renews a Let's Encrypt certificate for
@@ -61,9 +69,19 @@ sudo tee /etc/caddy/Caddyfile >/dev/null <<CADDY
 $DOMAIN {
 	encode zstd gzip
 
-	# reverse_proxy passes WebSocket upgrades through untouched. The solver only
-	# ever listens on loopback, so this is its sole route in.
-	reverse_proxy 127.0.0.1:$PORT
+	# Drop-in routes from other components on this box. Each writes its own file
+	# and reloads Caddy; nothing has to edit this one, so two deploy scripts
+	# cannot overwrite each other's routes. liquid-twin/deploy/deploy.sh puts
+	# the loop viewer at /loop/ this way.
+	import /etc/caddy/sites.d/*.caddy
+
+	# Everything not claimed above. reverse_proxy passes WebSocket upgrades
+	# through untouched, and the solver only ever listens on loopback, so this is
+	# its sole route in. Wrapped in handle so the imported routes above are
+	# alternatives to it rather than being shadowed by it.
+	handle {
+		reverse_proxy 127.0.0.1:$PORT
+	}
 
 	header {
 		X-Content-Type-Options nosniff

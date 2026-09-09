@@ -4,6 +4,8 @@ A real-time model of the AU01 liquid side: DLC cold plates → CDU → dry coole
 Companion to [`../digital-twin/`](../digital-twin/), which does the air side of
 the same hall and which this deliberately does not touch.
 
+**Live: <https://au01-twin.dametech.net/loop/>**
+
 **Status: Phase 1 of 6.** The hydraulic core is built and tested. Thermal
 transport, heat exchangers, controls and the viewer are not. Temperatures come from Schneider
 RD110 rev 3; see below for what it settles and what it changes.
@@ -177,6 +179,7 @@ pinned by its own test so that Phase 2 notices if it changes.
 ./viewer/serve.sh                 # http://127.0.0.1:8770/
 ./geometry/run.sh                 # rebuild models/RD110_Loop.step (needs FreeCAD)
 ./viewer/prepare_geometry.py      # rebuild the browser bundle (no FreeCAD)
+./deploy/deploy.sh                # publish to /loop/ on the air twin's box
 ```
 
 RD110's plant as geometry: 4 chillers, 9 CDUs, 48 liquid-cooled racks, 148 pipe
@@ -326,6 +329,33 @@ counts here are a **floor, not an estimate**. `piping/route_engine.py` is where
 A* routing, real bend radii and clash checking live; this layout is for reviewing
 connectivity and equipment placement. A test pins the limitation so that routing
 it properly is a deliberate act.
+
+## Deployment
+
+Published at **<https://au01-twin.dametech.net/loop/>**, sharing a host and a
+certificate with the air twin at `/`. Nothing else is shared: the viewer is
+entirely static — HTML, one JS module, a 0.6 MB geometry bundle and a manifest
+carrying the solved hydraulics — so there is no service, no port and no Python
+on the server. `deploy/deploy.sh` is an rsync and a Caddy route.
+
+Two things it does deliberately:
+
+- **A drop-in route directory rather than a shared Caddyfile.** Each component
+  writes `/etc/caddy/sites.d/<name>.caddy` and reloads; nothing has to edit the
+  file the other one owns, so two deploy scripts cannot overwrite each other's
+  routes. `digital-twin/deploy/provision.sh` writes the `import` line on a new
+  box, and this deploy adds it idempotently to an existing one — because
+  re-provisioning to add one line of config would restart the air twin and drop
+  its sessions.
+- **Validate before reload.** That Caddyfile also serves the air twin, so a bad
+  route file would take it down. The remote step runs `caddy validate` and
+  removes its own snippet if it fails, then reloads rather than restarts, so
+  live WebSockets are not dropped. The air twin's uptime counter is unchanged
+  across this deploy, which is the check that it worked.
+
+The one non-obvious detail is the redirect: every URL in the page is relative,
+so `/loop` without the trailing slash resolves them against `/` and fetches the
+air twin's index instead of the bundle. `redir /loop /loop/` fixes it.
 
 ## Next
 
