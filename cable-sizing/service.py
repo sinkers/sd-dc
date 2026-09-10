@@ -187,6 +187,11 @@ def _build(p):
     default_method = standards.get(std_id).methods[0].id
     install = cs.Installation(
         method=p.get("method") or default_method,
+        # Formation is a second axis, not a consequence of the method: single
+        # core in trefoil on an "unenclosed touching" tray is the normal case
+        # here. Left unset the engine guesses and warns, and the guess is worth
+        # about 19 % on reactance, so it is worth passing.
+        formation=p.get("formation") or None,
         ambient_c=_f(p, "ambient_c"),
         n_circuits=int(_f(p, "n_circuits", 1)),
         max_parallel=int(_f(p, "max_parallel", 4)),
@@ -217,7 +222,11 @@ def _serialise(r, source, install, route_length_m, mode):
                      "extra_rules": list(std.extra_rules)},
         "installation": {"method": m.id, "label": m.label, "ref": m.ref,
                          "medium": m.medium, "diagram": m.diagram,
-                         "note": m.note},
+                         "note": m.note,
+                         # Report what was actually used, guessed or not, so a
+                         # reader never has to infer it from the warnings.
+                         "formation": install.formation,
+                         "formation_stated": install.formation is not None},
         "inputs": {"route_length_m": route_length_m,
                    "voltage_v": source.voltage_v,
                    "phase_mode": source.phase_mode,

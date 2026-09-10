@@ -48,6 +48,13 @@ _LOAD_SUPPLY_PROPS = {
                "description": "Installation method id, which is specific to the "
                               "standard. GET /api/standards lists the valid ids "
                               "and their diagrams."},
+    "formation": {"type": "string", "enum": ["trefoil", "flat_touching"],
+                  "nullable": True,
+                  "description": "Single-core formation, independent of "
+                                 "`method`. Trefoil carries about 19 % less "
+                                 "reactance than flat touching. Unset, it is "
+                                 "guessed from the method and a warning is "
+                                 "raised."},
     "cable_type": {"type": "string", "default": "XLPE_SDI_CU"},
     "ambient_c": {"type": "number", "nullable": True,
                   "description": "Defaults to the standard's reference ambient."},

@@ -176,9 +176,11 @@ MANIFEST: tuple[TableSpec, ...] = (
         table_id="resistance",
         source="AS/NZS 3008.1.1:2025 Section 4, a.c. resistance tables",
         filename="resistance.csv",
-        key_columns=("material", "form", "size_mm2", "temperature_c"),
+        key_columns=("form_class", "construction", "material", "size_mm2",
+                     "temperature_c"),
         value_column="r_ohm_per_km",
         numeric_columns=("size_mm2", "temperature_c", "r_ohm_per_km"),
+        extra_columns=("source_table",),
         notes="Tabulated at the standard's stated operating temperatures. "
               "Intermediate temperatures are reached by the alpha-20 correction "
               "in voltage_drop.resistance_at, not by interpolating this table.",
@@ -187,9 +189,18 @@ MANIFEST: tuple[TableSpec, ...] = (
         table_id="reactance",
         source="AS/NZS 3008.1.1:2025 Section 4, reactance tables",
         filename="reactance.csv",
-        key_columns=("construction", "size_mm2"),
+        key_columns=("form_class", "construction", "insulation_class",
+                     "size_mm2"),
         value_column="x_ohm_per_km",
         numeric_columns=("size_mm2", "x_ohm_per_km"),
+        extra_columns=("source_table",),
+        notes="Axes are the standard's own. `form_class` splits Table 4.1 "
+              "(fixed wiring) from 4.2 (flexible). `construction` is trefoil "
+              "or flat_touching for single-core, circular or shaped for "
+              "multicore. `insulation_class` is the table axis "
+              "(Elastomer|PVC|XLPE), not the Insulation enum. Tabulated "
+              "values are for TOUCHING formation; a spaced single-core "
+              "arrangement adds the NOTE 1 correction.",
     ),
     TableSpec(
         table_id="mv_per_a_m",

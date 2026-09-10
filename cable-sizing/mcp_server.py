@@ -62,6 +62,17 @@ _COMMON = {
     "standard": {"type": "string", "enum": _STD_IDS,
                  "default": standards.DEFAULT},
     "method": {"type": "string", "description": _METHOD_HINT},
+    "formation": {
+        "type": "string", "enum": ["trefoil", "flat_touching"],
+        "description":
+            "How single-core cables sit relative to each other. INDEPENDENT of "
+            "`method`: trefoil on an unenclosed-touching tray is the common "
+            "case. Trefoil has about 19 % less reactance than flat, so leaving "
+            "it unstated makes the engine guess and warn, and the guess can "
+            "push the selection a size larger than needed. Ignored for "
+            "multicore. Defaults to trefoil for conduit and buried methods, "
+            "flat_touching otherwise.",
+    },
     "cable_type": {"type": "string", "default": "XLPE_SDI_CU",
                    "description": "Catalogue family. Call list_cable_types."},
     "ambient_c": {"type": "number",

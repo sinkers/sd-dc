@@ -12,7 +12,7 @@ Linux, so in practice there is nothing to install. Both test suites were run on
 rather than guessed.
 
 - **Command** `python3 /Users/andrewsinclair/workspace/sd-dc/cable-sizing/mcp_server.py`
-- **Transport** stdio
+- **Transport** stdio, or HTTP for a remote client — see *Remote clients* below
 - **Server name** `cable-sizing`
 - **Tools** 5 &nbsp;|&nbsp; **Resources** 3
 
@@ -40,6 +40,34 @@ claude mcp remove cable-sizing
 ```
 
 Inside a session, `/mcp` lists the server and lets you inspect its tools.
+
+## Remote clients
+
+`mcp_server.py` speaks JSON-RPC over stdio, which only works where the client can
+spawn the process. A hosted client cannot, so `http_mcp_server.py` serves the same
+protocol over HTTP. Dispatch is `mcp_server.handle`, unchanged — stdio and HTTP
+cannot give different answers to the same question because there is only one
+implementation of the answer. Standard library only, like everything else here.
+
+```bash
+python3 http_mcp_server.py                    # http://127.0.0.1:8766/mcp
+MCP_TOKEN=secret python3 http_mcp_server.py   # require a bearer token
+```
+
+One endpoint, `/mcp`, per the MCP Streamable HTTP transport. POST a JSON-RPC
+request and get a response; a notification returns 202; a batch returns an array.
+`GET /mcp` returns 405 — this server has no unsolicited messages to push, and
+saying so beats leaving a client waiting on an empty stream. `GET /healthz`
+returns the server version, tool and resource names and whether auth is on; it is
+deliberately unauthenticated so a health check needs no credential.
+
+`deploy/deploy.sh` puts it behind Caddy on the box that already runs the air twin,
+as its own user on loopback. It exposes two ways in: the bearer token in an
+`Authorization` header, and a token-in-path URL for clients whose connector UI
+takes a URL and nothing else. The second makes the URL itself the credential —
+as secret as the token, and it will appear in browser history and proxy logs.
+The deploy does not print the token unless asked; read it from `/etc/dcable.env`
+on the box, or re-run with `--show-token`.
 
 ## Claude Desktop
 
@@ -89,6 +117,21 @@ printf '%s\n' \
 |---|---|
 | `size_cable` | Selects the smallest conductor that passes every check. **AS/NZS 3008.1.1 only** |
 | `check_cable_size` | Checks a size you nominate against a rating you supply. **All five standards** |
+
+### `formation` — state it, do not let it be guessed
+
+Both sizing tools take `formation`, either `trefoil` or `flat_touching`. It is a
+**second axis, independent of `method`**: the installation method picks the
+rating column (a tray is *unenclosed touching* either way), while the formation
+sets the reactance. Single-core cables in trefoil on an unenclosed-touching tray
+are the normal case here.
+
+Trefoil and flat differ by about 19 % in reactance. Left unstated the engine
+falls back to `trefoil` for conduit and buried methods and `flat_touching`
+otherwise, and raises a warning saying so — which can push a selection a size
+larger than it needs to be. The response carries `installation.formation` and
+`installation.formation_stated` so a reader never has to infer which happened.
+Ignored for multicore.
 | `list_standards` | The five profiles: reference ambient and soil model, installation methods with ids and diagram keys, voltage drop limits, IEC voltage factor, units, and whether the profile can select |
 | `list_cable_types` | Catalogue families and the sizes held |
 | `get_installation_diagram` | SVG of an installation arrangement |

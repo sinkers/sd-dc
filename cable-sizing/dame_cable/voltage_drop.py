@@ -47,11 +47,14 @@ import math
 
 from dataclasses import dataclass, field
 
-from .errors import MissingTableData
+from .errors import MissingTableData, OpenItem
 from .schema import (
     Cable,
+    CableConstruction,
     CheckResult,
+    ConductorForm,
     ConductorMaterial,
+    Insulation,
     Load,
     Route,
     RouteSegment,
@@ -66,39 +69,91 @@ ALPHA_20 = {
 }
 
 
+#: Table 4.1/4.5-4.9 cover fixed wiring; 4.2/4.10 cover flexible cords and
+#: flexible cables. The split is a real axis of the standard, not a modelling
+#: choice, and the tinned-copper factor differs between them too.
+def _form_class(cable: Cable) -> str:
+    return "flexible" if cable.form is ConductorForm.FLEXIBLE else "fixed"
+
+
+#: a.c. resistance is tabulated per construction: 4.5 single-core, 4.7
+#: multicore with circular conductors, 4.9 multicore with shaped conductors.
+#: Formation does not enter it, so all three single-core formations share a
+#: row.
+_RESISTANCE_CONSTRUCTION = {
+    CableConstruction.SINGLE_CORE_TREFOIL: "single-core",
+    CableConstruction.SINGLE_CORE_FLAT_TOUCHING: "single-core",
+    CableConstruction.SINGLE_CORE_FLAT_SPACED: "single-core",
+    # OI-4.14: CableConstruction.MULTICORE does not say whether the conductors
+    # are circular (4.7) or shaped (4.9), and the two tables differ. Both are
+    # present in resistance.csv. Circular is assumed here because it is the
+    # commoner construction; a shaped-conductor cable will read slightly low.
+    CableConstruction.MULTICORE: "multicore-circular",
+}
+
+#: Reactance is tabulated per formation for single-core and per conductor
+#: profile for multicore.
+_REACTANCE_CONSTRUCTION = {
+    CableConstruction.SINGLE_CORE_TREFOIL: "trefoil",
+    CableConstruction.SINGLE_CORE_FLAT_TOUCHING: "flat_touching",
+    CableConstruction.MULTICORE: "circular",
+}
+
+#: Tables 4.1 and 4.2 use a three-way insulation axis, coarser than the
+#: Insulation enum: one class serves several enum members.
+_INSULATION_CLASS = {
+    Insulation.THERMOPLASTIC_75: "PVC",
+    Insulation.THERMOPLASTIC_90: "PVC",
+    Insulation.THERMOSETTING_90: "XLPE",
+    Insulation.THERMOSETTING_110: "Elastomer",
+}
+
+
 def resistance_at(store: TableStore, cable: Cable, temperature_c: float) -> float:
     """A.c. resistance in ohm/km at an arbitrary conductor temperature."""
     table = store.tables["resistance"]
+    form_class = _form_class(cable)
+    construction = _RESISTANCE_CONSTRUCTION[cable.construction]
+    key = {
+        "form_class": form_class,
+        "construction": construction,
+        "material": cable.material.value,
+        "size_mm2": cable.size_mm2,
+    }
     temps = sorted({
         row["temperature_c"]
         for row in table.rows
-        if row.get("material") == cable.material.value
-        and row.get("form") == cable.form.value
-        and row.get("size_mm2") == cable.size_mm2
+        if all(row.get(k) == v for k, v in key.items())
     })
     if not temps:
-        raise MissingTableData(
-            "resistance",
-            {"material": cable.material.value, "form": cable.form.value,
-             "size_mm2": cable.size_mm2},
-            table.spec.source,
-        )
+        raise MissingTableData("resistance", key, table.spec.source)
     base_t = min(temps, key=lambda t: abs(t - temperature_c))
-    r_base = store.value(
-        "resistance",
-        material=cable.material,
-        form=cable.form,
-        size_mm2=cable.size_mm2,
-        temperature_c=base_t,
-    )
+    r_base = store.value("resistance", temperature_c=base_t, **key)
     a = ALPHA_20[cable.material]
     return r_base * (1 + a * (temperature_c - 20.0)) / (1 + a * (base_t - 20.0))
 
 
 def reactance(store: TableStore, cable: Cable) -> float:
-    """Reactance in ohm/km. Zero for d.c."""
+    """Reactance in ohm/km. Zero for d.c.
+
+    Tables 4.1 and 4.2 are tabulated for TOUCHING formation only. NOTE 1 of
+    each gives an additive correction for spaced single-core, keyed on the
+    spacing in conductor diameters -- which `Cable` does not carry. Rather
+    than return the touching value for a spaced arrangement, which
+    understates the reactance and so understates the voltage drop, this
+    raises.
+    """
+    if cable.construction is CableConstruction.SINGLE_CORE_FLAT_SPACED:
+        raise OpenItem(
+            "reactance for spaced single-core needs the spacing in conductor "
+            "diameters (Tables 4.1/4.2 NOTE 1: add 0.0254, 0.0435 or 0.0690 "
+            "ohm/km at 0.5D, 1D or 2D). Cable carries no spacing field. "
+            "Returning the touching value would understate the drop."
+        )
     return store.value("reactance",
-                       construction=cable.construction,
+                       form_class=_form_class(cable),
+                       construction=_REACTANCE_CONSTRUCTION[cable.construction],
+                       insulation_class=_INSULATION_CLASS[cable.insulation],
                        size_mm2=cable.size_mm2)
 
 

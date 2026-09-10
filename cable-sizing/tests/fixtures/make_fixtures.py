@@ -141,14 +141,23 @@ write("cf_harmonic.csv",
        "0.45,neutral,1.00,1.00"],
       banner="Band STRUCTURE mirrors Clause 3.5.9; values are placeholders.")
 
+# Axes follow the standard: `form_class` splits fixed wiring (Tables 4.1,
+# 4.5-4.9) from flexible (4.2, 4.10), and `construction` names the table
+# rather than the formation, because a.c. resistance has no formation axis.
 res = []
 for s in SIZES:
     for t in (20, 75, 90):
-        res.append(f"Cu,stranded,{s:g},{t},{round(r_at(s, t), 5)}")
-write("resistance.csv", "material,form,size_mm2,temperature_c,r_ohm_per_km", res)
+        res.append(f"fixed,multicore-circular,Cu,{s:g},{t},{round(r_at(s, t), 5)}")
+write("resistance.csv",
+      "form_class,construction,material,size_mm2,temperature_c,r_ohm_per_km",
+      res)
 
-write("reactance.csv", "construction,size_mm2,x_ohm_per_km",
-      [f"multicore,{s:g},{X_OHM_KM}" for s in SIZES])
+# Reactance carries an insulation axis in Tables 4.1/4.2 -- three classes,
+# coarser than the Insulation enum. The fixture holds one class; the real
+# data holds all three.
+write("reactance.csv",
+      "form_class,construction,insulation_class,size_mm2,x_ohm_per_km",
+      [f"fixed,circular,XLPE,{s:g},{X_OHM_KM}" for s in SIZES])
 
 # The 0.8 column mirrors the real tables' CONVENTION, not the naive formula:
 # it is the worst case over load power factors in [0.8, 1.0], which equals the

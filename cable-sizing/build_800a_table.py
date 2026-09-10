@@ -30,6 +30,12 @@ STANDARD_VD = 5.0
 AMBIENT = 40.0
 N_CIRCUITS = 1
 METHOD = "touching"
+# Trefoil, stated rather than guessed. Formation is a second axis: the tray is
+# still "unenclosed touching" (Table 3.9, the rating column), but the three
+# actives of each run sit in a triangle rather than side by side, which is what
+# sets reactance. Left unstated the engine assumes flat_touching and warns, and
+# the two differ by about 19 % in X.
+FORMATION = "trefoil"
 # Stated rather than implied, because it changes the answer more than anything
 # else on this page: single-core cables laid touching in one layer on a
 # perforated tray, and parallel runs counted as separate grouped bundles
@@ -177,7 +183,7 @@ def load(vd_limit):
 
 
 def install(cable_type):
-    return cs.Installation(method=METHOD, ambient_c=AMBIENT,
+    return cs.Installation(method=METHOD, formation=FORMATION, ambient_c=AMBIENT,
                            n_circuits=N_CIRCUITS, cable_type=cable_type,
                            max_parallel=MAX_PARALLEL,
                            parallel_runs_grouped=PARALLEL_RUNS_GROUPED)
@@ -228,13 +234,25 @@ def bundle(cable_type, area_mm2, parallel, earth_mm2):
         mass = CORES_PER_RUN * parallel * core / 100.0
         if earth_w is not None:
             mass += earth_w / 100.0
-    # Single layer touching: the tray must span every core side by side.
+    # Footprint on the tray. A trefoil group of three equal circles spans 2 x OD,
+    # not 3 x OD, because the third cable sits in the notch rather than beside
+    # them. The neutral is not part of the trefoil -- a trefoil is three cables --
+    # so it lies alongside its run. Per run that is 2 x OD + 1 x OD = 3 x OD,
+    # against 4 x OD laid flat.
     width = None
     if od is not None:
-        width = (actives + neutrals) * od + (earth_od or 0.0)
+        if FORMATION == "trefoil":
+            width = parallel * 3.0 * od + (earth_od or 0.0)
+        else:
+            width = (actives + neutrals) * od + (earth_od or 0.0)
+    # A trefoil stands 1 + sqrt(3)/2 = 1.866 diameters tall; a flat layer is one.
+    height = None
+    if od is not None:
+        height = od * (1.0 + 3 ** 0.5 / 2.0) if FORMATION == "trefoil" else od
     return {"actives": actives, "neutrals": neutrals, "earths": 1,
             "total_cores": total_cores, "mass_kg_per_m": mass,
-            "od_mm": od, "earth_od_mm": earth_od, "tray_width_mm": width}
+            "od_mm": od, "earth_od_mm": earth_od, "tray_width_mm": width,
+            "bundle_height_mm": height}
 
 
 def tray_section_svg(cable_type, area_mm2, parallel, earth_mm2):
@@ -253,10 +271,17 @@ def tray_section_svg(cable_type, area_mm2, parallel, earth_mm2):
     W, H = install_diagrams.W, install_diagrams.H
     inner = 168.0                      # px available between the tray lips
     gap_mm = 6.0                       # a small air gap before the earth
-    span_mm = n_power * od + gap_mm + e_od
+    if FORMATION == "trefoil":
+        span_mm = (bd["actives"] // 3) * 3.0 * od + gap_mm + e_od
+    else:
+        span_mm = n_power * od + gap_mm + e_od
     k = min(inner / span_mm, 2.2)      # px per mm, capped so small runs are not huge
+    if FORMATION == "trefoil":
+        # A trefoil stands 1.866 OD tall. Without this the top cable of a small
+        # run is drawn off the top of the viewBox.
+        k = min(k, 58.0 / (od * (1.0 + 3 ** 0.5 / 2.0)))
     r_p, r_e = od * k / 2.0, e_od * k / 2.0
-    total_px = n_power * od * k + gap_mm * k + e_od * k
+    total_px = (span_mm - gap_mm - e_od) * k + gap_mm * k + e_od * k
     x = (W - total_px) / 2.0
     base = 74.0                        # tray deck
 
@@ -269,6 +294,15 @@ def tray_section_svg(cable_type, area_mm2, parallel, earth_mm2):
         f'<line x1="16" y1="{base}" x2="184" y2="{base}" '
         f'stroke="var(--dg-line)" stroke-width="1.6"/>')
 
+    def core_at(cx, cy, r, label):
+        return (f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="none" '
+                f'stroke="var(--dg-ins)" stroke-width="{max(1.6, r * 0.28):.1f}"/>'
+                f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{max(1.2, r - r * 0.34):.1f}" '
+                f'fill="var(--dg-cu)"/>'
+                + (f'<text x="{cx:.1f}" y="{cy - r - 4:.1f}" '
+                   f'text-anchor="middle" style="font-size:8px">{label}</text>'
+                   if label else ""))
+
     def core(cx, r, label):
         cy = base - r
         return (f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" fill="none" '
@@ -279,15 +313,28 @@ def tray_section_svg(cable_type, area_mm2, parallel, earth_mm2):
                    f'text-anchor="middle" style="font-size:8px">{label}</text>'
                    if label else ""))
 
-    # Three actives then the neutral, per run, all in contact.
-    for i in range(n_power):
-        cx = x + r_p + i * od * k
-        per_run = 4
-        idx = i % per_run
-        lbl = ("A", "B", "C", "N")[idx] if n_power <= 8 else ""
-        parts.append(core(cx, r_p, lbl))
+    if FORMATION == "trefoil":
+        # Per run: two cables on the deck with the third in the notch above
+        # them, then the neutral alongside. The neutral is not in the trefoil.
+        step = 3.0 * od * k                 # 2 OD of trefoil + 1 OD of neutral
+        for run in range(bd["actives"] // 3):
+            x0 = x + run * step
+            parts.append(core(x0 + r_p, r_p, ""))                    # A, deck
+            parts.append(core(x0 + 3 * r_p, r_p, ""))                # B, deck
+            parts.append(core_at(x0 + 2 * r_p,
+                                 base - r_p - r_p * 3 ** 0.5, r_p,
+                                 "ABC" if run == 0 else ""))         # C, on top
+            parts.append(core(x0 + 5 * r_p, r_p, "N"))               # neutral
+    else:
+        for i in range(n_power):
+            cx = x + r_p + i * od * k
+            idx = i % 4
+            lbl = ("A", "B", "C", "N")[idx] if n_power <= 8 else ""
+            parts.append(core(cx, r_p, lbl))
     if r_e > 0:
-        cx = x + n_power * od * k + gap_mm * k + r_e
+        span = (bd["actives"] // 3) * 3.0 * od * k if FORMATION == "trefoil" \
+            else n_power * od * k
+        cx = x + span + gap_mm * k + r_e
         parts.append(core(cx, r_e, "E"))
 
     parts.append(
@@ -592,7 +639,8 @@ def render():
                 ref.earth_area_mm2)
     ungrouped = cs.size_feeder(
         source(), load(STANDARD_VD), LENGTHS[-1],
-        cs.Installation(method=METHOD, ambient_c=AMBIENT, n_circuits=N_CIRCUITS,
+        cs.Installation(method=METHOD, formation=FORMATION, ambient_c=AMBIENT,
+                        n_circuits=N_CIRCUITS,
                         cable_type=CONDUCTORS[1]["key"],
                         max_parallel=MAX_PARALLEL,
                         parallel_runs_grouped=False), catalog=CATALOG)
@@ -603,22 +651,35 @@ def render():
   <div style="flex:0 0 240px">{tray_section_svg(CONDUCTORS[0]["key"],
       ref.active_area_mm2, ref.parallel, ref.earth_area_mm2)}</div>
   <div style="flex:1;min-width:280px">
-    <p class="note" style="margin-top:0"><strong>Single-core cables laid
-      touching, in one layer, on a cable tray or ladder.</strong> Unenclosed,
-      at {AMBIENT:.0f} &deg;C ambient. That is AS/NZS 3008.1.1 Table 3.9,
+    <p class="note" style="margin-top:0"><strong>Single-core cables in
+      trefoil, touching, on a cable tray or ladder.</strong> Unenclosed, at
+      {AMBIENT:.0f} &deg;C ambient. That is AS/NZS 3008.1.1 Table 3.9,
       <em>unenclosed touching</em>, which is the rating column every number on
       this page is drawn from. Touching is the conservative assumption for a
       tray: spacing the cables by a diameter would raise the rating, and this
       does not claim that benefit.</p>
+    <p class="note"><strong>Formation and installation method are two axes, not
+      one.</strong> The tray is <em>unenclosed touching</em> either way &mdash;
+      that sets the current rating. Trefoil versus flat sets the
+      <em>reactance</em>, and the two differ by about 19 %. This page states
+      trefoil rather than letting it be inferred. It lowers the calculated
+      voltage drop, so at the tight budgets it can drop a parallel run; at the
+      {STANDARD_VD:g} % budget, where current capacity governs, it changes
+      nothing.</p>
     <p class="note">A three-phase circuit with a 100 % neutral is not one cable.
       Per parallel run it is <strong>three actives and one neutral</strong>,
       and the circuit carries <strong>one earth</strong>. At
       {LENGTHS[-1]} m and the {STANDARD_VD:g} % limit the copper answer is
       {bd["actives"]} actives, {bd["neutrals"]} neutral and
-      {bd["earths"]} earth &mdash; <strong>{bd["total_cores"]} cables</strong>
-      side by side, {bd["mass_kg_per_m"]:.1f} kg/m on the tray, needing about
-      <strong>{bd["tray_width_mm"]:.0f} mm</strong> of tray width laid touching.
-      Add the tray's own fixing allowance on top.</p>
+      {bd["earths"]} earth &mdash; <strong>{bd["total_cores"]} cables</strong>,
+      {bd["mass_kg_per_m"]:.1f} kg/m on the tray, needing about
+      <strong>{bd["tray_width_mm"]:.0f} mm</strong> of tray width. A trefoil
+      group spans two diameters rather than three, because the third cable sits
+      in the notch, so trefoil is <em>narrower</em> than flat &mdash; three
+      diameters per run against four &mdash; while standing
+      {bd["bundle_height_mm"]:.0f} mm tall instead of {bd["od_mm"]:.0f} mm.
+      A trefoil is three cables, so the neutral lies alongside its run rather
+      than in the group. Add the tray's own fixing allowance on top.</p>
   </div>
 </div>
 <div class="warn"><strong>Parallel runs are counted as grouped bundles.</strong>
@@ -738,7 +799,7 @@ def render():
    outright: two runs of aluminium come in lighter than one run of copper, so
    the tray carries less even though there is twice as much cable on it.</p>
 <p class="note"><strong>Tray selection is real product, not a rule of thumb.</strong>
-   The smallest {TRAY_FAMILY} width that takes the cables side by side with
+   The smallest {TRAY_FAMILY} width that takes the bundle with
    {ezystrut.SIDE_CLEARANCE_MM:.0f} mm clearance each side, from the Ezystrut
    range in <code>../cable-tray-ezystrut/</code>, with the load check against
    the published rating at a {TRAY_SPAN_MM / 1000:g} m support span and
