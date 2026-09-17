@@ -1,9 +1,9 @@
 # SD-DC — an agentic stack for data centre design
 
 <p align="center">
-  <img src="digital-twin/docs/viewer.png" alt="The AU01 hall digital twin: a 720 kW hall solved in real time, every rack's inlet and exhaust temperature listed, streamed to a browser" width="100%">
+  <img src="digital-twin/docs/viewer-sustained.png" alt="The AU01 hall digital twin at 709.8 kW sustained load: cyan cold air entering the rack intake faces, an amber exhaust plume rising into the return, containment and fan walls visible, and every rack's inlet, peak, outlet and recirculation listed" width="100%">
 </p>
-<p align="center"><sub>The AU01 hall, solved faster than real time and streamed to a browser — <a href="https://au01-twin.dametech.net/">au01-twin.dametech.net</a></sub></p>
+<p align="center"><sub>The AU01 hall at 709.8&nbsp;kW sustained, solved faster than real time and streamed to a browser. Cyan is supply into the rack faces, amber is the exhaust plume. Worst rack 28.85&nbsp;°C against a 35&nbsp;°C envelope — <a href="https://au01-twin.dametech.net/">au01-twin.dametech.net</a></sub></p>
 
 A data centre is sized, routed, costed and simulated by a dozen different tools
 that do not speak to each other, and a human carries numbers between them. This
@@ -412,8 +412,19 @@ The most developed component, and the template for the rest. Given a source, a
 load, a route length and an installation condition, it returns the smallest
 compliant cable with every check shown.
 
+<p align="center">
+  <img src="cable-sizing/docs/ui.png" alt="The cable sizing browser UI: a 250 kW load at 415 V over 85 m selects 240 mm2 active, 240 mm2 neutral and 95 mm2 earth against a 366 A design current, with current capacity, voltage drop and short circuit each passing and their margins shown, the full derating working below, and two warnings about unstated formation and a catalogue reactance that differs from the standard" width="100%">
+</p>
+<p align="center"><sub>Not just an answer. The derating factors, the operating temperature, the adiabatic check, the installation arrangement that set the rating — and two warnings, including the one saying the formation was guessed.</sub></p>
+
 Four checks in order: current-carrying capacity after derating, voltage drop,
 short-circuit withstand, earth fault loop impedance.
+
+The warnings are the part worth arguing for. *"Cable formation not stated;
+assumed flat_touching for reactance. Trefoil and flat differ by about 19 % in
+X"* is the engine refusing to let a guess pass as a result. So is *"catalogue X
+0.0730 ohm/km differs from AS/NZS 3008 Table 4.1(A) by −24.7 %; the standard is
+used"* — it took the conservative source and said which one it took.
 
 ```python
 from cable_sizing import Source, Load, Installation, size_feeder
@@ -525,9 +536,14 @@ loop, so it becomes the ground truth that calibrates something fast enough to.
 ### `liquid-twin/`
 
 <p align="center">
-  <img src="liquid-twin/docs/viewer-hydraulics.png" alt="The RD110 liquid loop viewer: 48 AI racks, 9 CDUs, 4 chilled water pumps and 4 chillers, with solved flows, loop temperatures and a free-cooling crossover at 20.9 C" width="100%">
+  <img src="liquid-twin/docs/viewer-hydraulics.png" alt="The RD110 liquid loop coloured by service: the four loops at their design temperatures, with 48 AI racks, 9 CDUs, 4 chilled water pumps and 4 chillers, solved flows and a free-cooling crossover at 20.9 C" width="100%">
 </p>
-<p align="center"><sub>The RD110 loop, solved — <a href="https://au01-twin.dametech.net/loop/">au01-twin.dametech.net/loop/</a>. Flow is an output of the network, never an input to it</sub></p>
+<p align="center"><sub>The RD110 loop coloured by <b>service</b> — the four loops at their design temperatures</sub></p>
+
+<p align="center">
+  <img src="liquid-twin/docs/viewer-velocity.png" alt="The same RD110 network recoloured by velocity against a 3 m/s ceiling: headers running near the limit in yellow, branch runs well under it in green" width="100%">
+</p>
+<p align="center"><sub>The same network, recoloured by <b>velocity</b> against a 3&nbsp;m/s ceiling. Peak 2.84&nbsp;m/s on the facility circuit — the headers run close to the limit, the branches do not. Nothing here was drawn; it is what the solver found — <a href="https://au01-twin.dametech.net/loop/">au01-twin.dametech.net/loop/</a></sub></p>
 
 The other half of the cooling story: DLC cold plates to CDU to chillers, the
 loop the air twin explicitly does not model. Reducing each heat exchanger to a
