@@ -135,3 +135,8 @@ cable-sizing/reference/elek-*.txt
 cable-sizing/reference/elek-calculator.png
 cable-sizing/reference/jcalc-*.txt
 cable-sizing/reference/tricab-cable-calc.js
+
+# ── piping benchmark data ─────────────────────────────────────────────────
+# Project coordinates extracted from DAME project models by
+# piping/tools/extract_revb.py. Never commit them: this repo is public.
+piping/private/

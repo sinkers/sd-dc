@@ -19,6 +19,10 @@ run "cable-sizing — synthetic smoke (no data needed)" cable-sizing python3 tes
 run "cable-sizing — AS/NZS 3008 engine"               cable-sizing python3 test_cable_sizing.py
 run "cable-sizing — REST + MCP API"                   cable-sizing python3 test_api.py
 
+# piping: the FreeCAD-free router and its service. The Rev B benchmark is
+# project data kept out of git (piping/private/); without it that class skips.
+run "piping — router, service, MCP + REST"            piping python3 -m pytest -q tests
+
 # digital-twin needs its package importable. Prefer an installed dthall; fall
 # back to PYTHONPATH so a plain checkout still runs.
 if python3 -c "import dthall" 2>/dev/null; then
