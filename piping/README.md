@@ -4,11 +4,84 @@ Parametric piping generation for FreeCAD. Generates solid 3D pipe geometry (stra
 
 ## Files
 
-- `piping.py` — Core module (PipeSpec, StraightPipe, Elbow, PipeRoute)
-- `route_engine.py` — Orthogonal route engine with A* pathfinding and obstacle avoidance
-- `router.py` — Standalone A* grid router (PipeRouter class)
-- `routing_report.html` — Visual test report with 5 scenarios (3 pass, 2 fail)
+- `core/` — FreeCAD-free routing: pipe sizes, one router, the validator. Plain tuples in mm.
+- `service.py` — the routing service, dicts in and out; the only implementation behind the three front ends
+- `mcp_server.py`, `http_mcp_server.py` — MCP over stdio and over HTTP (port 8776)
+- `server.py`, `openapi.py` — REST API (port 8775) and its OpenAPI description
+- `tests/` — router, validator, service and front-end tests
+- `tools/extract_revb.py`, `tools/bench_revb.py` — build and run the Rev B benchmark (project data, kept in `private/`, never committed)
+- `piping.py` — FreeCAD solids (PipeSpec, StraightPipe, Elbow, PipeRoute)
+- `route_engine.py` — FreeCAD waypoint validation and solid building; its A* search is superseded by `core/`
+- `router.py` — older standalone A* grid router, superseded by `core/`
+- `routing_report.html` — Visual report of the 5 scenarios (A–C route, D and E are correctly refused)
 - `README.md` — This file (rules, terminology, and usage)
+
+## Routing service
+
+Other agents and tools route pipes through `service.py`, over MCP or REST:
+
+```
+claude mcp add piping -- python3 /ABS/PATH/TO/piping/mcp_server.py   # stdio
+python3 http_mcp_server.py        # MCP over HTTP, http://127.0.0.1:8776/mcp (MCP_TOKEN for a bearer token)
+python3 server.py                 # REST, http://127.0.0.1:8775, described at /openapi.json
+```
+
+| Tool | REST | Does |
+|------|------|------|
+| `piping_route_pipe` | `POST /api/route` | One pipe, outlet nozzle to inlet nozzle |
+| `piping_route_network` | `POST /api/route/batch` | Pipes in order; each routed pipe is an obstacle for the rest |
+| `piping_validate_route` | `POST /api/validate` | Check corner points someone drew |
+| `piping_list_specs` | `GET /api/specs` | DN, OD, wall, bend radius |
+
+A nozzle is `{"id", "pos": [x, y, z], "dir": [dx, dy, dz], "dn"}`, the same
+fields as a catalogue port (PLAN.md §0.1), with `dir` pointing out of the
+equipment face. Obstacles are boxes `{"id", "min", "max"}`. Everything is mm.
+
+A routed pipe returns its corner points, the straights (cut back by BR at each
+elbow) and elbows, lengths, a bill of materials, the validator's verdict, a
+hash of the request and an IndustroML `connection` ready to write into the
+model. A pipe that cannot be built returns `"status": "failed"` with a
+`reason` (`blocked_nozzle`, `enclosed_inlet`, `enclosed_outlet`, `no_path`,
+`no_path_within_budget`), the nozzle and obstacle involved, what was measured
+and what would fix it:
+
+```json
+{"status": "failed", "reason": "blocked_nozzle", "nozzle": "PUMP.out",
+ "obstacle": "BLOCKER", "measured": {"gap_mm": 100, "need_mm": 278.6, "short_mm": 178.6},
+ "suggest": ["move BLOCKER at least 179 mm further from PUMP.out"]}
+```
+
+### How the router works
+
+`core/router.py` is an A* search over corners rather than grid cells. A state
+is a corner plus the heading the pipe arrived with, and a move is a whole
+straight run to the next corner, so the rules are part of the move: the first
+run leaves along the outlet's direction, the last arrives against the inlet's,
+runs are at least 1 × BR next to a nozzle and 2 × BR between elbows, turns are
+90°, and endpoints are never snapped to a grid. Candidate corners are the
+nozzles, one BR out from each nozzle, every obstacle face grown by the pipe
+radius plus clearance, and a regular grid (`grid_mm`). Cost is length plus
+`bend_cost_mm` per elbow.
+
+Clearance: a run must stay `radius + clearance_mm` from every obstacle, except
+the obstacle a nozzle sits on (the run touching that nozzle ignores it), and
+except where two pipes meet at a shared nozzle such as a tee, where the run
+into the tee only has to avoid touching the other pipe.
+
+Whatever the router returns, `core/validate.py` accepts; a randomised test
+holds the two to that.
+
+### Benchmark: Concept A Rev B
+
+The Rev B plant-room model has 34 chilled-water pipes routed by hand and
+checked with `validate_waypoints`. `tools/extract_revb.py` reads them from the
+build script without FreeCAD, and `tools/bench_revb.py` routes the same ports.
+The router finds all 34, one at a time and as one batch, and is never longer
+and never has more elbows than the hand route one at a time (194.2 m against
+196.4 m, 42 elbows against 46). The benchmark only has the obstacles the build
+script places (pump skids, headers, buffer tanks); chillers, fan walls and the
+building live in the FCStd and are not in it yet, so a shorter router route
+may pass through something the benchmark cannot see.
 
 ## Terminology
 
@@ -202,7 +275,12 @@ objects, build_errors = waypoints_to_pipe(
 )
 ```
 
-### A* Automatic Routing
+### A* Automatic Routing (superseded)
+
+Use `core.route_pipe` or the service to plan a route, then
+`waypoints_to_pipe` to build it. `RouteEngine.route` is kept for existing
+scripts; it snaps endpoints to its grid and does not enforce nozzle direction
+or minimum run length during the search.
 
 ```python
 from route_engine import RouteEngine
@@ -242,7 +320,9 @@ objects = route.build(doc)
 issues = route.validate()  # Check all joints (should be [])
 ```
 
-### Sequential Routing (Pipe as Obstacle)
+### Sequential Routing (Pipe as Obstacle, superseded)
+
+`core.route_network` and `piping_route_network` do this without FreeCAD.
 
 ```python
 from router import PipeRouter
@@ -313,3 +393,13 @@ ret = create_pipe_run(doc, "Return", 150, return_wp)
 - **The arrival direction is the inverse of the nozzle direction** — easy to get backwards. The nozzle direction points OUTWARD; the pipe arrives going INWARD (opposite)
 - **Check obstacle overlap with pipe elevation** — a "low" cable tray at Z=0-150 doesn't block a pipe at Z=450, but a "tall" column at Z=0-1500 blocks everything
 - **Sort pipe objects by creation order, not name** — alphabetical sorting of names like "Pipe_0e", "Pipe_0s", "Pipe_1e" mixes elbows with straights and breaks chain validation
+
+### Review images
+
+`piping_render_routes` (MCP) and `POST /api/render?format=svg|png|json` (REST)
+draw a review sheet: plan, elevations and an isometric, pipes to scale with
+their elbows, coloured by service, rule breaks in red, unrouted pipes as a red
+dashed line. Pipes without `points` are routed first; pipes with `points` are
+drawn as given and checked. PNG needs `rsvg-convert` (`brew install librsvg`,
+`apt install librsvg2-bin`); without it the MCP tool returns the SVG.
+`tools/render_revb.py` draws the Rev B routes into `private/renders/`.
