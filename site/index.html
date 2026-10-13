@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SD-DC</title>
+<meta name="description" content="An agentic stack for data centre design: cable sizing, pipe and tray routing, CAD and simulation as tools an agent can call.">
+<meta property="og:title" content="SD-DC: an agentic stack for data centre design">
+<meta property="og:description" content="Sizing, routing, drawing and simulating a data centre as tool calls over one machine-readable model.">
+<meta property="og:image" content="img/tray_demo.png">
+<style>
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #14181f; --muted: #5b6573;
+  --line: #dde1e7; --accent: #1f6fd1; --accent-2: #d1402b; --good: #1b8a52;
+  --warn: #a8810f; --plan: #6b6b8a; --code: #eef1f5;
+  --shadow: 0 1px 2px rgba(20,24,31,.06), 0 4px 16px rgba(20,24,31,.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e1116; --surface: #161b22; --ink: #e6e9ee; --muted: #9aa4b2;
+    --line: #2a313c; --accent: #5b9df0; --accent-2: #ef7563; --good: #3fbf7f;
+    --warn: #d9b343; --plan: #9b9bbd; --code: #1d232c;
+    --shadow: 0 1px 2px rgba(0,0,0,.4);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e1116; --surface: #161b22; --ink: #e6e9ee; --muted: #9aa4b2;
+  --line: #2a313c; --accent: #5b9df0; --accent-2: #ef7563; --good: #3fbf7f;
+  --warn: #d9b343; --plan: #9b9bbd; --code: #1d232c;
+  --shadow: 0 1px 2px rgba(0,0,0,.4);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+}
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .88em; }
+code { background: var(--code); padding: .1em .35em; border-radius: 4px; }
+pre { background: var(--code); padding: 14px 16px; border-radius: 8px; overflow-x: auto; line-height: 1.5; }
+pre code { background: none; padding: 0; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+header.top {
+  border-bottom: 1px solid var(--line); background: var(--surface);
+  position: sticky; top: 0; z-index: 5;
+}
+header.top .wrap { display: flex; align-items: center; gap: 20px; height: 56px; }
+.brand { font-weight: 700; letter-spacing: .02em; color: var(--ink); text-decoration: none; }
+nav { display: flex; gap: 18px; margin-left: auto; overflow-x: auto; white-space: nowrap; }
+nav a { color: var(--muted); text-decoration: none; font-size: .92rem; }
+nav a:hover { color: var(--ink); }
+.hero { padding: 56px 0 32px; }
+.hero h1 { font-size: clamp(1.9rem, 4.5vw, 3rem); line-height: 1.15; margin: 0 0 16px; letter-spacing: -.01em; }
+.hero p.lede { font-size: 1.15rem; color: var(--muted); max-width: 46em; margin: 0 0 24px; }
+.cta { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn {
+  display: inline-block; padding: 9px 16px; border-radius: 8px; text-decoration: none;
+  font-weight: 600; font-size: .95rem; border: 1px solid var(--line); color: var(--ink);
+  background: var(--surface);
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+figure { margin: 0; }
+.shot {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  overflow: hidden; box-shadow: var(--shadow);
+}
+.shot img { display: block; width: 100%; height: auto; }
+.shot.light img { background: #fff; }
+figcaption { font-size: .88rem; color: var(--muted); padding: 10px 14px; border-top: 1px solid var(--line); }
+section { padding: 40px 0; border-top: 1px solid var(--line); }
+section h2 { font-size: 1.6rem; margin: 0 0 8px; letter-spacing: -.005em; }
+section h3 { font-size: 1.15rem; margin: 28px 0 8px; }
+section > .wrap > p.intro { color: var(--muted); max-width: 48em; margin-top: 0; }
+.grid { display: grid; gap: 16px; }
+.g2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 760px) { .g2, .g3 { grid-template-columns: 1fr; } }
+.card {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  padding: 18px 20px; box-shadow: var(--shadow);
+}
+.card h3 { margin-top: 0; }
+.card p { margin: 0; color: var(--muted); }
+.loop {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 20px 0 8px;
+}
+.loop .step {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+  padding: 10px 14px; font-size: .92rem;
+}
+.loop .step b { display: block; }
+.loop .arrow { color: var(--muted); }
+.table-scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; }
+tr:last-child td { border-bottom: 0; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill {
+  display: inline-block; font-size: .75rem; font-weight: 600; padding: 2px 8px;
+  border-radius: 999px; border: 1px solid currentColor; white-space: nowrap;
+}
+.pill.built { color: var(--good); }
+.pill.partial { color: var(--warn); }
+.pill.planned { color: var(--plan); }
+.note {
+  border-left: 3px solid var(--warn); background: var(--surface); padding: 12px 16px;
+  border-radius: 0 8px 8px 0; color: var(--muted); font-size: .92rem; margin: 20px 0 0;
+}
+ul.tight { padding-left: 1.2em; margin: 8px 0; }
+ul.tight li { margin: 4px 0; }
+footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--muted); font-size: .88rem; }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#">SD-DC</a>
+    <nav aria-label="Sections">
+      <a href="#loop">The loop</a>
+      <a href="#routing">Routing</a>
+      <a href="#trays">Cable trays</a>
+      <a href="#review">Review</a>
+      <a href="#built">What's built</a>
+      <a href="#data">Data</a>
+      <a href="https://github.com/sinkers/sd-dc">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<div class="hero">
+  <div class="wrap">
+    <h1>An agentic stack for data centre design</h1>
+    <p class="lede">A data centre is sized, routed, costed and simulated by a dozen tools that don't talk to each other, and people carry the numbers between them. SD-DC bets that an agent can close that loop instead: sizing, routing, drawing and simulating become tool calls over one machine-readable model of the building, and every answer gets checked by running it.</p>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/sinkers/sd-dc">View on GitHub</a>
+      <a class="btn" href="https://github.com/sinkers/industroml">IndustroML model</a>
+      <a class="btn" href="#routing">See the routing demos</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <figure class="shot">
+    <img src="img/twin.png" alt="The AU01 hall digital twin at 709.8 kW sustained load, with cold supply air entering the rack faces and an amber exhaust plume rising into the return" width="2000" height="1100">
+    <figcaption>The AU01 hall digital twin at 709.8&nbsp;kW sustained, solved faster than real time and streamed to a browser. Worst rack 28.85&nbsp;°C against a 35&nbsp;°C envelope.</figcaption>
+  </figure>
+</div>
+
+<section id="loop" style="margin-top:40px">
+  <div class="wrap">
+    <h2>The design loop</h2>
+    <p class="intro">The unit of work isn't a drawing. It's a catalogue entry, a sizing calculation, a route or a simulation. Each is machine-readable, carries its own provenance, and can be checked by running it.</p>
+    <div class="loop" role="list">
+      <div class="step" role="listitem"><b>Brief</b>1 MW hall, N+1 cooling, AS/NZS</div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="step" role="listitem"><b>Agent</b>decides what to call</div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="step" role="listitem"><b>Tools over MCP</b>size, route, draw, simulate</div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="step" role="listitem"><b>Verify</b>does it route, export, clear, pass?</div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="step" role="listitem"><b>Outputs</b>schedules, BOM, STEP, a hall the twin can run</div>
+    </div>
+    <div class="grid g3" style="margin-top:20px">
+      <div class="card"><h3>Every answer is checkable</h3><p>A cable size is right or wrong against a standard. A pipe route closes or it doesn't. That makes the test suite a reward signal as well as a test.</p></div>
+      <div class="card"><h3>The inputs are finite</h3><p>Vendors publish datasheets and standards publish methods. A data hall contains a few hundred product families, not a long tail.</p></div>
+      <div class="card"><h3>Nothing is real time</h3><p>A design takes weeks. An agent that takes four minutes and a hundred tool calls to size a feeder run is still far faster than the meeting it replaces.</p></div>
+    </div>
+    <p style="margin-top:20px">The tools share one model, <a href="https://github.com/sinkers/industroml">IndustroML</a>. It describes a site as containers, assets, interfaces and connections. A connection routed through named trays is an electrical fact, a geometric fact and a line on the bill of materials all at once.</p>
+  </div>
+</section>
+
+<section id="routing">
+  <div class="wrap">
+    <h2>Pipe routing as a service</h2>
+    <p class="intro">An A* router over corners rather than grid cells, so the pipe rules are part of every move: leave along the outlet, arrive against the inlet, keep runs long enough for real elbows, keep clear of everything. It needs no FreeCAD, and other agents call it over MCP or REST.</p>
+    <figure class="shot light">
+      <img src="img/pipe_demo.png" alt="A review sheet with plan, two elevations and an isometric of four chilled-water pipes routed from two chillers to two CDUs around a column" width="1600" height="1406" loading="lazy">
+      <figcaption>A review sheet from <code>piping_render_routes</code> for an invented plant room: four DN150 pipes, two chillers to two CDUs. Supply is blue and return red. Elbows are drawn to scale, and anything that breaks a rule shows in red.</figcaption>
+    </figure>
+    <div class="grid g2" style="margin-top:20px">
+      <div class="card">
+        <h3>What an agent gets back</h3>
+        <ul class="tight">
+          <li>Corner points, straights and elbows, lengths and a bill of materials</li>
+          <li>The validator's verdict, and a hash of the request</li>
+          <li>An IndustroML connection, ready to write into the model</li>
+          <li>A PNG review sheet with a JSON summary, for a person to look at</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>A refusal it can act on</h3>
+        <p style="margin-bottom:10px">A pipe that can't be built says why, in terms the agent can fix:</p>
+<pre><code>{"status": "failed", "reason": "blocked_nozzle",
+ "nozzle": "CH2.in", "obstacle": "R-1/run2",
+ "suggest": ["move R-1/run2 at least 218 mm
+             further from CH2.in",
+             "use DN40, which needs 147 mm"]}</code></pre>
+      </div>
+    </div>
+    <h3>Tools</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>MCP tool</th><th>REST</th><th>Does</th></tr></thead>
+        <tbody>
+          <tr><td><code>piping_route_pipe</code></td><td><code>POST /api/route</code></td><td>One pipe, outlet nozzle to inlet nozzle</td></tr>
+          <tr><td><code>piping_route_network</code></td><td><code>POST /api/route/batch</code></td><td>Pipes in order; each routed pipe becomes an obstacle for the next</td></tr>
+          <tr><td><code>piping_validate_route</code></td><td><code>POST /api/validate</code></td><td>Checks corner points someone drew by hand</td></tr>
+          <tr><td><code>piping_render_routes</code></td><td><code>POST /api/render</code></td><td>Routes or checks, then draws plan, elevations and isometric</td></tr>
+          <tr><td><code>tray_route_and_support</code></td><td><code>POST /api/tray</code></td><td>Routes a cable tray, supports it, sizes its cables and builds the 3D model</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:16px">On a real project benchmark of 34 chilled-water pipes, the router routed all 34 for a total of 194.2&nbsp;m with 42 elbows. The engineer's hand-drawn routes were 196.4&nbsp;m with 46 elbows.</p>
+  </div>
+</section>
+
+<section id="trays">
+  <div class="wrap">
+    <h2>Cable trays, supports and the cables in them</h2>
+    <p class="intro">The same router lays out a ladder tray: it keeps the tray's real depth clear above and below and its full width clear beside it, and bends at the fitting radius. It then sizes every circuit on the tray to AS/NZS 3008, sets the support spacing from the actual cable weight, and builds the whole run as a FreeCAD and STEP model.</p>
+    <figure class="shot light">
+      <img src="img/tray_demo.png" alt="Plan, elevations and isometric of a ladder tray from a transformer to a switchroom, past a generator and a pit, on 20 ground-mounted supports" width="1600" height="1458" loading="lazy">
+      <figcaption>An invented yard: a 900&nbsp;mm ladder from a transformer's LV box to a switchroom wall, past a generator and a drainage pit, on 20 two-post supports at 1.5&nbsp;m spacing.</figcaption>
+    </figure>
+    <div class="grid g2" style="margin-top:16px">
+      <figure class="shot light">
+        <img src="img/model_bend.png" alt="FreeCAD model of the tray bend, with each circuit's cables following its own radius around the bend and the supports below" width="825" height="672" loading="lazy">
+        <figcaption>The bend in FreeCAD. Each cable keeps its place across the tray, so the inside ones take the tighter radius.</figcaption>
+      </figure>
+      <figure class="shot light">
+        <img src="img/model_iso.png" alt="FreeCAD model of the full tray run with supports and the surrounding equipment" width="1112" height="563" loading="lazy">
+        <figcaption>The whole run, with the transformer, generator and switchroom as context. Builds in about three seconds.</figcaption>
+      </figure>
+    </div>
+    <figure class="shot light" style="margin-top:16px">
+      <img src="img/model_section.png" alt="Cross-section of the tray: three parallel trefoil groups for the largest feeder, then smaller trefoils with neutral and earth alongside" width="1056" height="172" loading="lazy">
+      <figcaption>Cross-section. Every core is drawn at its catalogue diameter: trefoils of three actives, with the neutral and earth beside them.</figcaption>
+    </figure>
+
+    <h3>The cable schedule it produces</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Circuit</th><th>Load</th><th>Cable</th><th class="num">Length</th><th class="num">Design / capacity</th><th class="num">Voltage drop</th></tr></thead>
+        <tbody>
+          <tr><td>F-01</td><td>1200 kW</td><td>3 × (3 × 1C 630 + 1C 630 N) + 1C 500 E</td><td class="num">41 m</td><td class="num">1757 / 1822 A</td><td class="num">0.66 %</td></tr>
+          <tr><td>F-02</td><td>400 kW</td><td>3 × 1C 630 + 1C 630 N + 1C 185 E</td><td class="num">41 m</td><td class="num">586 / 625 A</td><td class="num">0.65 %</td></tr>
+          <tr><td>F-03</td><td>160 kW</td><td>3 × 1C 150 + 1C 150 N + 1C 50 E</td><td class="num">43 m</td><td class="num">247 / 256 A</td><td class="num">0.80 %</td></tr>
+          <tr><td>F-04</td><td>250 kVA</td><td>3 × 1C 240 + 1C 240 N + 1C 95 E</td><td class="num">41 m</td><td class="num">348 / 349 A</td><td class="num">0.74 %</td></tr>
+          <tr><td>F-05</td><td>63 A</td><td>3 × 1C 16 + 1C 16 N + 1C 10 E</td><td class="num">45 m</td><td class="num">63 / 73 A</td><td class="num">1.69 %</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:12px">Copper XLPE single-core cables, sized at 40&nbsp;°C ambient and a 25&nbsp;kA fault level. All seven parallel runs on the tray count towards grouping derating. The full schedule also gives fault current, operating temperature, weight and tray width per circuit, and the metres of each size to order. It comes out as CSV and Markdown.</p>
+    <p class="note">The loads are made up and the tray's load table is synthetic. Support ratings are unverified and every result is a draft for an engineer to check.</p>
+  </div>
+</section>
+
+<section id="review">
+  <div class="wrap">
+    <h2>Images for review, then a live view</h2>
+    <p class="intro">An agent's design is only useful once a person can check it, so every tool that makes geometry also makes something to look at.</p>
+    <div class="grid g3">
+      <div class="card"><h3><span class="pill built">Built</span> Schematic sheets</h3><p>Plan, elevations and isometric as SVG or PNG, straight from the router. No CAD needed, so an agent can attach one to every answer.</p></div>
+      <div class="card"><h3><span class="pill partial">Next</span> Shaded renders</h3><p>A render job on the headless FreeCAD worker that images the real solids: the model's own views, close-ups and sections.</p></div>
+      <div class="card"><h3><span class="pill planned">Planned</span> Live view</h3><p>The FreeCAD desktop streamed over WebRTC so an engineer can watch an agent work, or take the controls.</p></div>
+    </div>
+    <h3>Containerised CAD</h3>
+    <p>FreeCAD is heavy, stateful and slow to script, so it sits behind a job queue rather than inside a tool call. A CAD worker builds the solids, checks every joint, and either returns the STEP and glTF or says which clearance failed. A worker that refuses with a reason is a tool an agent can use. One that quietly produces geometry nobody can build just moves the error to the site.</p>
+    <figure class="shot light" style="max-width:720px">
+      <img src="img/fittings.png" alt="Generated tray fittings: a 90 degree bend, an internal riser, a tee, a reducer and a closed rectangular circuit" width="1920" height="1080" loading="lazy">
+      <figcaption>Generated tray fittings: a bend, a riser, a tee, a reducer, and a closed circuit that proves the joints line up.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="built">
+  <div class="wrap">
+    <h2>What's built today</h2>
+    <p class="intro">The loop above is where this is going. This is how far it has got.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Component</th><th>What it does</th><th>State</th></tr></thead>
+        <tbody>
+          <tr><td><code>cable-sizing</code></td><td>AS/NZS 3008 cable sizing with a full audit trail. REST, MCP over stdio and HTTP, browser UI</td><td><span class="pill built">Mature</span></td></tr>
+          <tr><td><code>digital-twin</code></td><td>Real-time hall thermals, calibrated against CFD, streamed to a browser</td><td><span class="pill built">Deployed</span></td></tr>
+          <tr><td><code>piping</code></td><td>Pipe router, validator and review sheets as an MCP and REST service</td><td><span class="pill built">Service</span></td></tr>
+          <tr><td><code>trays</code></td><td>Tray routing, supports off the ground, cable sizing on the tray, FreeCAD and STEP model</td><td><span class="pill partial">Draft</span></td></tr>
+          <tr><td><code>cfd-cabinet-cooling</code></td><td>OpenFOAM: does a fan wall keep a 30 kW cabinet inside ASHRAE limits?</td><td><span class="pill built">Working</span></td></tr>
+          <tr><td><code>liquid-twin</code></td><td>Direct liquid cooling, CDU to chillers, as a hydraulic network</td><td><span class="pill partial">Phase 1 of 6</span></td></tr>
+          <tr><td><code>cables</code>, <code>cable-tray-ezystrut</code></td><td>Catalogues: cable OD, weight, bend radius and impedance; tray families and joining rules</td><td><span class="pill built">Working</span></td></tr>
+          <tr><td><code>vm-setup</code></td><td>Headless FreeCAD, XML-RPC server and MCP bridge</td><td><span class="pill built">Working</span></td></tr>
+          <tr><td>Design agent</td><td>An agent that takes a design task and calls all of the above</td><td><span class="pill planned">Designed</span></td></tr>
+          <tr><td><code>layout</code>, <code>costing</code></td><td>Composing a hall from a brief; BOM to rates to a number</td><td><span class="pill planned">Not built</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid g2" style="margin-top:20px">
+      <figure class="shot">
+        <img src="img/cfd_flow.png" alt="OpenFOAM streamlines through the AU01 hall" width="1900" height="1000" loading="lazy">
+        <figcaption>OpenFOAM ground truth for the twin: airflow through the AU01 hall.</figcaption>
+      </figure>
+      <div class="card">
+        <h3>Try it</h3>
+<pre><code>git clone https://github.com/sinkers/sd-dc
+cd sd-dc
+./run-tests.sh
+
+# pipe routing over MCP
+claude mcp add piping -- \
+  python3 piping/mcp_server.py
+
+# the tray demo on this page
+python3 trays/tools/demo.py</code></pre>
+        <p>The value suites skip without the licensed data, which isn't in the repo. A synthetic suite still checks that it all fits together.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="data">
+  <div class="wrap">
+    <h2>Code open, data private</h2>
+    <p class="intro">Engines, schemas, tests and docs are public. Vendor documents, standards tables and project data are not.</p>
+    <div class="grid g2">
+      <div class="card"><h3>Public</h3><p>The engines, the IndustroML schema, tests and documentation, in <code>sd-dc</code> and <code>industroml</code>. Every demo on this page uses invented scenes.</p></div>
+      <div class="card"><h3>Private</h3><p>Vendor datasheets, standards tables, the training corpus, project models and installed rates. A calculator holds the data and the user gets an answer, the same way the established AS/NZS 3008 calculators work.</p></div>
+    </div>
+    <p class="note">This is a private study and research project, not for commercial use. A statement of purpose isn't a licence: the vendor data it reads isn't licensed to you, so check each source's terms before using it.</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    SD-DC · code under the <a href="https://github.com/sinkers/sd-dc/blob/main/LICENSE">MIT licence</a> · <a href="https://github.com/sinkers/sd-dc">github.com/sinkers/sd-dc</a> · images regenerate with <code>python3 site/make_images.py</code>
+  </div>
+</footer>
+</body>
+</html>
