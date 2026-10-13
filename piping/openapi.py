@@ -33,6 +33,24 @@ def _get(summary):
             "schema": {"type": "object"}}}}}}}
 
 
+def _render():
+    op = _post("Draw routes for review", service.RENDER_SCHEMA,
+               "Routes the pipes (or checks the points given) and draws "
+               "plan, elevation and isometric views. ?format=svg (default), "
+               "png (needs rsvg-convert on the server) or json (the result "
+               "with the SVG in it).")
+    op["post"]["parameters"] = [{
+        "name": "format", "in": "query", "required": False,
+        "schema": {"enum": ["svg", "png", "json"], "default": "svg"}}]
+    op["post"]["responses"]["200"] = {"description": "The sheet.", "content": {
+        "image/svg+xml": {"schema": {"type": "string"}},
+        "image/png": {"schema": {"type": "string", "format": "binary"}},
+        "application/json": {"schema": {"type": "object"}}}}
+    op["post"]["responses"]["501"] = {"description": "PNG asked for and "
+                                                     "rsvg-convert absent."}
+    return op
+
+
 def spec():
     return {
         "openapi": "3.1.0",
@@ -54,5 +72,6 @@ def spec():
                                    service.VALIDATE_SCHEMA,
                                    "Returns each rule broken, with the run "
                                    "it is on."),
+            "/api/render": _render(),
         },
     }

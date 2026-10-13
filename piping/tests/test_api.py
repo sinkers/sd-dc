@@ -4,6 +4,7 @@ there and the front ends are checked for plumbing.
 """
 from __future__ import annotations
 
+import base64
 import json
 import os
 import subprocess
@@ -21,6 +22,7 @@ import http_mcp_server  # noqa: E402
 import mcp_server  # noqa: E402
 import server  # noqa: E402
 import service  # noqa: E402
+from core import render  # noqa: E402
 
 PUMP_OUT = {"id": "PUMP-1.out", "pos": [500, 0, 600], "dir": [1, 0, 0],
             "dn": 100}
@@ -133,6 +135,60 @@ class Service(unittest.TestCase):
         self.assertEqual(r["issues"][0]["code"], "collision")
         self.assertEqual(r["issues"][0]["obstacle"], "COL-1")
 
+    def test_render_routes_then_draws(self):
+        out = service.render({"pipes": [
+            {"id": "P-1", "dn": 100, "service": "CHW-S", "from": PUMP_OUT,
+             "to": HX_IN}], "obstacles": [COLUMN],
+            "render": {"views": ["plan", "iso"], "title": "t<&>"}})
+        self.assertEqual((out["mode"], out["routed"]), ("routed", 1))
+        svg = out["svg"]
+        self.assertTrue(svg.startswith("<svg"))
+        self.assertIn("t&lt;&amp;&gt;", svg)          # title escaped
+        self.assertIn("#1f6fd1", svg)                 # CHW-S colour
+        self.assertIn("P-1", svg)
+        self.assertNotIn("parts", out["results"][0])
+        import xml.dom.minidom
+        xml.dom.minidom.parseString(svg)               # well formed
+
+    def test_render_given_points_marks_broken_runs(self):
+        out = service.render({"pipes": [
+            {"id": "P-1", "dn": 100, "from": PUMP_OUT, "to": HX_IN,
+             "points": [[500, 0, 600], [3500, 0, 600]]}],
+            "obstacles": [COLUMN]})
+        self.assertEqual((out["mode"], out["broken"]), ("checked", 1))
+        self.assertEqual(out["results"][0]["issues"][0]["code"], "collision")
+        self.assertIn('stroke="#e00000"', out["svg"])
+
+    def test_render_failed_pipe_is_drawn(self):
+        out = service.render({"pipes": [
+            {"id": "P-1", "dn": 100, "from": PUMP_OUT, "to": HX_IN}],
+            "obstacles": [BLOCKER]})
+        self.assertEqual(out["status"], "failed")
+        self.assertIn("blocked_nozzle", out["svg"])
+
+    def test_render_refusals(self):
+        given = {"id": "A", "dn": 100, "from": PUMP_OUT, "to": HX_IN,
+                 "points": [[500, 0, 600], [3500, 0, 600]]}
+        routed = {"id": "B", "dn": 100, "from": PUMP_OUT, "to": HX_IN}
+        for name, req in {
+            "mixed": {"pipes": [given, routed]},
+            "view": {"pipes": [routed], "render": {"views": ["top"]}},
+            "option": {"pipes": [routed], "render": {"dpi": 3}},
+            "width": {"pipes": [routed], "render": {"width": 10}},
+        }.items():
+            with self.subTest(name), self.assertRaises(ValueError):
+                service.render(req)
+
+    def test_render_focus_drops_far_obstacles(self):
+        far = {"id": "FAR-BOX", "min": [90000, 0, 0], "max": [91000, 1, 1]}
+        out = service.render({"pipes": [
+            {"id": "P-1", "dn": 100, "from": PUMP_OUT, "to": HX_IN}],
+            "obstacles": [COLUMN, far],
+            "render": {"focus": {"min": [0, -1000, 0],
+                                 "max": [4000, 1000, 2000]}}})
+        self.assertNotIn("FAR-BOX", out["svg"])
+        self.assertIn("COL-1", out["svg"])
+
     def test_specs_and_meta(self):
         sizes = {s["dn"]: s for s in service.specs()["sizes"]}
         self.assertAlmostEqual(sizes[100]["bend_radius"], 171.45)
@@ -167,7 +223,8 @@ class Mcp(unittest.TestCase):
     def test_lists(self):
         names = [t["name"] for t in self.call("tools/list")["result"]["tools"]]
         self.assertEqual(names, ["piping_route_pipe", "piping_route_network",
-                                 "piping_validate_route", "piping_list_specs"])
+                                 "piping_validate_route",
+                                 "piping_render_routes", "piping_list_specs"])
         for uri in ("piping://meta", "piping://specs", "piping://openapi"):
             r = self.call("resources/read", {"uri": uri})
             json.loads(r["result"]["contents"][0]["text"])
@@ -181,6 +238,22 @@ class Mcp(unittest.TestCase):
                                      "arguments": route_req(dn=90)})
         self.assertTrue(r["result"]["isError"])
         self.assertIn("DN90", r["result"]["content"][0]["text"])
+
+    def test_render_tool_returns_an_image(self):
+        r = self.call("tools/call", {"name": "piping_render_routes",
+                                     "arguments": {"pipes": [
+                                         {"id": "P-1", "dn": 100,
+                                          "from": PUMP_OUT, "to": HX_IN}]}})
+        first, last = r["result"]["content"][0], r["result"]["content"][-1]
+        if render.png_available():
+            self.assertEqual(first["type"], "image")
+            self.assertTrue(base64.b64decode(first["data"])
+                            .startswith(b"\x89PNG"))
+        else:
+            self.assertEqual(first["resource"]["mimeType"], "image/svg+xml")
+        body = json.loads(last["text"])
+        self.assertEqual(body["routed"], 1)
+        self.assertNotIn("svg", body)
 
     def test_notification_gets_no_answer(self):
         self.assertIsNone(mcp_server.handle(
@@ -244,6 +317,22 @@ class Http(unittest.TestCase):
         code, body = _post(self.rest_url + "/api/route", route_req(dn=90))
         self.assertEqual(code, 400)
         self.assertIn("DN90", body["error"])
+
+    def test_rest_render(self):
+        req = {"pipes": [{"id": "P-1", "dn": 100, "from": PUMP_OUT,
+                          "to": HX_IN}]}
+        for fmt, ctype in (("svg", "image/svg+xml"), ("json",
+                                                      "application/json")):
+            r = urllib.request.Request(
+                f"{self.rest_url}/api/render?format={fmt}",
+                json.dumps(req).encode(), {"Content-Type": "application/json"})
+            with urllib.request.urlopen(r, timeout=30) as resp:
+                self.assertEqual(resp.headers["Content-Type"], ctype)
+                body = resp.read()
+            if fmt == "svg":
+                self.assertTrue(body.startswith(b"<svg"))
+        code, body = _post(self.rest_url + "/api/render?format=gif", req)
+        self.assertEqual(code, 400)
 
     def test_http_mcp(self):
         code, body = _post(self.mcp_url + "/mcp", {

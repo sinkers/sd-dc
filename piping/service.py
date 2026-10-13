@@ -27,6 +27,7 @@ from collections import defaultdict
 from core import (Box, Nozzle, RouteOptions, centreline_parts, list_specs,
                   route_network, route_pipe, spec_for, validate_route)
 from core.geom import axis_dir, point, segment_box
+from core.render import VIEWS, png_available, render_sheet
 from core.specs import SCH10S
 
 VERSION = "0.1.0"
@@ -160,6 +161,47 @@ VALIDATE_SCHEMA = {
         "obstacles": {"type": "array", "items": OBSTACLE_SCHEMA},
         "options": {"type": "object", "properties": {
             "clearance_mm": OPTIONS_SCHEMA["properties"]["clearance_mm"]}},
+    },
+}
+
+RENDER_OPTIONS_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "views": {"type": "array", "items": {"enum": list(VIEWS)},
+                  "default": ["plan", "front", "iso"],
+                  "description": "plan, front (looking +y), side (looking "
+                                 "-x), iso (from south-west)."},
+        "title": {"type": "string"},
+        "focus": {"type": "object", "required": ["min", "max"],
+                  "properties": {"min": _VEC, "max": _VEC},
+                  "description": "Draw only this region, mm."},
+        "labels": {"type": "array", "items": {"enum": list(VIEWS)},
+                   "default": ["plan"],
+                   "description": "Views that get pipe and obstacle ids."},
+        "width": {"type": "integer", "default": 1600,
+                  "minimum": 400, "maximum": 4000},
+    },
+}
+RENDER_SCHEMA = {
+    "type": "object",
+    "required": ["pipes"],
+    "properties": {
+        "pipes": {"type": "array", "items": {
+            "type": "object", "required": ["from", "to"],
+            "properties": {**PIPE_FIELDS,
+                           "points": {"type": "array", "items": _VEC,
+                                      "description": "Draw this route as "
+                                                     "given instead of "
+                                                     "routing it."},
+                           "service": {"type": "string",
+                                       "description": "e.g. CHW-S; sets "
+                                                      "the colour."}}},
+            "description": "Pipes without points are routed as a batch, "
+                           "in order. Pipes with points are drawn as given "
+                           "and checked. Give points for all or none."},
+        "obstacles": {"type": "array", "items": OBSTACLE_SCHEMA},
+        "options": OPTIONS_SCHEMA,
+        "render": RENDER_OPTIONS_SCHEMA,
     },
 }
 
@@ -411,6 +453,101 @@ def validate(req: dict) -> dict:
     if len(pts) >= 2 and not any(i["code"] in ("not_orthogonal",)
                                  for i in issues):
         _, out["summary"] = _summary(pts, spec)
+    return out
+
+
+def render(req: dict) -> dict:
+    """Route (or check) pipes and draw them as an SVG sheet for review.
+
+    Returns the routing or checking result without per-pipe parts, plus
+    "svg". The front ends turn the SVG into a PNG where they can.
+    """
+    req = _obj(req, "request")
+    pipes = req.get("pipes")
+    if not isinstance(pipes, list) or not pipes:
+        raise ValueError("pipes must be a non-empty list")
+    ro = _obj(req.get("render") or {}, "render")
+    unknown = set(ro) - set(RENDER_OPTIONS_SCHEMA["properties"])
+    if unknown:
+        raise ValueError(f"unknown render options {sorted(unknown)}")
+    views = tuple(ro.get("views") or ("plan", "front", "iso"))
+    labels = tuple(ro.get("labels") or ("plan",))
+    for v in views + labels:
+        if v not in VIEWS:
+            raise ValueError(f"unknown view {v!r}; expected {list(VIEWS)}")
+    width = int(ro.get("width") or 1600)
+    if not 400 <= width <= 4000:
+        raise ValueError("render.width must be 400 to 4000")
+    focus = None
+    if ro.get("focus") is not None:
+        f = _obj(ro["focus"], "render.focus")
+        focus = (point(f.get("min"), "render.focus.min"),
+                 point(f.get("max"), "render.focus.max"))
+
+    given = [isinstance(p, dict) and p.get("points") is not None
+             for p in pipes]
+    if any(given) and not all(given):
+        raise ValueError("give points for every pipe or for none: pipes "
+                         "with points are drawn as given, the rest routed")
+    services = {k: p.get("service") for k, p in enumerate(pipes)
+                if isinstance(p, dict)}
+
+    drawn, ok_count = [], 0
+    if all(given):
+        results = []
+        for k, p in enumerate(pipes):
+            p = _obj(p, f"pipes[{k}]")
+            v = validate({**{f: p[f] for f in ("dn", "schedule", "points",
+                                               "from", "to") if f in p},
+                          "obstacles": req.get("obstacles") or [],
+                          "options": {"clearance_mm": (req.get("options")
+                                      or {}).get("clearance_mm",
+                                      DEFAULT_OPTIONS["clearance_mm"])}})
+            pid = str(p.get("id") or f"pipes[{k}]")
+            spec = v["spec"]
+            results.append({"id": pid, "ok": v["ok"], "issues": v["issues"],
+                            "summary": v.get("summary")})
+            ok_count += v["ok"]
+            drawn.append({"id": pid, "od": spec["od"],
+                          "bend_radius": spec["bend_radius"],
+                          "service": services.get(k),
+                          "points": p["points"], "issues": v["issues"],
+                          "from_pos": p["from"]["pos"],
+                          "to_pos": p["to"]["pos"]})
+        out = {"mode": "checked", "ok": ok_count, "broken":
+               len(results) - ok_count, "results": results}
+    else:
+        batch = route_batch({k: req[k] for k in ("pipes", "obstacles",
+                                                 "options") if k in req})
+        for k, r in enumerate(batch["results"]):
+            p = pipes[k]
+            base = {"id": r["id"], "od": r["spec"]["od"],
+                    "bend_radius": r["spec"]["bend_radius"],
+                    "service": services.get(k),
+                    "from_pos": p["from"]["pos"], "to_pos": p["to"]["pos"]}
+            if r["status"] == "routed":
+                drawn.append({**base, "points": r["points"],
+                              "issues": r["validation"]["issues"]})
+            else:
+                drawn.append({**base, "reason": r["reason"]})
+            r.pop("parts", None)
+        out = {"mode": "routed", **batch}
+
+    obstacles = [{"id": b.id, "min": list(b.lo), "max": list(b.hi)}
+                 for b in _obstacles(req.get("obstacles"))]
+    n = len(drawn)
+    title = ro.get("title") or f"{n} pipe{'s' * (n != 1)}"
+    if out["mode"] == "routed":
+        note = (f"{out['routed']}/{n} routed. sd-dc piping {VERSION}, "
+                f"request {out['request_sha256'][:12]}")
+    else:
+        note = (f"{out['ok']}/{n} pass the routing rules; red marks a run "
+                f"that breaks one. sd-dc piping {VERSION}")
+    out["svg"] = render_sheet(
+        obstacles, drawn, views, title=title,
+        notes=[note, "Schematic: only the obstacles given are drawn."],
+        labels=labels, focus=focus, width=width)
+    out["png_available"] = png_available()
     return out
 
 

@@ -19,12 +19,14 @@ not offered here yet.
 """
 from __future__ import annotations
 
+import base64
 import json
 import sys
 import traceback
 
 import openapi
 import service
+from core.render import svg_to_png
 
 PROTOCOL_VERSIONS = ("2025-06-18", "2025-03-26", "2024-11-05")
 SERVER_INFO = {"name": "piping", "version": service.VERSION}
@@ -74,6 +76,20 @@ TOOLS = [
         "inputSchema": service.VALIDATE_SCHEMA,
     },
     {
+        "name": "piping_render_routes",
+        "title": "Draw routes for review",
+        "description": (
+            "Draw pipes and obstacles as a review sheet: plan, elevations "
+            "and an isometric, pipes to scale with their elbows, coloured by "
+            "service. Pipes without points are routed first, as "
+            "piping_route_network would; pipes with points are drawn as "
+            "given and checked. Runs that break a rule are marked red and "
+            "unrouted pipes are a red dashed line. Returns the image and a "
+            "short summary. Look at it before reporting a route as done. "
+            + _UNITS),
+        "inputSchema": service.RENDER_SCHEMA,
+    },
+    {
         "name": "piping_list_specs",
         "title": "List pipe sizes",
         "description": ("Pipe sizes held: DN, outside diameter, wall and "
@@ -107,6 +123,28 @@ def _text(obj):
                          "text": json.dumps(obj, indent=1, allow_nan=False)}]}
 
 
+def _image(result):
+    """PNG when it can be made, else the SVG as an embedded resource. The
+    summary goes alongside as text, without the SVG or the per-pipe points."""
+    svg = result.pop("svg")
+    result.pop("png_available", None)
+    for r in result.get("results", []):
+        for k in ("points", "industroml", "validation", "bom"):
+            r.pop(k, None)
+    content = []
+    png = svg_to_png(svg)
+    if png:
+        content.append({"type": "image", "mimeType": "image/png",
+                        "data": base64.b64encode(png).decode()})
+    else:
+        content.append({"type": "resource", "resource": {
+            "uri": "piping://render/sheet.svg", "mimeType": "image/svg+xml",
+            "text": svg}})
+    content.append({"type": "text",
+                    "text": json.dumps(result, indent=1, allow_nan=False)})
+    return {"content": content}
+
+
 def _error(message):
     return {"content": [{"type": "text", "text": message}], "isError": True}
 
@@ -119,6 +157,8 @@ def call_tool(name, args):
         return _text(service.route_batch(args))
     if name == "piping_validate_route":
         return _text(service.validate(args))
+    if name == "piping_render_routes":
+        return _image(service.render(args))
     if name == "piping_list_specs":
         return _text(service.specs())
     raise ValueError(f"unknown tool {name!r}, expected one of "

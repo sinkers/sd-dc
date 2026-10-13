@@ -393,3 +393,13 @@ ret = create_pipe_run(doc, "Return", 150, return_wp)
 - **The arrival direction is the inverse of the nozzle direction** — easy to get backwards. The nozzle direction points OUTWARD; the pipe arrives going INWARD (opposite)
 - **Check obstacle overlap with pipe elevation** — a "low" cable tray at Z=0-150 doesn't block a pipe at Z=450, but a "tall" column at Z=0-1500 blocks everything
 - **Sort pipe objects by creation order, not name** — alphabetical sorting of names like "Pipe_0e", "Pipe_0s", "Pipe_1e" mixes elbows with straights and breaks chain validation
+
+### Review images
+
+`piping_render_routes` (MCP) and `POST /api/render?format=svg|png|json` (REST)
+draw a review sheet: plan, elevations and an isometric, pipes to scale with
+their elbows, coloured by service, rule breaks in red, unrouted pipes as a red
+dashed line. Pipes without `points` are routed first; pipes with `points` are
+drawn as given and checked. PNG needs `rsvg-convert` (`brew install librsvg`,
+`apt install librsvg2-bin`); without it the MCP tool returns the SVG.
+`tools/render_revb.py` draws the Rev B routes into `private/renders/`.
