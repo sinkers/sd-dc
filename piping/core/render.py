@@ -123,6 +123,13 @@ def _fillet(pts2, radii):
     return "".join(d)
 
 
+def _tone(hex_colour, face):
+    """Shade a solid fill by face so a box reads as a box."""
+    k = {"top": 1.0, "west": 0.85, "south": 0.72, "side": 0.85}[face]
+    r, g, b = (int(hex_colour[i:i + 2], 16) for i in (1, 3, 5))
+    return "#%02x%02x%02x" % (int(r * k), int(g * k), int(b * k))
+
+
 def _run_paths(pts2, r):
     """One SVG path per run, each ending with the elbow at its far corner."""
     n = len(pts2) - 1
@@ -194,12 +201,15 @@ def _panel_svg(pn, obstacles, pipes, ghosts, labels):
     for b in obstacles:
         lo, hi = tuple(b["min"]), tuple(b["max"])
         centre = tuple((lo[i] + hi[i]) / 2 for i in range(3))
+        fill = b.get("fill")
         for face, poly in _box_faces(view, lo, hi):
             near = _near(view, centre) if view != "plan" else hi[2]
             pts = " ".join(f"{a:.1f},{c:.1f}" for a, c in map(pn.xy, poly))
-            items.append((near, 0,
-                          f'<polygon points="{pts}" fill="{shade[face]}" '
-                          f'fill-opacity="0.75" stroke="#59616b" '
+            colour = _tone(fill, face) if fill else shade[face]
+            opacity = "1" if fill else "0.75"
+            items.append((near, 1 if fill else 0,
+                          f'<polygon points="{pts}" fill="{colour}" '
+                          f'fill-opacity="{opacity}" stroke="#59616b" '
                           f'stroke-width="0.6"/>'))
     for g in ghosts:
         if not g.get("points"):
@@ -212,7 +222,12 @@ def _panel_svg(pn, obstacles, pipes, ghosts, labels):
                       f'stroke-width="{w:.2f}" stroke-dasharray="6 4" '
                       f'stroke-opacity="0.8" stroke-linejoin="round"/>'))
     for p in pipes:
-        w = max(p["od"] * pn.s, 1.4)
+        # A tray is a band: its width seen from above, its depth from the
+        # side. A pipe is the same from everywhere.
+        size = p["od"]
+        if p.get("band"):
+            size = p["band"][0] if view == "plan" else p["band"][1]
+        w = max(size * pn.s, 1.4)
         if p.get("points"):
             pts = p["points"]
             # One item per run so the painter's sort can put a run behind a
@@ -284,8 +299,8 @@ def _panel_svg(pn, obstacles, pipes, ghosts, labels):
             lo, hi = b["min"], b["max"]
             top_c = ((lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, hi[2])
             cx, cy = pn.xy(top_c)
-            name = str(b.get("id", ""))
-            if free(cx, cy + 3, name, 9):
+            name = str(b.get("label", b.get("id", "")) or "")
+            if name and free(cx, cy + 3, name, 9):
                 out.append(f'<text x="{cx:.1f}" y="{cy + 3:.1f}" class="ob">'
                            f'{escape(name)}</text>')
 
@@ -329,9 +344,11 @@ def render_sheet(obstacles, pipes, views=("plan", "front", "iso"),
                  focus=None, width=1600) -> str:
     """One SVG sheet with a panel per view.
 
-    obstacles: [{id, min, max}]
+    obstacles: [{id, min, max, fill?, label?}]; fill draws a solid box
+               (supports), label "" leaves it unlabelled
     pipes:     [{id, od, bend_radius, points | None, from_pos, to_pos,
-                 service?, colour?, issues?, reason?}]
+                 service?, colour?, issues?, reason?, band?}]; band is
+               [width, depth] for a tray
     ghosts:    pipes drawn dashed grey underneath, e.g. the hand routes when
                reviewing the router against them.
     labels:    the views that get pipe and obstacle ids.

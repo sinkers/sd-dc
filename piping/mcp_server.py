@@ -26,6 +26,7 @@ import traceback
 
 import openapi
 import service
+import tray_service
 from core.render import svg_to_png
 
 PROTOCOL_VERSIONS = ("2025-06-18", "2025-03-26", "2024-11-05")
@@ -88,6 +89,26 @@ TOOLS = [
             "short summary. Look at it before reporting a route as done. "
             + _UNITS),
         "inputSchema": service.RENDER_SCHEMA,
+    },
+    {
+        "name": "tray_route_and_support",
+        "title": "Route a cable tray and support it off the ground",
+        "description": (
+            "Route one cable tray run between two end points around box "
+            "obstacles (or take the route as drawn, via points), then place "
+            "ground-mounted supports under every horizontal run. The cable "
+            "load (cables or cable_kg_per_m, plus growth) picks the longest "
+            "span the tray's load table allows; supports go near each "
+            "fitting and termination, at no more than one span, with every "
+            "splice near a support. Each support is a single post with a "
+            "cantilever bracket or a goalpost, checked for clashes, slid "
+            "along the run if blocked. Returns support positions, post "
+            "heights, loads, a bill of materials, issues (support_blocked, "
+            "span_exceeded, splice_unsupported, overloaded) and open items "
+            "(risers needing a wall or structure fixing). Add render to "
+            "get a review image. Drafts for an engineer: support ratings "
+            "are unverified. " + _UNITS),
+        "inputSchema": tray_service.TRAY_SCHEMA,
     },
     {
         "name": "piping_list_specs",
@@ -159,6 +180,13 @@ def call_tool(name, args):
         return _text(service.validate(args))
     if name == "piping_render_routes":
         return _image(service.render(args))
+    if name == "tray_route_and_support":
+        result = tray_service.route_and_support(args)
+        for sup in result.get("supports", []):
+            sup.pop("boxes", None)
+        if "svg" in result:
+            return _image(result)
+        return _text(result)
     if name == "piping_list_specs":
         return _text(service.specs())
     raise ValueError(f"unknown tool {name!r}, expected one of "

@@ -224,7 +224,9 @@ class Mcp(unittest.TestCase):
         names = [t["name"] for t in self.call("tools/list")["result"]["tools"]]
         self.assertEqual(names, ["piping_route_pipe", "piping_route_network",
                                  "piping_validate_route",
-                                 "piping_render_routes", "piping_list_specs"])
+                                 "piping_render_routes",
+                                 "tray_route_and_support",
+                                 "piping_list_specs"])
         for uri in ("piping://meta", "piping://specs", "piping://openapi"):
             r = self.call("resources/read", {"uri": uri})
             json.loads(r["result"]["contents"][0]["text"])
@@ -254,6 +256,25 @@ class Mcp(unittest.TestCase):
         body = json.loads(last["text"])
         self.assertEqual(body["routed"], 1)
         self.assertNotIn("svg", body)
+
+    def test_tray_tool(self):
+        tray = {"family": "SYN", "width": 600, "overall_width": 660,
+                "side_height": 100, "self_weight": 6.6,
+                "standard_length": 6000, "bend_radius": 600,
+                "load_ratings": [[3000, 60], [2000, 120]]}
+        args = {"tray": tray, "cable_kg_per_m": 30,
+                "from": {"id": "A", "pos": [0, 0, 3000], "dir": [1, 0, 0]},
+                "to": {"id": "B", "pos": [12000, 0, 3000],
+                       "dir": [-1, 0, 0]}}
+        r = self.call("tools/call", {"name": "tray_route_and_support",
+                                     "arguments": args})
+        body = json.loads(r["result"]["content"][-1]["text"])
+        self.assertEqual(body["status"], "supported")
+        self.assertNotIn("boxes", body["supports"][0])
+        r = self.call("tools/call", {"name": "tray_route_and_support",
+                                     "arguments": {**args, "render": {}}})
+        self.assertIn(r["result"]["content"][0]["type"],
+                      ("image", "resource"))
 
     def test_notification_gets_no_answer(self):
         self.assertIsNone(mcp_server.handle(

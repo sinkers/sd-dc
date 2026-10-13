@@ -10,6 +10,7 @@ servers also use. Routes are described at /openapi.json:
   GET  /api/health  /api/meta  /api/specs
   POST /api/route  /api/route/batch  /api/validate
   POST /api/render?format=svg|png|json   a review sheet of the routes
+  POST /api/tray                          a cable tray run and its supports
 """
 from __future__ import annotations
 
@@ -21,6 +22,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 import openapi
 import service
+import tray_service
 from core.render import svg_to_png
 
 MAX_BODY = 1 << 20
@@ -36,6 +38,7 @@ POSTS = {
     "/api/route/batch": service.route_batch,
     "/api/validate": service.validate,
     "/api/render": service.render,
+    "/api/tray": tray_service.route_and_support,
 }
 
 

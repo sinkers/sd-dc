@@ -22,6 +22,9 @@ run "cable-sizing — REST + MCP API"                   cable-sizing python3 tes
 # piping: the FreeCAD-free router and its service. The Rev B benchmark is
 # project data kept out of git (piping/private/); without it that class skips.
 run "piping — router, service, MCP + REST"            piping python3 -m pytest -q tests
+# trays: tray runs and their ground supports, on the piping router. Synthetic
+# tray data only; the Ezystrut catalogue is vendor data and not needed.
+run "trays — supports off the ground"                  trays python3 -m pytest -q tests
 
 # digital-twin needs its package importable. Prefer an installed dthall; fall
 # back to PYTHONPATH so a plain checkout still runs.

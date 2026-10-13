@@ -6,6 +6,7 @@ interfaces cannot describe different inputs.
 from __future__ import annotations
 
 import service
+import tray_service
 
 
 def _post(summary, schema, description):
@@ -73,5 +74,10 @@ def spec():
                                    "Returns each rule broken, with the run "
                                    "it is on."),
             "/api/render": _render(),
+            "/api/tray": _post("Route a cable tray and support it",
+                               tray_service.TRAY_SCHEMA,
+                               "Ground-mounted supports under every "
+                               "horizontal run; draft, ratings "
+                               "unverified."),
         },
     }
