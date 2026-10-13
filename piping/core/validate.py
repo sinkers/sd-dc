@@ -10,7 +10,8 @@ Rules (piping/README.md):
 """
 from __future__ import annotations
 
-from .geom import (EPS, OWNER_TOL, Box, Nozzle, dist, dot, neg, segment_hits)
+from .geom import (EPS, OWNER_TOL, Box, Nozzle, dist, dot, grow_box, neg,
+                   segment_hits)
 from .specs import PipeSpec
 
 POS_TOL = 1.0
@@ -106,7 +107,16 @@ def validate_route(points, spec: PipeSpec, start: Nozzle | None = None,
                          and box.meets(start.pos))
                         or (i == n - 1 and end is not None
                             and box.meets(end.pos)))
-                test = box if meet else box.grown(grow)
+                env = getattr(spec, "envelope", None)
+                if meet:
+                    test = box
+                elif env is None:
+                    test = box.grown(grow)
+                else:
+                    ax = next((k for k in range(3)
+                               if abs(pts[i + 1][k] - pts[i][k]) > 1e-6), 0)
+                    test = grow_box(box, tuple(e + clearance
+                                               for e in env(ax)))
                 if not own and segment_hits(pts[i], pts[i + 1], test):
                     issue("collision",
                           f"run {i} passes within {grow:.0f} mm of {box.id}",

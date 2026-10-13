@@ -206,5 +206,128 @@ class Service(unittest.TestCase):
         self.assertIn("reason", r)
 
 
+class Envelope(unittest.TestCase):
+    def test_flat_tray_passes_close_over_equipment(self):
+        """500 mm over a roof: fine for a 100 mm deep tray, though it is
+        960 mm wide. One clearance for every side refused this."""
+        wide = T.TrayType("SYN", 900, 960, 100, 9.5, 6000, ((3000, 50),),
+                          bend_radius=900)
+        roof = Box("TX", (-3000, -1500, 0), (0, 1500, 3000))
+        r = T.route_tray(wide, Nozzle("A", (0, 0, 3500), (1, 0, 0)),
+                         Nozzle("B", (12000, 6000, 3500), (-1, 0, 0)),
+                         [roof])
+        self.assertTrue(r.ok, r.failure)
+
+    def test_but_not_through_it(self):
+        roof = Box("TX", (-3000, -1500, 0), (0, 1500, 3480))
+        r = T.route_tray(LADDER, Nozzle("A", (0, 0, 3500), (1, 0, 0)),
+                         Nozzle("B", (12000, 6000, 3500), (-1, 0, 0)),
+                         [roof])
+        self.assertFalse(r.ok)
+
+
+class Model(unittest.TestCase):
+    PTS = [(0, 0, 3000), (6000, 0, 3000), (6000, 6000, 3000),
+           (6000, 6000, 1000)]
+
+    def test_pieces_follow_the_route(self):
+        import model3d
+        pieces = model3d.frames(self.PTS, LADDER.centre_bend_radius)
+        kinds = [p[0] for p in pieces]
+        self.assertEqual(kinds, ["straight", "bend", "straight", "bend",
+                                 "straight"])
+        # The deck stays facing up through a horizontal bend and turns
+        # with a riser.
+        self.assertEqual(tuple(pieces[2][-1]), (0.0, 0.0, 1.0))
+        self.assertAlmostEqual(abs(pieces[4][-1][2]), 0.0)
+
+    def test_straights_and_bends_meet(self):
+        import math
+        import model3d
+        R = LADDER.centre_bend_radius
+        pieces = model3d.frames(self.PTS, R)
+        s0, b0 = pieces[0], pieces[1]
+        end0 = tuple(s0[1][i] + s0[2][i] * s0[3] for i in range(3))
+        self.assertLess(math.dist(end0, b0[1]), 1e-6)
+        self.assertAlmostEqual(math.dist(b0[1], b0[4]), R)
+
+    def test_spec_has_tray_supports_and_each_circuit(self):
+        import model3d
+        sup = T.support_run(self.PTS, LADDER, 20)
+        layout = [{"circuit": "F-1", "od_mm": 40, "lateral_mm": -100,
+                   "up_mm": 20},
+                  {"circuit": "F-2", "od_mm": 20, "lateral_mm": 0,
+                   "up_mm": 10}]
+        spec = model3d.build_spec(self.PTS, LADDER, sup["supports"], layout)
+        groups = {p["group"] for p in spec["primitives"]}
+        self.assertEqual(groups, {"tray", "supports", "cable:F-1",
+                                  "cable:F-2"})
+        self.assertEqual(spec["groups"]["cable:F-1"],
+                         model3d.CIRCUIT_COLOURS[0])
+
+
+def _catalogue():
+    try:
+        import cables
+        cables.sizing_service().CATALOG_()
+        return True
+    except Exception:          # noqa: BLE001
+        return False
+
+
+@unittest.skipUnless(_catalogue(), "cable catalogue not present")
+class Circuits(unittest.TestCase):
+    CIRCUITS = [{"id": "F-1", "kw": 400, "power_factor": 0.95,
+                 "tails_m": 6},
+                {"id": "F-2", "amps": 63, "tails_m": 4}]
+
+    def test_sized_by_the_calculator(self):
+        import cables
+        res = cables.size_circuits(self.CIRCUITS, 30.0,
+                                   defaults={"ambient_c": 40})
+        f1, f2 = res["rows"]
+        self.assertTrue(f1["passed"] and f2["passed"])
+        self.assertEqual(f1["length_m"], 36.0)
+        self.assertLess(f1["design_a"], f1["capacity_a"])
+        self.assertLessEqual(f1["vd_pct"], f1["vd_limit_pct"])
+        self.assertIn("1C", f1["cable"])
+        # Every circuit and parallel run counts for grouping.
+        self.assertEqual(res["totals"]["grouped_runs"],
+                         f1["parallel"] + f2["parallel"])
+
+    def test_cable_order_covers_every_core(self):
+        import cables
+        res = cables.size_circuits(self.CIRCUITS[:1], 30.0)
+        r = res["rows"][0]
+        cores = len(r["_cores"])
+        self.assertAlmostEqual(sum(b["metres"] for b in res["cable_bom"]),
+                               cores * r["length_m"])
+
+    def test_service_uses_the_cable_mass(self):
+        req = {"id": "T-1", "tray": TRAY, "circuits": self.CIRCUITS,
+               "from": {"id": "A", "pos": [0, 0, 3000], "dir": [1, 0, 0]},
+               "to": {"id": "B", "pos": [20000, 8000, 3000],
+                      "dir": [-1, 0, 0]},
+               "model": {"build": False}}
+        r = service.route_and_support(req)
+        self.assertEqual(r["cable_kg_per_m"],
+                         round(r["cable_totals"]["mass_kg_per_m"], 2))
+        self.assertEqual(len(r["circuits"]), 2)
+        self.assertFalse(r["model"]["built"])
+        self.assertGreater(r["model"]["primitives"], 0)
+
+    def test_full_tray_is_reported(self):
+        req = {"id": "T-1", "tray": {**TRAY, "width": 150,
+                                     "overall_width": 210},
+               "circuits": [{"id": "BIG", "kw": 1500, "tails_m": 0}],
+               "points": [[0, 0, 3000], [10000, 0, 3000]],
+               "from": {"id": "A", "pos": [0, 0, 3000], "dir": [1, 0, 0]},
+               "to": {"id": "B", "pos": [10000, 0, 3000],
+                      "dir": [-1, 0, 0]}}
+        r = service.route_and_support(req)
+        self.assertIn("tray_full", {i["code"] for i in r["cable_issues"]})
+        self.assertEqual(r["status"], "needs_attention")
+
+
 if __name__ == "__main__":
     unittest.main()

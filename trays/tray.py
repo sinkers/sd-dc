@@ -69,9 +69,8 @@ class TrayType:
     # The router reads these three as if this were a pipe.
     @property
     def radius(self) -> float:
-        """Half the envelope. The router grows obstacles by one number for
-        every axis, so this is the larger half-dimension; it is
-        conservative vertically for a wide, shallow tray."""
+        """The larger half-dimension. Routing uses _RouterSpec.envelope,
+        which is tighter vertically; this is for messages and batches."""
         return max(self.overall_width, self.side_height) / 2
 
     @property
@@ -89,12 +88,25 @@ class TrayType:
 
 
 class _RouterSpec:
-    """What the pipe router needs: radius, bend radius and a dn."""
+    """What the pipe router needs: radius, bend radius, a dn, and the
+    envelope, which lets it keep a flat tray's real clearance above and
+    below instead of half its width."""
 
     def __init__(self, tray: TrayType):
         self.radius = tray.radius
         self.bend_radius = max(tray.centre_bend_radius, tray.radius)
         self.dn = 0
+        self._half_w = tray.overall_width / 2
+        self._half_h = tray.side_height / 2
+
+    def envelope(self, ax):
+        """Half-extents (x, y, z) of the tray on a run along axis ax. A
+        horizontal run is flat: half its depth vertically, half its width
+        sideways and, conservatively for the fittings, along the run. A
+        riser's orientation is not tracked, so it gets half its width on
+        every side."""
+        return tuple(self._half_h if (k == 2 and ax != 2) else self._half_w
+                     for k in range(3))
 
 
 @dataclass(frozen=True)

@@ -30,7 +30,7 @@ import time
 from dataclasses import dataclass, field
 
 from .geom import (AXES, EPS, OWNER_TOL, Box, Nozzle, add, axis_of, dot,
-                   manhattan, neg, segment_box, sign_of, travel)
+                   grow_box, manhattan, neg, segment_box, sign_of, travel)
 from .specs import SCH10S, PipeSpec, spec_for
 
 
@@ -61,6 +61,16 @@ class _Field:
         self.grow = spec.radius + opts.clearance_mm
         self.raw = list(obstacles)
         self.grown = [b.grown(self.grow) for b in obstacles]
+        # A body that is not round (a cable tray) needs different room on
+        # each side depending on which way it is running. by_axis[ax] holds
+        # the obstacles grown for a run along axis ax.
+        env = getattr(spec, "envelope", None)
+        if env is None:
+            self.by_axis = [self.grown] * 3
+        else:
+            c = opts.clearance_mm
+            self.by_axis = [[grow_box(b, tuple(e + c for e in env(ax)))
+                             for b in obstacles] for ax in range(3)]
         self.start_own = {i for i, b in enumerate(obstacles)
                           if b.contains(start.pos, OWNER_TOL)}
         self.end_own = {i for i, b in enumerate(obstacles)
@@ -93,7 +103,8 @@ class _Field:
                 continue
             meet = ((first and i in self.start_meet)
                     or (last and i in self.end_meet))
-            t = travel(p, d, self.raw[i] if meet else self.grown[i])
+            t = travel(p, d, self.raw[i] if meet
+                       else self.by_axis[ax][i])
             if t < best:
                 best, who = t, self.raw[i].id
         return max(best, 0.0), who
@@ -113,8 +124,9 @@ def _coords(spec, start, end, fld, opts):
             sets[k].add(a)
             a += g
         for i in fld.active:
-            b = fld.grown[i]
-            sets[k].update((b.lo[k], b.hi[k]))
+            for grown in fld.by_axis:
+                b = grown[i]
+                sets[k].update((b.lo[k], b.hi[k]))
     return [sorted(c for c in s if fld.lo[k] - EPS <= c <= fld.hi[k] + EPS)
             for k, s in enumerate(sets)]
 

@@ -109,6 +109,12 @@ class Box:
         return all(self.lo[i] - tol <= p[i] <= self.hi[i] + tol for i in range(3))
 
 
+def grow_box(box: Box, by) -> Box:
+    """box grown by (gx, gy, gz) on each side."""
+    return Box(box.id, tuple(box.lo[i] - by[i] for i in range(3)),
+               tuple(box.hi[i] + by[i] for i in range(3)), box.nodes)
+
+
 def segment_box(a, b, r: float, id: str, nodes=()) -> Box:
     """The box a straight pipe of radius r occupies from a to b."""
     lo = tuple(min(a[i], b[i]) for i in range(3))

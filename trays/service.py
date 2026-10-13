@@ -23,13 +23,19 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
+import re
+import shutil
+import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(HERE)
 sys.path.append(os.path.join(HERE, "..", "piping"))
 
+import cables as C  # noqa: E402
+import model3d as M  # noqa: E402
 import tray as T  # noqa: E402
 from core.geom import Box, Nozzle, axis_dir, point  # noqa: E402
 from core.render import VIEWS, render_sheet  # noqa: E402
@@ -73,6 +79,47 @@ TRAY_SCHEMA = {
         "cable_kg_per_m": {"type": "number",
                            "description": "Total cable load, instead of "
                                           "cables."},
+        "circuits": {
+            "type": "array",
+            "description": "Circuits to size with the cable sizing "
+                           "calculator (AS/NZS 3008) and lay on this tray. "
+                           "Replaces cables and cable_kg_per_m: their mass "
+                           "drives the supports. Length is the tray route "
+                           "plus tails_m.",
+            "items": {"type": "object", "properties": {
+                "id": {"type": "string"},
+                "from": {"type": "string"}, "to": {"type": "string"},
+                "kw": {"type": "number"}, "kva": {"type": "number"},
+                "amps": {"type": "number"},
+                "power_factor": {"type": "number", "default": 0.9},
+                "voltage_v": {"type": "number", "default": 415},
+                "cable_type": {"type": "string", "default": "XLPE_SDI_CU"},
+                "formation": {"enum": ["trefoil", "flat_touching"],
+                              "default": "trefoil"},
+                "tails_m": {"type": "number", "default": 0,
+                            "description": "Cable beyond the tray, both "
+                                           "ends together (drops into "
+                                           "boards)."},
+                "ambient_c": {"type": "number"},
+                "fault_level_ka": {"type": "number"},
+                "max_voltage_drop_pct": {"type": "number"},
+                "harmonic_content_pct": {"type": "number"},
+                "area_mm2": {"type": "number",
+                             "description": "Check this size instead of "
+                                            "selecting one."},
+                "parallel": {"type": "integer"}}}},
+        "circuit_defaults": {"type": "object",
+                             "description": "Fields applied to every "
+                                            "circuit that does not set "
+                                            "them, e.g. ambient_c."},
+        "install_method": {"type": "string", "default": "touching"},
+        "model": {"type": "object", "description": "Build the 3D model: "
+                  "ladder, supports and every core as solids, FCStd and "
+                  "STEP, when FreeCAD is installed on the server.",
+                  "properties": {
+                      "build": {"type": "boolean", "default": True},
+                      "include_spec": {"type": "boolean", "default": False},
+                      "context": {"type": "boolean", "default": True}}},
         "obstacles": {"type": "array", "items": {
             "type": "object", "required": ["min", "max"],
             "properties": {"id": {"type": "string"}, "min": _VEC,
@@ -164,7 +211,11 @@ def route_and_support(req: dict) -> dict:
     obstacles = [Box(str(o.get("id", f"obstacle{k}")),
                      point(o["min"], "min"), point(o["max"], "max"))
                  for k, o in enumerate(req.get("obstacles") or [])]
-    load = _load(req)
+    circuits = req.get("circuits")
+    if circuits is not None and (not isinstance(circuits, list)
+                                 or not circuits):
+        raise ValueError("circuits must be a non-empty list")
+    load = None if circuits else _load(req)
     sopts = _support_options(req.get("supports"))
     rid = str(req.get("id") or "T-1")
     digest = hashlib.sha256(json.dumps(
@@ -190,13 +241,111 @@ def route_and_support(req: dict) -> dict:
     issues = validate_route(pts, T._RouterSpec(tray), a, b, obstacles,
                             (req.get("options") or {}).get("clearance_mm",
                                                            50.0))
+    tray_m = sum(math.dist(pts[i], pts[i + 1])
+                 for i in range(len(pts) - 1)) / 1000
+    out["tray_length_m"] = round(tray_m, 2)
+    sized, layout, cable_issues = None, [], []
+    if circuits:
+        sized = C.size_circuits(circuits, tray_m,
+                                method=req.get("install_method", "touching"),
+                                defaults=req.get("circuit_defaults") or {})
+        load = sized["totals"]["mass_kg_per_m"]
+        layout = C.lay_out(sized["rows"], tray.width)
+        cable_issues = sized["issues"] + _fit_checks(sized["totals"], tray)
     sup = T.support_run(pts, tray, load, obstacles, sopts, rid)
     out.update(points=[[round(c, 1) for c in p] for p in pts],
                route_issues=issues, **{k: v for k, v in sup.items()
                                        if k != "id"})
-    problems = issues or sup["issues"]
+    if sized:
+        out["circuits"] = [{k: v for k, v in r.items() if k != "_cores"}
+                           for r in sized["rows"]]
+        out["cable_totals"] = sized["totals"]
+        out["cable_bom"] = sized["cable_bom"]
+        out["cable_issues"] = cable_issues
+    problems = issues or sup["issues"] or cable_issues
     out["status"] = "supported" if not problems else "needs_attention"
+    if req.get("model"):
+        out["model"] = _model(req["model"], rid, pts, tray, sup, layout,
+                              req.get("obstacles") or [])
     return _maybe_render(out, req, tray, a, b, obstacles, pts, sup)
+
+
+def _fit_checks(totals, tray):
+    """Does the cable fit across and within the tray, and round its bends."""
+    out = []
+    need = totals["width_mm"] + 2 * C.SIDE_CLEARANCE_MM
+    if need > tray.width:
+        out.append({"code": "tray_full",
+                    "message": f"cables need {need:.0f} mm of width with "
+                               f"{C.SIDE_CLEARANCE_MM:g} mm each side; "
+                               f"{tray.family} {tray.width:g} has "
+                               f"{tray.width:g} mm. Use a wider tray, a "
+                               f"second tray, or fewer circuits",
+                    "need_mm": round(need), "have_mm": tray.width})
+    if totals["height_mm"] > tray.side_height:
+        out.append({"code": "above_rails",
+                    "message": f"cables stand {totals['height_mm']:.0f} mm, "
+                               f"above the {tray.side_height:g} mm rails"})
+    if totals["max_bend_radius_mm"] > tray.bend_radius:
+        out.append({"code": "bend_too_tight",
+                    "message": f"largest cable needs a "
+                               f"{totals['max_bend_radius_mm']:g} mm bend "
+                               f"radius; tray bends are "
+                               f"{tray.bend_radius:g} mm inside radius"})
+    return out
+
+
+FREECADCMD_CANDIDATES = (
+    "/Applications/FreeCAD.app/Contents/Resources/bin/freecadcmd",
+    "/usr/bin/freecadcmd", "/usr/local/bin/freecadcmd")
+MODEL_DIR = os.environ.get("TRAY_MODEL_DIR") or os.path.join(HERE, "out",
+                                                             "models")
+
+
+def freecadcmd():
+    exe = os.environ.get("FREECADCMD") or shutil.which("freecadcmd")
+    if exe:
+        return exe
+    return next((p for p in FREECADCMD_CANDIDATES if os.path.exists(p)), None)
+
+
+def _model(m, rid, pts, tray, sup, layout, obstacles):
+    """The 3D model: always the build spec; solids too when FreeCAD is here.
+
+    Files go under MODEL_DIR (TRAY_MODEL_DIR), named from the run id, so a
+    caller cannot choose where on the server they land.
+    """
+    if not isinstance(m, dict):
+        m = {}
+    spec = M.build_spec(pts, tray, sup["supports"], layout,
+                        obstacles if m.get("context", True) else (),
+                        name=rid)
+    safe = re.sub(r"[^A-Za-z0-9_.-]", "_", rid)[:80] or "tray"
+    out = {"primitives": len(spec["primitives"]),
+           "groups": sorted(spec["groups"])}
+    if m.get("include_spec"):
+        out["spec"] = spec
+    if m.get("build", True) is False:
+        out["built"] = False
+        return out
+    exe = freecadcmd()
+    if not exe:
+        out.update(built=False, note="FreeCAD is not installed here; build "
+                   "the spec with freecad_build.py on the CAD host")
+        return out
+    os.makedirs(MODEL_DIR, exist_ok=True)
+    base = os.path.join(MODEL_DIR, safe)
+    with open(base + ".spec.json", "w") as fh:
+        json.dump(spec, fh)
+    env = {**os.environ, "TRAY_SPEC": base + ".spec.json", "TRAY_OUT": base}
+    try:
+        subprocess.run([exe, os.path.join(HERE, "freecad_build.py")],
+                       env=env, capture_output=True, timeout=600, check=True)
+        with open(base + ".build.json") as fh:
+            out.update(built=True, **json.load(fh))
+    except (subprocess.SubprocessError, OSError, ValueError) as exc:
+        out.update(built=False, error=f"{type(exc).__name__}: {exc}")
+    return out
 
 
 def _maybe_render(out, req, tray, a, b, obstacles, pts, sup):

@@ -105,9 +105,18 @@ TOOLS = [
             "along the run if blocked. Returns support positions, post "
             "heights, loads, a bill of materials, issues (support_blocked, "
             "span_exceeded, splice_unsupported, overloaded) and open items "
-            "(risers needing a wall or structure fixing). Add render to "
-            "get a review image. Drafts for an engineer: support ratings "
-            "are unverified. " + _UNITS),
+            "(risers needing a wall or structure fixing). Give circuits "
+            "(kw, kva or amps per circuit) and each is sized with the "
+            "AS/NZS 3008 cable sizing calculator for the tray's length plus "
+            "tails, grouped with everything else on the tray: the result "
+            "lists cable type and size, length, design current against "
+            "capacity, voltage drop against its limit, fault current, and "
+            "metres of each cable to order, and the cable mass sets the "
+            "support spacing; a tray too narrow or too shallow for them is "
+            "an issue. Add model to build the 3D model (ladder, supports "
+            "and every core) as FCStd and STEP when FreeCAD is on the "
+            "server. Add render to get a review image. Drafts for an "
+            "engineer: support ratings are unverified. " + _UNITS),
         "inputSchema": tray_service.TRAY_SCHEMA,
     },
     {
@@ -184,6 +193,8 @@ def call_tool(name, args):
         result = tray_service.route_and_support(args)
         for sup in result.get("supports", []):
             sup.pop("boxes", None)
+        for c in result.get("circuits", []):
+            c.pop("manufacturers", None)
         if "svg" in result:
             return _image(result)
         return _text(result)
