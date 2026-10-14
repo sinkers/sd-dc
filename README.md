@@ -205,6 +205,7 @@ The vision above is the destination. This is the odometer.
 | [`digital-twin/`](digital-twin/) | Simulation | Real-time AU01 hall thermals, calibrated against the CFD, streamed to a browser and Unreal | **Deployed** — 119 tests |
 | [`cfd-cabinet-cooling/`](cfd-cabinet-cooling/) | Simulation | OpenFOAM: does a fan wall keep a 30 kW cabinet inside ASHRAE limits? | Working |
 | [`liquid-twin/`](liquid-twin/) | Simulation | Two-loop liquid cooling — DLC cold plates to CDU to chillers, as a pressure-driven hydraulic network | Phase 1 of 6 — 137 tests |
+| [`power-sim/`](power-sim/) | Simulation | Drop-in electrical components as IndustroML kinds (grid, BESS, UPS, GPU load, generator, DR controller): demand response on recorded NEM prices, grid-disturbance ride-through, standby generation | **Deployed**, sim 1 of 2 — 146 tests |
 | [`cables/`](cables/) | Catalogue | Nexans Australia cable catalogue — 3 families, 40 sizes, with OD, weight, bend radius, pulling tension and impedance | Working |
 | [`cable-tray-ezystrut/`](cable-tray-ezystrut/) | Catalogue | Ezystrut tray systems — 5 families (ET5, ET3, ET, CT, NEMA3), datasheets, STEP models, joining rules | Working |
 | [`piping/`](piping/) | Engineering | Orthogonal pipe routing with A* obstacle avoidance, generating solid FreeCAD geometry | Working, 3/5 scenarios pass |

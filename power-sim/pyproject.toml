@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dtpower"
+version = "0.1.0"
+description = "Composable electrical simulations: grid, BESS, UPS and GPU load, for demand response studies"
+requires-python = ">=3.10"
+# The standard library only. A whole simulated day is a few hundred steps of
+# arithmetic, and the service is a plain HTTP endpoint, so there is nothing for
+# numpy or websockets to do.
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4",
+]
+
+[project.scripts]
+dtpower = "dtpower.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["model"]
+
+[tool.setuptools.package-data]
+dtpower = ["data/*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["model/tests"]
