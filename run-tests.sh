@@ -46,6 +46,14 @@ else
   ( cd "$HERE/liquid-twin" && PYTHONPATH=loop python3 -m pytest -q loop/tests ) || fail=1
 fi
 
+# power-sim: standard library only, so a plain checkout runs it with no install.
+if python3 -c "import dtpower" 2>/dev/null; then
+  run "power-sim — grid, BESS, UPS, generator" power-sim python3 -m pytest -q model/tests
+else
+  echo -e "\n\033[1m== power-sim — grid, BESS, UPS, generator\033[0m"
+  ( cd "$HERE/power-sim" && PYTHONPATH=model python3 -m pytest -q model/tests ) || fail=1
+fi
+
 printf '\n'
 if [ "$fail" -eq 0 ]; then echo "All suites passed."; else echo "One or more suites FAILED."; fi
 exit "$fail"
