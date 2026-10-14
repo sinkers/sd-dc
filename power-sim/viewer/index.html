@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Power Sim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="ui/theme.css">
+</head>
+<body>
+<header class="bar">
+  <div class="bar-inner">
+    <div class="title">
+      <h1 id="title">Power Sim</h1>
+      <span class="sub" id="subtitle">Loading…</span>
+    </div>
+    <span class="grow"></span>
+    <label class="field-inline" for="scenario"><span>Scenario</span>
+      <select id="scenario"></select>
+    </label>
+    <div class="transport" role="group" aria-label="Playback">
+      <button id="play" type="button" aria-pressed="false">Play</button>
+      <label class="field-inline" for="speed"><span>Speed</span>
+        <select id="speed">
+          <option value="0.000277778">1 s/s (real time)</option>
+          <option value="0.00277778">10 s/s</option>
+          <option value="0.00833333">30 s/s</option>
+          <option value="0.0166667">1 min/s</option>
+          <option value="0.0833333">5 min/s</option>
+          <option value="0.25">15 min/s</option>
+          <option value="0.5">30 min/s</option>
+          <option value="1">1 h/s</option>
+          <option value="3" selected>3 h/s</option>
+          <option value="8">8 h/s</option>
+        </select>
+      </label>
+      <input id="scrub" type="range" min="0" max="287" value="0" aria-label="Time of day">
+      <span class="clock" id="clock">00:00</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="scenario-note" id="scenario-note"></p>
+
+  <section class="panel dispatch" aria-label="Power price and BESS dispatch">
+    <div class="now">
+      <span class="k">Power price now</span>
+      <span class="v" id="price-now">–</span>
+      <span class="pill zone" id="price-zone">–</span>
+      <span class="n" id="price-source"></span>
+    </div>
+    <div class="set">
+      <span class="k">BESS dispatch prices</span>
+      <div id="dispatch-controls"></div>
+      <p class="note" id="dispatch-note"></p>
+    </div>
+  </section>
+
+  <section class="summary" aria-label="Day summary">
+    <div class="hero">
+      <span class="k" id="sum-saving-label">Net saved today</span>
+      <span class="v" id="sum-saving">–</span>
+      <span class="n" id="sum-saving-now"></span>
+      <span class="n" id="sum-saving-note"></span>
+    </div>
+    <div><span class="k">From the BESS</span><span class="v" id="sum-bess">–</span><span class="n">arbitrage, after wear</span></div>
+    <div><span class="k">From the power cap</span><span class="v" id="sum-cap">–</span><span class="n" id="sum-cap-note"></span></div>
+    <div><span class="k">From the generator</span><span class="v" id="sum-gen">–</span><span class="n" id="sum-gen-note"></span></div>
+    <div><span class="k">Bill without BESS</span><span class="v" id="sum-base">–</span><span class="n">spot plus adder</span></div>
+    <div><span class="k">Bill with BESS</span><span class="v" id="sum-cost">–</span><span class="n">before wear</span></div>
+    <div><span class="k">Bought → sold at</span><span class="v" id="sum-spread">–</span><span class="n">mean $/MWh</span></div>
+    <div><span class="k">BESS use</span><span class="v" id="sum-cycles">–</span></div>
+    <div><span class="k">Supply risk</span><span class="v" id="sum-risk">–</span><span class="n">unserved load, overloads</span></div>
+    <div><span class="k">Ride-through</span><span class="v" id="sum-rt">–</span><span class="n" id="sum-rt-note"></span></div>
+  </section>
+
+  <section class="panel">
+    <h2>Single-line diagram <span class="spacer"></span><span class="tag" style="color:var(--muted)">click equipment for its settings · * kind not yet in IndustroML</span></h2>
+    <div class="oneline" id="sld"></div>
+  </section>
+
+  <div class="cards" id="cards"></div>
+
+  <section class="panel">
+    <h2>The day <span class="spacer"></span>
+      <button id="price-scale" type="button">Price scale: log</button>
+      <button id="reset" type="button">Reset to scenario</button>
+    </h2>
+    <div class="charts" id="charts"></div>
+  </section>
+
+  <details class="panel">
+    <summary style="padding:9px 14px;cursor:pointer" class="k">IndustroML model for this simulation</summary>
+    <div style="padding:0 14px 8px"><button id="copy-model" type="button">Copy JSON</button></div>
+    <pre class="model" id="model"></pre>
+  </details>
+
+  <p class="status-line" id="status" role="status">Connecting to the simulation service…</p>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
