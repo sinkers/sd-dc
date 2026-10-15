@@ -44,7 +44,7 @@ in the repo, this one included.
 | `feeder.py` | The service engine — `Source`, `Load`, `Installation`, `size_feeder()`, `size_network()` |
 | `reference_tables.json` | All reference data, each table tagged with provenance and a `verified` flag |
 | `EXTRACTED-TABLES.md` | Capture record of everything read from AS/NZS 3000:2018, including what was deliberately not encoded |
-| `test_feeder.py` | 150-check suite: published worked examples, table structure validation, AS/NZS 3000:2018 cross-checks |
+| `test_feeder.py` | 158-check suite: published worked examples, table structure validation, AS/NZS 3000:2018 cross-checks |
 | `standards.py` | The five standard profiles: reference ambients, installation vocabularies, voltage drop limits, IEC voltage factor |
 | `install_diagrams.py` | Inline SVG diagrams of each installation arrangement |
 | `service.py` | Service layer. The web UI, the REST API and the MCP server all call this, so they cannot disagree |
@@ -55,7 +55,7 @@ in the repo, this one included.
 | `build_800a_table.py` | Generates the 800 A 3ph+N+E schedule page into `out/` |
 | `as3008_ratings.json` | AS/NZS 3008.1.1 Table 3.14 col 5 ratings, from two agreeing calculators |
 | `ezystrut.py` | Tray selection against the Ezystrut range in `../cable-tray-ezystrut/` |
-| `test_api.py` | 129-check suite for the standards layer, diagrams, service, OpenAPI and MCP |
+| `test_api.py` | 150-check suite for the standards layer, diagrams, service, OpenAPI and MCP |
 | `tricab_families.json` | Tricab public family metadata. Deliberately carries no per-size electrical data: see below |
 | `REVIEW-ELEK.md` | Review of ELEK Cable Pro Web against this engine, with the measured differences |
 | `reference/` | Captured evidence: the jCalc origin page, the five ELEK pages, the cross-check scripts, the Tricab extractor |
@@ -63,7 +63,7 @@ in the repo, this one included.
 ## Usage
 
 ```python
-from cable_sizing import Source, Load, Installation, size_feeder
+from feeder import Source, Load, Installation, size_feeder
 
 result = size_feeder(
     Source("MSB-1", voltage_v=415, fault_level_ka=25, clearing_time_s=0.2),
@@ -371,7 +371,7 @@ losses, but that could not be resolved without the standard itself.
 
 ```
 $ python3 test_feeder.py
-All 150 checks passed.
+All 158 checks passed.
 ```
 
 The suite validates the primitives against two independently published worked examples
@@ -592,8 +592,8 @@ error naming the table to read, rather than a plausible number.
 ## Tests
 
 ```
-python3 test_feeder.py     # 150 checks, the engine
-python3 test_api.py              # 129 checks, everything around it
+python3 test_feeder.py           # 158 checks, the service engine
+python3 test_api.py              # 150 checks, everything around it
 ```
 
 `test_api.py` pins the two properties that matter most: that adding the

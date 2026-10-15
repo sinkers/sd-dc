@@ -436,7 +436,7 @@ X"* is the engine refusing to let a guess pass as a result. So is *"catalogue X
 used"* — it took the conservative source and said which one it took.
 
 ```python
-from cable_sizing import Source, Load, Installation, size_feeder
+from feeder import Source, Load, Installation, size_feeder
 
 result = size_feeder(
     Source("MSB-1", voltage_v=415, fault_level_ka=25, clearing_time_s=0.2),
@@ -459,7 +459,7 @@ a browser and an agent:
 | REST + HTML | `server.py`, described by `openapi.py` |
 | MCP over stdio | `mcp_server.py` — 5 tools, 3 resources |
 | MCP over HTTP | `http_mcp_server.py` — same dispatch, for hosted clients |
-| Direct | `import cable_sizing` |
+| Direct | `import feeder` (service engine) or `import cable_sizing` (reference engine) |
 
 The HTTP transport is the one that matters for the stack above: a hosted agent
 cannot spawn a subprocess, so it cannot use stdio. Dispatch is `mcp_server.handle`

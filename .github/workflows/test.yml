@@ -38,6 +38,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.9"
-      - name: cable-sizing — synthetic smoke on Python 3.9
+      - name: cable-sizing — service engine on Python 3.9
         working-directory: cable-sizing
-        run: python3 test_synthetic.py
+        run: |
+          python3 -c "import feeder, service, server, mcp_server"
+          python3 test_synthetic.py
+          python3 test_feeder.py
+          python3 test_api.py

@@ -77,8 +77,10 @@ class DataFile:
 #: and must stay out of the public repository. `licensed=False` files are safe
 #: to publish but are listed here so the store is the single place that knows
 #: where data comes from.
-#: Set SDDC_ARTIFACTS_BUCKET to the artifacts bucket, as tools/data_pull_*.sh do.
-_BUCKET = os.environ.get("SDDC_ARTIFACTS_BUCKET", "s3://<artifacts-bucket>").rstrip("/")
+#: SDDC_ARTIFACTS_BUCKET names the artifacts bucket (bare name, no s3://), as
+#: for tools/data_pull_*.sh. Only used to say where a missing file comes from.
+_BUCKET = "s3://" + os.environ.get(
+    "SDDC_ARTIFACTS_BUCKET", "<artifacts-bucket>").removeprefix("s3://").rstrip("/")
 S3 = f"{_BUCKET}/standards/as-nzs-3008/"
 
 #: Manufacturer catalogues. Published by their makers for use with their
