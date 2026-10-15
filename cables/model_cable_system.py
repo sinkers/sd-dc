@@ -5,7 +5,7 @@ Generates a 3D model of power cables on ladder trays between two points,
 with correct cable selection, tray sizing, trefoil arrangement, and bend radii.
 
 Usage (inside FreeCAD Python console or via MCP):
-    exec(open('/Users/andrewsinclair/workspace/sd-dc/cables/model_cable_system.py').read())
+    exec(open('/path/to/sd-dc/cables/model_cable_system.py').read())
 
     # Example: 4000A from transformer to PTU, 20m run
     model = generate_cable_system(
@@ -49,7 +49,9 @@ except ImportError:
 # =============================================================================
 
 # Resolve catalog path - works whether run from FreeCAD, CLI, or imported
-_THIS_DIR = os.path.dirname(os.path.abspath(__file__)) if '__file__' in dir() else '/Users/andrewsinclair/workspace/sd-dc/cables'
+# FreeCAD's exec() context has no __file__: use the checkout named by SDDC_ROOT.
+_THIS_DIR = (os.path.dirname(os.path.abspath(__file__)) if '__file__' in dir()
+             else os.path.join(os.environ.get('SDDC_ROOT', os.getcwd()), 'cables'))
 CATALOG_PATH = os.path.join(_THIS_DIR, "cable_catalog.json")
 
 def load_catalog():

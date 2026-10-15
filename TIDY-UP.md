@@ -102,7 +102,7 @@ grep -rn "Downloads/sd-dc" . --exclude-dir=.git     # should return nothing
 
 ## Step 2 — Large data to S3  ·  ✅ DONE 2026-09-04
 
-Bucket **`s3://sd-dc-artifacts-730335486558-apse2`** created in ap-southeast-2:
+Bucket **`s3://sd-dc-artifacts-<account-id>-apse2`** created in ap-southeast-2:
 versioning on, public access blocked, SSE-S3 default encryption, lifecycle
 (IA at 90 d, non-current expiry 180 d, abort stale multipart at 7 d).
 
@@ -377,7 +377,7 @@ git ls-files --cached --others --exclude-standard -z | xargs -0 du -ck | tail -1
 git ls-files --others --exclude-standard -z | xargs -0 du -k | sort -rn | head -20
 
 git ls-files | grep -E 'drawing_locate/img|drawing_read|datasheets/.*\.pdf'
-git ls-files -z | xargs -0 grep -lI '730335486558'
+git ls-files -z | xargs -0 grep -lI '<account-id>'
 git ls-files -z | xargs -0 grep -lI 'dame.com.au'
 git ls-files -z | xargs -0 grep -lInE \
   'AKIA[0-9A-Z]{16}|BEGIN (RSA|OPENSSH|EC) PRIVATE|api[_-]?key.*[:=]|password.*[:=]'

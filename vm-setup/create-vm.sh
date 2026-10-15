@@ -2,8 +2,8 @@
 set -euo pipefail
 
 VM_NAME="freecad-mcp"
-CLOUD_IMG="${1:-/Users/andrewsinclair/Downloads/ubuntu-noble-arm64.img}"
-VM_DIR="/Users/andrewsinclair/Parallels"
+CLOUD_IMG="${1:-$HOME/Downloads/ubuntu-noble-arm64.img}"
+VM_DIR="$HOME/Parallels"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "=== Creating FreeCAD MCP VM from cloud image ==="
@@ -25,7 +25,7 @@ fi
 # Step 1: Convert qcow2 to raw
 echo "[1/6] Converting cloud image to raw format..."
 RAW_IMG="/tmp/ubuntu-noble-arm64.raw"
-QEMU_IMG="/Users/andrewsinclair/Library/Android/sdk/emulator/qemu-img"
+QEMU_IMG="${QEMU_IMG:-$(command -v qemu-img || echo "$HOME/Library/Android/sdk/emulator/qemu-img")}"
 $QEMU_IMG convert -f qcow2 -O raw "$CLOUD_IMG" "$RAW_IMG"
 
 # Resize the raw image to 40GB

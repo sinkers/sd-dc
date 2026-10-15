@@ -3,7 +3,7 @@
 Cross-check of the ticket against the current `DAME_AU01_Building.FCStd` layout
 (read live, 18 Aug 2026) and against what the `cfd-cabinet-cooling` hall model
 can and cannot yet answer. Updated 18 Aug PM: FWCV figures verified against the
-brochure PDF (Vendors/Schneider/ProductBrochures); all coolers confirmed on the
+Schneider product brochure PDF; all coolers confirmed on the
 chilled water loop; ticket description corrected (45 kW spine, B300 HGX, 807.5,
 hall clear width). Delta RowCool 95 kW and MCDU-40 remain as quoted.
 
