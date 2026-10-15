@@ -195,19 +195,28 @@ enough to yet to claim.
 
 ---
 
+## Reviewing the calculations
+
+[`CALCS.md`](CALCS.md) is the register: every calculation and simulation in the
+repository, the engine it runs on, the standard or method it follows, where each
+formula lives, where its inputs come from, how it is verified and how to
+reproduce it, and what is still open. Start there.
+
+---
+
 ## What is actually built today
 
 The vision above is the destination. This is the odometer.
 
 | Component | Layer | What it does | State |
 |---|---|---|---|
-| [`cable-sizing/`](cable-sizing/) | Engineering | AS/NZS 3008 cable sizing with a full audit trail. REST API, MCP over stdio **and HTTP**, browser UI | **Mature** — 308 checks |
+| [`cable-sizing/`](cable-sizing/) | Engineering | AS/NZS 3008 cable sizing with a full audit trail. REST API, MCP over stdio **and HTTP**, browser UI | **Mature** — reference engine 113 tests; service engine 308 checks |
 | [`digital-twin/`](digital-twin/) | Simulation | Real-time AU01 hall thermals, calibrated against the CFD, streamed to a browser and Unreal | **Deployed** — 119 tests |
 | [`cfd-cabinet-cooling/`](cfd-cabinet-cooling/) | Simulation | OpenFOAM: does a fan wall keep a 30 kW cabinet inside ASHRAE limits? | Working |
-| [`liquid-twin/`](liquid-twin/) | Simulation | Two-loop liquid cooling — DLC cold plates to CDU to chillers, as a pressure-driven hydraulic network | Phase 1 of 6 — 137 tests |
+| [`liquid-twin/`](liquid-twin/) | Simulation | Two-loop liquid cooling — DLC cold plates to CDU to chillers, as a pressure-driven hydraulic network | Phases 0–1, steady HX and chiller plant — 137 tests |
 | [`cables/`](cables/) | Catalogue | Nexans Australia cable catalogue — 3 families, 40 sizes, with OD, weight, bend radius, pulling tension and impedance | Working |
 | [`cable-tray-ezystrut/`](cable-tray-ezystrut/) | Catalogue | Ezystrut tray systems — 5 families (ET5, ET3, ET, CT, NEMA3), datasheets, STEP models, joining rules | Working |
-| [`piping/`](piping/) | Engineering | Orthogonal pipe routing with A* obstacle avoidance, generating solid FreeCAD geometry | Working, 3/5 scenarios pass |
+| [`piping/`](piping/) | Engineering | Orthogonal pipe routing with A* obstacle avoidance, generating solid FreeCAD geometry | Working — 47 tests; scenarios A–C route, D and E correctly refused |
 | [`cooling-model/`](cooling-model/) | Engineering | Parametric cooling plant and pump skid geometry, exported to STEP/OBJ | Working |
 | [`vm-setup/`](vm-setup/) | Infrastructure | Headless FreeCAD VM, XML-RPC server, MCP bridge | Working |
 | [`spec-exchange/`](spec-exchange/) | Process | Questions to the standards owner and their answers, with values held privately | Working |
@@ -218,7 +227,7 @@ The vision above is the destination. This is the odometer.
 | `costing/` | Engineering | BOM to rates to a number | **Not built** |
 
 ```bash
-./run-tests.sh          # every suite: 308 + 119 + 137, all green
+./run-tests.sh          # every suite — the list, and what each verifies, is in CALCS.md
 ```
 
 ### Honest scoreboard
@@ -467,9 +476,12 @@ The five tools an agent sees:
 | `list_cable_types` | Cable families with conductor, insulation, voltage, temperature |
 | `get_installation_diagram` | An SVG of the arrangement that sets the rating — spacing, formation, touching or spaced |
 
-308 checks across two suites (`test_feeder.py`, `test_api.py`), plus a
-credential-free synthetic smoke suite that proves the code assembles without the
-licensed tables present.
+Two engines: `cable_sizing/` is the reference, to methodology Rev B, with 113
+tests including the standard's own published answers (Appendix A.1.2 and B);
+`feeder.py` runs the service, with 308 checks across `test_feeder.py` and
+`test_api.py`. A credential-free synthetic suite proves the code assembles
+without the licensed tables present. See `cable-sizing/README.md` for how the
+two differ.
 
 ### `piping/`
 
@@ -690,7 +702,8 @@ Most components are standard-library Python 3 and need nothing installed.
 
 # Cable sizing — no dependencies
 cd cable-sizing
-python3 test_feeder.py        # 158 checks
+python3 -m pytest tests             # reference engine
+python3 test_feeder.py              # service engine, 158 checks
 python3 server.py                   # REST + UI on localhost
 python3 build_status.py && open STATUS.html
 

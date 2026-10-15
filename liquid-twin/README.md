@@ -6,14 +6,17 @@ the same hall and which this deliberately does not touch.
 
 **Live: <https://au01-twin.dametech.net/loop/>**
 
-**Status: Phase 1 of 6.** The hydraulic core is built and tested. Thermal
-transport, heat exchangers, controls and the viewer are not. Temperatures come from Schneider
+**Status: Phases 0–1, plus steady heat exchangers and the chiller plant, and
+the Phase 4 review viewer.** The hydraulic network solve, ε-NTU plate exchangers
+(`hx.py`), the free-cooling chiller plant (`chiller.py`) and the circuit and
+scenario runs on the routed layout (`plant.py`) are built and tested. Transient
+thermal transport (Phase 2) and controls are not. Temperatures come from Schneider
 RD110 rev 3; see below for what it settles and what it changes.
 [SPEC.md](SPEC.md) is the design; this README is what exists.
 
 ```bash
 pip install -e '.[dev]'
-python3 -m pytest loop/tests -q      # 66 tests
+python3 -m pytest loop/tests -q      # 137 tests
 ```
 
 ## Why this is not CFD
@@ -64,8 +67,12 @@ liquid-twin/
 │   ├── fluid.py         PG25 properties
 │   ├── components.py    pipe, valve, pump, resistance
 │   ├── network.py       nodes, branches, incidence
-│   └── hydraulics.py    the Newton solve                          (Phase 1)
-└── loop/tests/          66 tests
+│   ├── hydraulics.py    the Newton solve                          (Phase 1)
+│   ├── hx.py            ε-NTU plate heat exchangers, steady
+│   ├── chiller.py       free-cooling chiller and plant
+│   ├── layout.py        the routed loop, pipe sizing by velocity
+│   └── plant.py         circuits on the layout, pump sizing, scenarios
+└── loop/tests/          137 tests
 ```
 
 ## Phase 0: what is not known yet

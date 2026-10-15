@@ -1,5 +1,11 @@
 # Code quality and test coverage assessment
 
+> **A snapshot, kept for the record.** Since it was measured, piping, trays and
+> liquid-twin gained suites, `dame_cable` became `cable_sizing/` and the old
+> `cable_sizing.py` became `feeder.py`, and CI runs every suite through
+> `run-tests.sh`. For what each calculation is and how it is verified now, see
+> [CALCS.md](CALCS.md).
+
 Measured 2026-09-04, not estimated. Coverage from `coverage.py` on real runs;
 structural figures from AST analysis of every tracked `.py` file.
 
