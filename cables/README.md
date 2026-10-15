@@ -45,13 +45,12 @@ Use the selection matrix below:
 | Fibre backbone | Optical Fibre | `16_fibre_optic.md` |
 
 ### Step 3: Size the Cable
-1. Look up the current carrying capacity table for the selected cable type
-2. Apply derating factors for:
-   - Ambient temperature above 40C (common in data centres)
-   - Grouping/bundling on cable trays
-   - Installation method
-3. Select the smallest conductor size where derated capacity >= required current
-4. Verify voltage drop over the run length is acceptable (< 5% for sub-mains)
+Don't size by hand from this catalogue. `../cable-sizing/` does it to AS/NZS
+3008.1.1 and AS/NZS 3000, with an audit trail: rating after ambient and
+grouping factors, voltage drop, short-circuit withstand and earth fault loop.
+`model_cable_system.py` calls the same engine (`feeder.size_feeder`) and only
+adds the tray geometry. `../CALCS.md` lists every calculation and how each is
+checked.
 
 ### Step 4: Generate 3D Model Parameters
 For each cable in the routing, extract from this catalog:
@@ -80,7 +79,10 @@ Cable construction (inside to outside):
 | Data cables | Grey/Blue |
 | Fibre optic | Yellow (SM) / Orange (MM) |
 
-### Key Derating Factors (AS/NZS 3008.1)
+### Key Derating Factors (AS/NZS 3008.1), indicative only
+The catalogue's own figures, for orientation. The engine applies the
+standard's tables, which depend on installation and support type.
+
 | Condition | Multiplier |
 |---|---|
 | Ambient 45C (vs 40C reference) | 0.93 |

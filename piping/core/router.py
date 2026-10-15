@@ -1,5 +1,6 @@
-"""One orthogonal pipe router, replacing the three in router.py, route_engine.py
-and piping.auto_route for anything that only needs a centreline.
+"""One orthogonal pipe router, replacing the three in the old router.py
+(removed), route_engine.py and piping.auto_route for anything that only needs a
+centreline.
 
 The search is A* over corners, not cells. A state is (corner, heading): the
 point where an elbow sits and the direction the pipe was travelling when it
