@@ -13,7 +13,7 @@ import sys
 
 import as3008
 import iec60228
-from cable_sizing import (Source, Load, Installation, size_feeder,
+from feeder import (Source, Load, Installation, size_feeder,
                           size_network, cable_schedule, voltage_drop_budget)
 
 GENERATED = "2026-08-24"
@@ -21,7 +21,7 @@ GENERATED = "2026-08-24"
 
 def test_summary():
     """Run the suite and return (passed_count, ok)."""
-    p = subprocess.run([sys.executable, "test_cable_sizing.py"],
+    p = subprocess.run([sys.executable, "test_feeder.py"],
                        capture_output=True, text=True)
     m = re.search(r"All (\d+) checks passed", p.stdout)
     if m:

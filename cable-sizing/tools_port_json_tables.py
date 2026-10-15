@@ -1,7 +1,7 @@
 """Port the licensed Section 4 JSON tables into the data/ CSV layer.
 
 The Section 4 and 5 numbers were read from the licensed AS/NZS 3008.1.1:2025
-on 2026-09-04 and landed as JSON beside the legacy engine. dame_cable reads
+on 2026-09-04 and landed as JSON beside the legacy engine. cable_sizing reads
 CSV. This moves the data across without going back to the printed standard,
 so the transcription is not repeated and cannot drift.
 

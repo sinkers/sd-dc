@@ -37,7 +37,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import as3008
-import cable_sizing as cs
+import feeder as cs
 import standards
 
 CABLE = "XLPE_SDI_CU"

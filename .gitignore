@@ -67,7 +67,7 @@ cable-sizing/as3008_ratings.json
 # standards/as-nzs-3000/.
 cable-sizing/reference_tables.json
 
-# Rating and factor tables for the dame_cable package, transcribed from the
+# Rating and factor tables for the cable_sizing package, transcribed from the
 # licensed AS/NZS copies. Same posture as the JSON tables above: the code is
 # open source, the numbers are not. Synthetic stand-ins live in
 # cable-sizing/tests/fixtures/ and ARE tracked.
@@ -128,7 +128,7 @@ spec-exchange/private/
 # is Tricab's own source, and elek-calculator.png is a screenshot of their UI.
 #
 # Nothing opens these at runtime — every reference in standards.py,
-# cable_sizing.py and test_cable_sizing.py is a provenance comment — so unlike
+# feeder.py and test_feeder.py is a provenance comment — so unlike
 # B5 this does not break a clean checkout. compare_elek.py, compare_au_nz.py and
 # build_tricab_families.py are OURS and stay. In S3 under vendor/calculators/.
 cable-sizing/reference/elek-*.txt

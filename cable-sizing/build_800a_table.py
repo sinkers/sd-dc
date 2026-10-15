@@ -5,7 +5,7 @@
 
 Sizes a 100% neutral three-phase feeder over 5-50 m in flexible copper and in
 aluminium, across a range of voltage drop budgets, and writes a self-contained
-HTML page. Every number comes from cable_sizing.size_feeder.
+HTML page. Every number comes from feeder.size_feeder.
 """
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ import math
 import os
 
 import as3008
-import cable_sizing as cs
+import feeder as cs
 import ezystrut
 import install_diagrams
 import service

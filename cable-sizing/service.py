@@ -11,7 +11,7 @@ import json
 import os
 
 import as3008
-import cable_sizing as cs
+import feeder as cs
 import tables
 import install_diagrams
 import standards

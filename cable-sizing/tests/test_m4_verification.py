@@ -14,14 +14,14 @@ import math
 
 import pytest
 
-from dame_cable.errors import InadmissibleFactor
-from dame_cable.rating_factors import ADMISSIBLE, DEPTH_TABLE, admit
-from dame_cable.schema import (BASE_TABLE, Cable, CableConstruction,
-                               ConductorMaterial, Insulation,
-                               InstallationArrangement as A,
-                               InstallationMethod, InvalidInstallation,
-                               MULTICORE_ARRANGEMENTS, SINGLE_CORE_ARRANGEMENTS,
-                               SupportType, base_table)
+from cable_sizing.errors import InadmissibleFactor
+from cable_sizing.rating_factors import ADMISSIBLE, DEPTH_TABLE, admit
+from cable_sizing.schema import (BASE_TABLE, Cable, CableConstruction,
+                                 ConductorMaterial, Insulation,
+                                 InstallationArrangement as A,
+                                 InstallationMethod, InvalidInstallation,
+                                 MULTICORE_ARRANGEMENTS, SINGLE_CORE_ARRANGEMENTS,
+                                 SupportType, base_table)
 
 # --------------------------------------------------------------------------
 # Structural cases - run without the licensed data

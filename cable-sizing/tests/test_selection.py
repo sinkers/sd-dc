@@ -1,13 +1,13 @@
 """Capacity over a route, and the nine-step orchestrator."""
 import pytest
 
-from dame_cable.current_capacity import capacity, check_capacity
-from dame_cable.errors import InvalidDeclaration
-from dame_cable.schema import (SupportType, Cable, CableConstruction, ConductorMaterial,
-                               DeviceType, InstallationArrangement,
-                               InstallationMethod, Insulation, Load, Protection,
-                               Route, RouteSegment, SystemType)
-from dame_cable.select_conductor import select
+from cable_sizing.current_capacity import capacity, check_capacity
+from cable_sizing.errors import InvalidDeclaration
+from cable_sizing.schema import (SupportType, Cable, CableConstruction, ConductorMaterial,
+                                 DeviceType, InstallationArrangement,
+                                 InstallationMethod, Insulation, Load, Protection,
+                                 Route, RouteSegment, SystemType)
+from cable_sizing.select_conductor import select
 
 
 def cable(size=50, **kw):
@@ -126,7 +126,7 @@ def test_harmonic_open_item_stops_the_run_at_step_2(tmp_path):
     sizing on the phase current."""
     import shutil
     from pathlib import Path as _P
-    from dame_cable.tables.registry import TableStore
+    from cable_sizing.tables.registry import TableStore
 
     src = _P(__file__).parent / "fixtures"
     for f in src.glob("*.csv"):

@@ -28,13 +28,29 @@ DEFAULT_CASE_HALL = (
     Path(__file__).resolve().parents[3] / "cfd-cabinet-cooling" / "case-hall"
 )
 
+# The last samples of every case-hall channel, committed so the validation gate
+# runs without the solved case (which is in S3). tools/extract_cfd_reference.py
+# writes it.
+REFERENCE_EXTRACT = Path(__file__).resolve().parent / "data" / "case_hall_reference"
+
 # 25 rows at writeInterval 20 = the last 500 iterations.
 WINDOW_ROWS = 25
 
 
+def _uses_extract(case: str | Path) -> bool:
+    """case-hall without its postProcessing on disk: read the extract."""
+    case = Path(case)
+    return (not (case / "postProcessing").is_dir()
+            and case.resolve() == DEFAULT_CASE_HALL.resolve()
+            and REFERENCE_EXTRACT.is_dir())
+
+
 def read_channel(case: str | Path, tag: str) -> np.ndarray:
     """(n, 2) array of [iteration, value] for one function object."""
-    pattern = str(Path(case) / "postProcessing" / tag / "*" / "*.dat")
+    if _uses_extract(case):
+        pattern = str(REFERENCE_EXTRACT / f"{tag}.dat")
+    else:
+        pattern = str(Path(case) / "postProcessing" / tag / "*" / "*.dat")
     files = sorted(glob.glob(pattern))
     if not files:
         raise FileNotFoundError(f"no postProcessing data for {tag!r} under {case}")
@@ -163,11 +179,15 @@ def load_case_hall(
 
 def _end_tags(case: Path) -> list[str]:
     """Discover the supply channel tags actually present (A/B, or A1/A2/B1/B2)."""
-    found = sorted(
-        p.name[len("supply") :]
-        for p in (case / "postProcessing").glob("supply*")
-        if p.is_dir()
-    )
+    if _uses_extract(case):
+        found = sorted(p.stem[len("supply") :]
+                       for p in REFERENCE_EXTRACT.glob("supply*.dat"))
+    else:
+        found = sorted(
+            p.name[len("supply") :]
+            for p in (case / "postProcessing").glob("supply*")
+            if p.is_dir()
+        )
     if not found:
         raise FileNotFoundError(f"no supply* channels under {case}/postProcessing")
     return found

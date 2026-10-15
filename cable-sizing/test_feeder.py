@@ -3,7 +3,7 @@ Validation suite for the AS/NZS 3008 cable sizing engine.
 
 The primitives are validated against two independently published worked
 examples (elek.com, AS/NZS 3008.1.1:2025) plus the four widely published K
-constants. Run with:  python3 test_cable_sizing.py
+constants. Run with:  python3 test_feeder.py
 """
 
 import math
@@ -11,7 +11,7 @@ import sys
 
 import as3008
 import iec60228
-from cable_sizing import (Source, Load, Installation, size_feeder,
+from feeder import (Source, Load, Installation, size_feeder,
 
                           size_network, cable_schedule, load_catalog,
                           voltage_drop_budget)

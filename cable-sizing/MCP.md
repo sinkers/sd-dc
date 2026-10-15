@@ -11,7 +11,7 @@ Linux, so in practice there is nothing to install. Both test suites were run on
 3.9.6, 3.11.14, 3.12.12, 3.13.13 and 3.14.3, all green, so the floor is measured
 rather than guessed.
 
-- **Command** `python3 /Users/andrewsinclair/workspace/sd-dc/cable-sizing/mcp_server.py`
+- **Command** `python3 /path/to/sd-dc/cable-sizing/mcp_server.py`
 - **Transport** stdio, or HTTP for a remote client — see *Remote clients* below
 - **Server name** `cable-sizing`
 - **Tools** 5 &nbsp;|&nbsp; **Resources** 3
@@ -22,13 +22,13 @@ Already registered in this project. To add it elsewhere:
 
 ```bash
 # this project only
-claude mcp add cable-sizing -- python3 /Users/andrewsinclair/workspace/sd-dc/cable-sizing/mcp_server.py
+claude mcp add cable-sizing -- python3 /path/to/sd-dc/cable-sizing/mcp_server.py
 
 # every project for this user
-claude mcp add --scope user cable-sizing -- python3 /Users/andrewsinclair/workspace/sd-dc/cable-sizing/mcp_server.py
+claude mcp add --scope user cable-sizing -- python3 /path/to/sd-dc/cable-sizing/mcp_server.py
 
 # shared with the team, writes .mcp.json into the repo
-claude mcp add --scope project cable-sizing -- python3 /Users/andrewsinclair/workspace/sd-dc/cable-sizing/mcp_server.py
+claude mcp add --scope project cable-sizing -- python3 /path/to/sd-dc/cable-sizing/mcp_server.py
 ```
 
 Then check it:
@@ -82,7 +82,7 @@ close the window).
   "mcpServers": {
     "cable-sizing": {
       "command": "python3",
-      "args": ["/Users/andrewsinclair/workspace/sd-dc/cable-sizing/mcp_server.py"]
+      "args": ["/path/to/sd-dc/cable-sizing/mcp_server.py"]
     }
   }
 }
@@ -97,7 +97,7 @@ path to `python.exe`. Windows paths need escaped backslashes in JSON
 
 ## Any other MCP client
 
-Same two facts: run `python3 /Users/andrewsinclair/workspace/sd-dc/cable-sizing/mcp_server.py` and talk stdio. The server accepts
+Same two facts: run `python3 /path/to/sd-dc/cable-sizing/mcp_server.py` and talk stdio. The server accepts
 protocol versions `2025-06-18`, `2025-03-26` and `2024-11-05`, echoing back
 whichever the client asks for and falling back to the newest if it asks for
 something else.
@@ -108,7 +108,7 @@ Smoke test it without a client:
 printf '%s\n' \
   '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18"}}' \
   '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
-  | python3 /Users/andrewsinclair/workspace/sd-dc/cable-sizing/mcp_server.py
+  | python3 /path/to/sd-dc/cable-sizing/mcp_server.py
 ```
 
 ## Tools

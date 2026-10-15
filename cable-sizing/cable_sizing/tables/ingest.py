@@ -1,7 +1,7 @@
 """Transcription helper: paste a table in, get it validated before it counts.
 
-    python -m dame_cable.tables.ingest cf_grouping data/ --paste
-    python -m dame_cable.tables.ingest ccc data/ --from-file scratch/ccc.tsv
+    python -m cable_sizing.tables.ingest cf_grouping data/ --paste
+    python -m cable_sizing.tables.ingest ccc data/ --from-file scratch/ccc.tsv
 
 Accepts CSV or tab/whitespace separated text, with or without a header row.
 If the header is absent the manifest's column order is assumed and echoed back

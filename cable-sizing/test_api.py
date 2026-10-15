@@ -3,7 +3,7 @@
 #!/usr/bin/env python3
 """Checks for the multi-standard layer, the diagrams, the REST API and MCP.
 
-`test_cable_sizing.py` covers the engine. This covers what was added around it,
+`test_feeder.py` covers the engine. This covers what was added around it,
 and in particular the two properties that matter most:
 
   1. Adding the standards layer did not move an AS/NZS answer.
@@ -19,7 +19,7 @@ import sys
 import xml.dom.minidom
 
 import as3008
-import cable_sizing as cs
+import feeder as cs
 import install_diagrams
 import mcp_server
 import openapi

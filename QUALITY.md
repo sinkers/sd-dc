@@ -1,5 +1,11 @@
 # Code quality and test coverage assessment
 
+> **A snapshot, kept for the record.** Since it was measured, piping, trays and
+> liquid-twin gained suites, `dame_cable` became `cable_sizing/` and the old
+> `cable_sizing.py` became `feeder.py`, and CI runs every suite through
+> `run-tests.sh`. For what each calculation is and how it is verified now, see
+> [CALCS.md](CALCS.md).
+
 Measured 2026-09-04, not estimated. Coverage from `coverage.py` on real runs;
 structural figures from AST analysis of every tracked `.py` file.
 
@@ -31,7 +37,7 @@ Tested: 10,217 LOC at ~70%. Untested: 6,447 LOC.
 
 ```
 standards.py     100%     iec60228.py      100%     openapi.py       100%
-install_diagrams  99%     cable_sizing.py   94%     ezystrut.py       94%
+install_diagrams  99%     feeder.py         94%     ezystrut.py       94%
 service.py        92%     as3008.py         91%     mcp_server.py     69%
 server.py          0%  ← the HTTP layer is untested
 build_*.py         0%  ← build scripts, acceptable

@@ -6,7 +6,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from dame_cable.tables.registry import TableStore  # noqa: E402
+from cable_sizing.tables.registry import TableStore  # noqa: E402
 
 
 @pytest.fixture(scope="session")

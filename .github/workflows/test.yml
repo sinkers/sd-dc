@@ -5,44 +5,43 @@ on:
     branches: [main]
   pull_request:
 
-# CI runs credential-free. The eight licensed data files (AS/NZS tables and
-# vendor catalogues) are not in the repo, so the value suites skip with exit 0
-# and the synthetic suite carries the load: it points CABLE_SIZING_DATA_DIR at
-# cable-sizing/fixtures/ and sizes a cable end to end on invented numbers. That
-# proves assembly, not correctness — correctness is checked locally against the
-# real data. See PUBLISH-REVIEW.md B5.
+# CI runs credential-free, and runs exactly what run-tests.sh runs, so the two
+# cannot drift. The licensed data (AS/NZS tables, vendor catalogues) is not in
+# the repo: the reference cable engine and the synthetic suite run on invented
+# fixtures, which proves assembly and method, not the tabulated values; the
+# service-engine value suites skip with exit 0 and are run locally against the
+# real data. See CALCS.md for what each suite verifies.
 
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        # 3.9 is the measured floor for cable-sizing, which is stdlib-only.
-        python: ["3.9", "3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python }}
+          python-version: "3.12"
 
-      # cable-sizing needs nothing. digital-twin needs numpy, websockets and
-      # pytest, and its package must be installed or the tests do not collect.
-      - name: Install digital-twin
-        run: pip install -e './digital-twin[dev]'
+      # digital-twin and liquid-twin are packages whose tests import them;
+      # piping and trays need only pytest, and jsonschema for one API test.
+      - name: Install
+        run: pip install -e './digital-twin[dev]' -e './liquid-twin[dev]' jsonschema
 
-      - name: cable-sizing — synthetic smoke (credential-free)
+      - name: Every suite
+        run: ./run-tests.sh
+
+  # feeder.py and its service are standard library only, with 3.9 as the
+  # measured floor. The rest of the repo needs 3.10.
+  cable-sizing-floor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+      - name: cable-sizing — service engine on Python 3.9
         working-directory: cable-sizing
-        run: python3 test_synthetic.py
-
-      - name: cable-sizing — AS/NZS 3008 engine (skips without licensed data)
-        working-directory: cable-sizing
-        run: python3 test_cable_sizing.py
-
-      - name: cable-sizing — REST + MCP API (skips without licensed data)
-        working-directory: cable-sizing
-        run: python3 test_api.py
-
-      - name: digital-twin — ROM
-        working-directory: digital-twin
-        run: python -m pytest -q rom/tests
+        run: |
+          python3 -c "import feeder, service, server, mcp_server"
+          python3 test_synthetic.py
+          python3 test_feeder.py
+          python3 test_api.py

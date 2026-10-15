@@ -1,6 +1,6 @@
 """Coverage report - what still has to come out of the licensed copy.
 
-`python -m dame_cable.tables.validate data/` prints, per table, how many rows
+`python -m cable_sizing.tables.validate data/` prints, per table, how many rows
 are loaded and which standard reference they come from, and flags the tables
 that are empty. A calculation cannot start against an empty table; this turns
 that from a runtime surprise into a checklist.

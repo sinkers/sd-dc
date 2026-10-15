@@ -467,7 +467,7 @@ the CFD and the building model cannot drift apart:
 |---|---|
 | `case-au01/system/cfd_export_params.json` | every plane, extent and the per-rack kW schedule |
 | `case-au01/constant/triSurface/*.stl` | the surfaces `snappyHexMesh` actually cuts to |
-| `geometry/CFD_Export_RevE/` | archived copy of the export, so a run reproduces without OneDrive |
+| `geometry/CFD_Export_RevE/` | archived copy of the export, so a run reproduces without the project document store |
 | `case-au01/system/au01Parameters` | **solver-side choices only** — cell size, duty, scenario, iterations |
 
 To take a new room revision, re-export from FreeCAD and re-copy both the JSON and

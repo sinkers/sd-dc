@@ -5,7 +5,7 @@ Generates a 3D model of power cables on ladder trays between two points,
 with correct cable selection, tray sizing, trefoil arrangement, and bend radii.
 
 Usage (inside FreeCAD Python console or via MCP):
-    exec(open('/Users/andrewsinclair/workspace/sd-dc/cables/model_cable_system.py').read())
+    exec(open('/path/to/sd-dc/cables/model_cable_system.py').read())
 
     # Example: 4000A from transformer to PTU, 20m run
     model = generate_cable_system(
@@ -32,6 +32,7 @@ Coordinate system: X = length of run, Y = lateral, Z = height (mm)
 import json
 import math
 import os
+import sys
 
 # Try FreeCAD imports - script works standalone for calculations,
 # only needs FreeCAD for 3D generation
@@ -49,7 +50,9 @@ except ImportError:
 # =============================================================================
 
 # Resolve catalog path - works whether run from FreeCAD, CLI, or imported
-_THIS_DIR = os.path.dirname(os.path.abspath(__file__)) if '__file__' in dir() else '/Users/andrewsinclair/workspace/sd-dc/cables'
+# FreeCAD's exec() context has no __file__: use the checkout named by SDDC_ROOT.
+_THIS_DIR = (os.path.dirname(os.path.abspath(__file__)) if '__file__' in dir()
+             else os.path.join(os.environ.get('SDDC_ROOT', os.getcwd()), 'cables'))
 CATALOG_PATH = os.path.join(_THIS_DIR, "cable_catalog.json")
 
 def load_catalog():
@@ -58,136 +61,62 @@ def load_catalog():
 
 
 # =============================================================================
-# CABLE SIZING ENGINE
+# CABLE SIZING: the shared engine, not a copy of it
 # =============================================================================
 
-def select_cable_size(current_a, cable_type_key, installation, ambient_temp_c,
-                      num_parallel_groups, catalog):
-    """
-    Select the optimal cable size for given requirements.
-
-    Returns dict with cable size and all properties, or None if impossible.
-    """
-    cable_data = catalog["cables"][cable_type_key]
-    derating = catalog["derating_factors"]
-
-    # Installation method maps to rating column
-    install_map = {
-        "spaced": "i_3ph_spaced_a",
-        "touching": "i_3ph_touching_a",
-        "conduit": "i_3ph_conduit_a",
-        "buried": "i_3ph_buried_a",
-    }
-    rating_key = install_map.get(installation, "i_3ph_spaced_a")
-
-    # Temperature derating
-    temp_factor = 1.0
-    if ambient_temp_c > 40:
-        temp_str = str(int(ambient_temp_c))
-        if temp_str in derating["ambient_temp"]:
-            temp_factor = derating["ambient_temp"][temp_str]
-        else:
-            # Interpolate
-            temp_factor = max(0.5, 1.0 - (ambient_temp_c - 40) * 0.02)
-
-    # Grouping derating
-    group_str = str(min(num_parallel_groups, 9))
-    group_factor = derating["grouping"].get(group_str, 0.69)
-
-    # Find smallest cable that meets derated requirement
-    target_per_cable = current_a / num_parallel_groups
-
-    # Sort sizes numerically
-    sorted_sizes = sorted(cable_data["sizes"].items(), key=lambda x: int(x[0]))
-
-    for size_str, props in sorted_sizes:
-        base_rating = props[rating_key]
-        derated_rating = base_rating * temp_factor * group_factor
-
-        if derated_rating >= target_per_cable:
-            return {
-                "size_mm2": int(size_str),
-                "properties": props,
-                "base_rating_a": base_rating,
-                "derated_rating_a": derated_rating,
-                "temp_factor": temp_factor,
-                "group_factor": group_factor,
-                "parallel_count": num_parallel_groups,
-                "total_capacity_a": derated_rating * num_parallel_groups,
-            }
-
-    return None  # No cable large enough
+def _feeder():
+    """cable-sizing/feeder.py, the engine the sizing service and the tray tool
+    use. This script used to carry its own simplified sizing (single grouping
+    table, a linear 2 %/K ambient fallback); one engine means one answer."""
+    path = os.path.normpath(os.path.join(_THIS_DIR, "..", "cable-sizing"))
+    if path not in sys.path:
+        sys.path.insert(0, path)
+    import feeder
+    return feeder
 
 
 def size_cable_system(current_a, voltage_v, phases, run_length_m,
                       cable_type_key="XLPE_SDI_CU", installation="spaced",
-                      ambient_temp_c=40, max_vdrop_pct=5.0):
+                      ambient_temp_c=40, max_vdrop_pct=5.0,
+                      fault_level_ka=25.0, clearing_time_s=0.2, max_parallel=12):
     """
-    Full cable sizing: determines parallel count, cable size, tray dimensions.
+    Full cable sizing: parallel count and cable size from the AS/NZS 3008
+    engine, then tray dimensions for the model.
+
+    fault_level_ka and clearing_time_s feed the short-circuit check; the
+    defaults are the engine's own (25 kA, 0.2 s) and should be set from the
+    source switchboard.
 
     Returns a complete specification dict.
     """
+    fd = _feeder()
     catalog = load_catalog()
     cable_data = catalog["cables"][cable_type_key]
-
-    # Start with largest cable, see how many parallels needed
-    largest_size = max(cable_data["sizes"].keys(), key=lambda x: int(x))
-    largest_props = cable_data["sizes"][largest_size]
-
-    install_map = {
-        "spaced": "i_3ph_spaced_a",
-        "touching": "i_3ph_touching_a",
-        "conduit": "i_3ph_conduit_a",
-        "buried": "i_3ph_buried_a",
+    result = fd.size_feeder(
+        fd.Source("SOURCE", voltage_v=voltage_v,
+                  phase_mode="3-phase" if phases == 3 else "1-phase",
+                  fault_level_ka=fault_level_ka,
+                  clearing_time_s=clearing_time_s),
+        fd.Load("LOAD", amps=current_a, max_voltage_drop_pct=max_vdrop_pct),
+        run_length_m,
+        fd.Installation(method=installation, formation="trefoil",
+                        ambient_c=ambient_temp_c, cable_type=cable_type_key,
+                        max_parallel=max_parallel))
+    if not result.passed:
+        raise ValueError(f"no cable passes: {result.failure_reason}")
+    size = int(result.active_area_mm2)
+    best_result = {
+        "size_mm2": size,
+        "properties": cable_data["sizes"][str(size)],
+        "parallel_count": result.parallel,
+        "voltage_drop_v": result.voltage_drop_v,
+        "voltage_drop_pct": result.voltage_drop_pct,
+        "run_length_m": run_length_m,
+        "temp_factor": result.ambient_factor,
+        "group_factor": result.grouping_factor,
+        "total_capacity_a": result.derated_capacity_a,
+        "sizing": result,                 # the engine's full audit trail
     }
-    rating_key = install_map.get(installation, "i_3ph_spaced_a")
-
-    # Determine minimum parallel sets needed (with largest cable)
-    base_rating = largest_props[rating_key]
-    min_parallels = math.ceil(current_a / base_rating)
-
-    # Try to optimise: fewer parallels with largest cable, or more with smaller
-    best_result = None
-
-    for n_parallel in range(min_parallels, min_parallels + 4):
-        result = select_cable_size(
-            current_a, cable_type_key, installation,
-            ambient_temp_c, n_parallel, catalog
-        )
-        if result:
-            # Check voltage drop
-            r_ac = result["properties"].get("r_ac_ohm_km",
-                   result["properties"].get("r_dc_ohm_km", 0.1) * 1.02)
-            x_ac = result["properties"].get("x_ohm_km", 0.08)
-            z_cable = math.sqrt(r_ac**2 + x_ac**2)  # ohm/km per cable
-
-            # Voltage drop (3-phase): Vd = sqrt(3) * I * Z * L / (n * 1000)
-            i_per_cable = current_a / n_parallel
-            vdrop_v = math.sqrt(3) * i_per_cable * z_cable * run_length_m / 1000
-            vdrop_pct = (vdrop_v / voltage_v) * 100
-
-            result["voltage_drop_v"] = vdrop_v
-            result["voltage_drop_pct"] = vdrop_pct
-            result["run_length_m"] = run_length_m
-
-            if vdrop_pct <= max_vdrop_pct:
-                if best_result is None or result["size_mm2"] < best_result["size_mm2"]:
-                    best_result = result
-                break  # First valid solution with minimum parallels
-            else:
-                # Need to upsize for voltage drop - try next parallel count
-                continue
-
-    if best_result is None:
-        # Fallback: use largest cable with calculated parallels
-        best_result = select_cable_size(
-            current_a, cable_type_key, installation,
-            ambient_temp_c, min_parallels + 2, catalog
-        )
-        if best_result:
-            best_result["voltage_drop_v"] = 0
-            best_result["voltage_drop_pct"] = 0
-            best_result["run_length_m"] = run_length_m
 
     # Calculate tray sizing
     cable_od = best_result["properties"]["od_mm"]

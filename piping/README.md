@@ -12,7 +12,6 @@ Parametric piping generation for FreeCAD. Generates solid 3D pipe geometry (stra
 - `tools/extract_revb.py`, `tools/bench_revb.py` — build and run the Rev B benchmark (project data, kept in `private/`, never committed)
 - `piping.py` — FreeCAD solids (PipeSpec, StraightPipe, Elbow, PipeRoute)
 - `route_engine.py` — FreeCAD waypoint validation and solid building; its A* search is superseded by `core/`
-- `router.py` — older standalone A* grid router, superseded by `core/`
 - `routing_report.html` — Visual report of the 5 scenarios (A–C route, D and E are correctly refused)
 - `README.md` — This file (rules, terminology, and usage)
 
@@ -320,26 +319,11 @@ objects = route.build(doc)
 issues = route.validate()  # Check all joints (should be [])
 ```
 
-### Sequential Routing (Pipe as Obstacle, superseded)
+### Sequential Routing (Pipe as Obstacle)
 
-`core.route_network` and `piping_route_network` do this without FreeCAD.
-
-```python
-from router import PipeRouter
-from piping import create_pipe_run
-
-router = PipeRouter(grid_size=200)
-router.add_obstacle_box(equipment_min, equipment_max)
-
-# Route first pipe
-supply_wp = router.find_path(pump_discharge, hx_inlet)
-supply = create_pipe_run(doc, "Supply", 150, supply_wp)
-
-# Add first pipe as obstacle, then route second pipe
-router.add_pipe_as_obstacle(supply, padding=300)
-return_wp = router.find_path(hx_outlet, pump_suction)
-ret = create_pipe_run(doc, "Return", 150, return_wp)
-```
+`core.route_network` and the `piping_route_network` tool route pipes one after
+another, each routed pipe becoming an obstacle for the next, without FreeCAD.
+The older FreeCAD `router.py` that did this was removed; it is in git history.
 
 ## Obstacle Avoidance Strategies
 

@@ -81,9 +81,9 @@ newer `case-au01/` and `case-hall/` were never added.
 
 ### B4 — AWS account identifier
 
-`730335486558` appears in **~60 tracked files**, including `dc-model/infra/main.tf`
+`<account-id>` appears in **~60 tracked files**, including `dc-model/infra/main.tf`
 and 44 generated `dc-model/status/status-*.html` snapshots, as part of the bucket
-name `s3://dame-dc-corpus-730335486558-apse2`.
+name `s3://dame-dc-corpus-<account-id>-apse2`.
 
 Not a credential, but it identifies the account and assists targeting. The status
 snapshots are build artifacts that should not be tracked at all — now gitignored.
@@ -293,7 +293,7 @@ git ls-files -z | xargs -0 grep -lInE \
   'AKIA[0-9A-Z]{16}|BEGIN (RSA|OPENSSH|EC) PRIVATE|api[_-]?key.*[:=]|password.*[:=]'
 
 # Account id, email, third-party drawings
-git ls-files -z | xargs -0 grep -lI '730335486558'
+git ls-files -z | xargs -0 grep -lI '<account-id>'
 git ls-files -z | xargs -0 grep -lI 'dame.com.au'
 git ls-files | grep -E 'drawing_locate/img|drawing_read|datasheets/.*\.pdf'
 ```

@@ -33,7 +33,7 @@ where = ["rom"]
 [tool.setuptools.package-data]
 # params_calibrated.json is the fit; au01_export_params.json is the geometry
 # contract, packaged so a deployment does not need the sibling CFD tree.
-dthall = ["*.json"]
+dthall = ["*.json", "data/case_hall_reference/*.dat"]
 
 [tool.pytest.ini_options]
 testpaths = ["rom/tests"]

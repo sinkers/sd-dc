@@ -1,10 +1,10 @@
 """Section 6 - k, the Table 5.2 break, and the iteration rule."""
 import pytest
 
-from dame_cable.schema import (Cable, CableConstruction, ConductorMaterial,
-                               DeviceType, Insulation, Protection)
-from dame_cable.short_circuit import (k_factor, k_for_size, minimum_size,
-                                      withstand_i2t, withstand_is_monotonic)
+from cable_sizing.schema import (Cable, CableConstruction, ConductorMaterial,
+                                 DeviceType, Insulation, Protection)
+from cable_sizing.short_circuit import (k_factor, k_for_size, minimum_size,
+                                        withstand_i2t, withstand_is_monotonic)
 
 Cu, Al = ConductorMaterial.COPPER, ConductorMaterial.ALUMINIUM
 
@@ -81,8 +81,8 @@ def test_parallel_sets_scale_withstand_by_n_squared(store):
 
 
 def test_adiabatic_validity_limit(store):
-    from dame_cable.errors import OpenItem
-    from dame_cable.short_circuit import check
+    from cable_sizing.errors import OpenItem
+    from cable_sizing.short_circuit import check
     p = Protection(device=DeviceType.HRC, rating_a=250,
                    prospective_fault_current_a=5000, clearing_time_s=6.0)
     with pytest.raises(OpenItem):

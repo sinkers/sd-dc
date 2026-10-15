@@ -9,7 +9,7 @@ Based on Ezystrut ET5, CT, and NEMA3 systems.
 Reference: JOINING_RULES.md
 
 Usage in FreeCAD:
-    exec(open('/Users/andrewsinclair/workspace/sd-dc/cable-tray-ezystrut/model_joint_examples.py').read())
+    exec(open('/path/to/sd-dc/cable-tray-ezystrut/model_joint_examples.py').read())
     build_all_joints()
 
 Coordinate system: X = run direction, Y = lateral, Z = height (mm)
@@ -17,9 +17,11 @@ Coordinate system: X = run direction, Y = lateral, Z = height (mm)
 
 import os
 
-# FreeCAD's exec() context has no __file__, so fall back to the install path.
+# FreeCAD's exec() context has no __file__, so fall back to the checkout named
+# by SDDC_ROOT.
 _THIS_DIR = (os.path.dirname(os.path.abspath(__file__)) if '__file__' in dir()
-             else '/Users/andrewsinclair/workspace/sd-dc/cable-tray-ezystrut')
+             else os.path.join(os.environ.get('SDDC_ROOT', os.getcwd()),
+                               'cable-tray-ezystrut'))
 import math
 
 try:
