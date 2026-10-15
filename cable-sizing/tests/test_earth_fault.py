@@ -1,13 +1,13 @@
 """Section 7 - PE sizing and earth fault loop impedance."""
 import pytest
 
-from dame_cable.earth_fault import check, loop_impedance_ohm, pe_minimum_size
-from dame_cable.errors import OpenItem
-from dame_cable.schema import (SupportType, Cable, CableConstruction, ConductorMaterial,
-                               DeviceType, InstallationArrangement,
-                               InstallationMethod, Insulation, Load, Protection,
-                               Route, RouteSegment, SystemType)
-from dame_cable.select_conductor import select
+from cable_sizing.earth_fault import check, loop_impedance_ohm, pe_minimum_size
+from cable_sizing.errors import OpenItem
+from cable_sizing.schema import (SupportType, Cable, CableConstruction, ConductorMaterial,
+                                 DeviceType, InstallationArrangement,
+                                 InstallationMethod, Insulation, Load, Protection,
+                                 Route, RouteSegment, SystemType)
+from cable_sizing.select_conductor import select
 
 Cu = ConductorMaterial.COPPER
 

@@ -5,7 +5,7 @@ current, derating, operating temperature, voltage drop and the adiabatic
 short-circuit check are common; what changes between them is the reference
 ambient, the soil model, the installation vocabulary, the permitted voltage
 drop, whether an IEC voltage factor applies, and the units. This module holds
-those differences so `cable_sizing.py` stays one engine rather than four.
+those differences so `feeder.py` stays one engine rather than four.
 
 ## What each profile can and cannot do
 

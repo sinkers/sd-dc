@@ -37,7 +37,7 @@ jobs:
 
       - name: cable-sizing — AS/NZS 3008 engine (skips without licensed data)
         working-directory: cable-sizing
-        run: python3 test_cable_sizing.py
+        run: python3 test_feeder.py
 
       - name: cable-sizing — REST + MCP API (skips without licensed data)
         working-directory: cable-sizing

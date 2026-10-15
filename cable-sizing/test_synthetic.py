@@ -14,7 +14,7 @@ os.environ["CABLE_SIZING_DATA_DIR"] = os.path.join(HERE, "fixtures")
 import tables                                        # noqa: E402
 import as3008                                        # noqa: E402
 import as3008_2025                                   # noqa: E402
-import cable_sizing as cs                            # noqa: E402
+import feeder as cs                            # noqa: E402
 
 fails = []
 

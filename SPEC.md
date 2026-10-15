@@ -318,8 +318,8 @@ sd-dc/
 ├── cable-sizing/                    # AS/NZS 3008 cable sizing engine
 │   ├── as3008.py
 │   ├── iec60228.py
-│   ├── cable_sizing.py
-│   └── test_cable_sizing.py
+│   ├── feeder.py
+│   └── test_feeder.py
 └── sddc/                           # Python package (future)
     ├── __init__.py
     ├── toolkit.py

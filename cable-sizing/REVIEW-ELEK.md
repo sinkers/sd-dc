@@ -2,7 +2,7 @@
 
 Reviewed <https://elek.com/calculators/cable-sizing-as> on 2026-09-02 and
 cross-checked its published calculation against `as3008.py` and
-`cable_sizing.py`.
+`feeder.py`.
 
 ELEK is worth reviewing rather than merely reading because their calculator
 prints every intermediate quantity of a worked example *and* the equation behind
@@ -62,7 +62,7 @@ area (4.874 mm² vs 4.87 mm²).
 
 ### 1. The fault loop omits the return conductor on single-phase circuits
 
-`cable_sizing.py:404` builds the fault path from the phase conductor's
+`feeder.py:404` builds the fault path from the phase conductor's
 impedance once:
 
 ```python
@@ -158,7 +158,7 @@ Five of our reference tables are still marked `unverified` in
   1.2 K·m/W, burial depth 0.5 m. Consistent with `AMBIENT_BASIS["AU"]` and with
   the catalogue's ambient derating starting at 45 °C.
 - Minimum 4 mm² for conductors in parallel. Already enforced at
-  `cable_sizing.py:359`.
+  `feeder.py:359`.
 - Correction factors are in AS/NZS 3008.1 Tables 3.33–3.48, and resistance and
   reactance in Tables 4.5–4.11 and 4.1–4.2. Useful pointers for closing out
   `ac_dc_resistance_ratio` and `reactance_ohm_km`, but the values themselves are

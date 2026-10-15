@@ -17,7 +17,7 @@ recorded so the trail is complete.
 | # | Subject | Outcome |
 |---|---|---|
 | — | Methodology Section 3 Rev B, design current | Delivered, implemented as `cable-sizing/design_current.py`, every §3.10 verification case reproduces |
-| — | Methodology Section 4 Rev B, rating factors and capacity | Delivered as `cable-sizing/METHODOLOGY-S4-RevB.md`, implemented in `cable-sizing/dame_cable/`. Found two live defects: grouping band direction was anti-conservative, and `arrangement` was not a key on the rating table |
+| — | Methodology Section 4 Rev B, rating factors and capacity | Delivered as `cable-sizing/METHODOLOGY-S4-RevB.md`, implemented in `cable-sizing/cable_sizing/` (then `dame_cable/`). Found two live defects: grouping band direction was anti-conservative, and `arrangement` was not a key on the rating table |
 
 ## Standing context for the standards agent
 

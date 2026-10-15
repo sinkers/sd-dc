@@ -51,7 +51,7 @@ rsync -az --delete \
   --exclude 'reference/' --exclude 'fixtures/' --exclude 'tests/' \
   --exclude '*.egg-info' --exclude 'deploy/' \
   --include 'data/***' \
-  "$HERE"/*.py "$HERE"/*.json "$HERE"/data "$HERE"/dame_cable \
+  "$HERE"/*.py "$HERE"/*.json "$HERE"/data "$HERE"/cable_sizing \
   ubuntu@"$IP":"$APP_DIR/"
 
 # Two data files live in sibling components in a checkout. tables.path_for()

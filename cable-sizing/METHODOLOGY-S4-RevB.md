@@ -23,8 +23,8 @@ which M4 consumes. Methodology Section 3 (Design Current) is "M3".
 
 ## 4.0 Changes at Rev B, and what this supersedes
 
-This section supersedes nothing in code. `src/dame_cable/rating_factors.py` and
-`src/dame_cable/current_capacity.py` are retained, with their public API
+This section supersedes nothing in code. `cable_sizing/rating_factors.py` and
+`cable_sizing/current_capacity.py` are retained, with their public API
 unchanged — `build_factor_set()`, `harmonic_treatment()`,
 `tabulated_capacity()`, `capacity()`, `check_capacity()`. No new modules are
 proposed. Rev B changes the data contract and four conventions:

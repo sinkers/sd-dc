@@ -19,16 +19,32 @@ This component is the calculation layer that sits on top of `../cables/`, which
 is the Nexans Australia product catalogue. `cables/` answers *what cable exists*;
 this answers *which one to use*.
 
+## Two engines, and which is the reference
+
+| | `cable_sizing/` (package) | `feeder.py` + `as3008.py` |
+|---|---|---|
+| Status | **Reference engine.** Review the calculations here. | Runs the service, the tray tool and the 800 A schedule today. |
+| Method | `METHODOLOGY.md` with Sections 3 and 4 at Rev B (`METHODOLOGY-S3-RevB.md`, `METHODOLOGY-S4-RevB.md`) | Reverse-engineered from jCalc (above); checked against ELEK in `REVIEW-ELEK.md` |
+| Tables | AS/NZS 3008.1.1:2025 and AS/NZS 3000 as CSV in `data/` (licensed, not in git) | JSON tables and the cable catalogue (licensed and vendor, not in git) |
+| Tests | `python3 -m pytest tests` | `python3 test_feeder.py`, `python3 test_api.py` |
+| Gaps | AS/NZS 3000 Table 5.1 (minimum PE size) and the maximum Zs tables are not transcribed, so the earth-fault step stops at an open item | Grouping uses one table (touching, tray or ladder) whatever the support, and holds the last value beyond the table (`as3008.py:418-431`). Rev B keys Table 3.34 on support type and refuses a fourth circuit per tier (R-GRP-1) |
+
+The service moves onto `cable_sizing/` once the earthing tables are in. Until
+then the two are kept, and a size from the service should be checked against
+the reference engine. `CALCS.md` at the repository root lists every calculation
+in the repo, this one included.
+
 ## Files
 
 | File | Purpose |
 |---|---|
 | `as3008.py` | AS/NZS 3008.1.1 calculation primitives — derating, voltage drop, K constant, loop impedance, earth sizing |
 | `iec60228.py` | IEC 60228 conductor DC resistance, used when the catalogue lacks impedance data |
-| `cable_sizing.py` | The sizing engine — `Source`, `Load`, `Installation`, `size_feeder()`, `size_network()` |
+| `cable_sizing/` | The reference engine, to methodology Rev B: `select()`, rating factors, capacity, voltage drop, short circuit, earth fault. `example_cable_sizing.py` runs it end to end on the synthetic fixtures |
+| `feeder.py` | The service engine — `Source`, `Load`, `Installation`, `size_feeder()`, `size_network()` |
 | `reference_tables.json` | All reference data, each table tagged with provenance and a `verified` flag |
 | `EXTRACTED-TABLES.md` | Capture record of everything read from AS/NZS 3000:2018, including what was deliberately not encoded |
-| `test_cable_sizing.py` | 150-check suite: published worked examples, table structure validation, AS/NZS 3000:2018 cross-checks |
+| `test_feeder.py` | 150-check suite: published worked examples, table structure validation, AS/NZS 3000:2018 cross-checks |
 | `standards.py` | The five standard profiles: reference ambients, installation vocabularies, voltage drop limits, IEC voltage factor |
 | `install_diagrams.py` | Inline SVG diagrams of each installation arrangement |
 | `service.py` | Service layer. The web UI, the REST API and the MCP server all call this, so they cannot disagree |
@@ -354,7 +370,7 @@ losses, but that could not be resolved without the standard itself.
 ## Validation
 
 ```
-$ python3 test_cable_sizing.py
+$ python3 test_feeder.py
 All 150 checks passed.
 ```
 
@@ -576,7 +592,7 @@ error naming the table to read, rather than a plausible number.
 ## Tests
 
 ```
-python3 test_cable_sizing.py     # 150 checks, the engine
+python3 test_feeder.py     # 150 checks, the engine
 python3 test_api.py              # 129 checks, everything around it
 ```
 

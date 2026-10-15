@@ -360,7 +360,7 @@ def vc_mv_per_a_m(table, area_mm2, temp_c, column="max", group=None,
 
     The "0.8 p.f." column is NOT a 0.8 p.f. value: it is the worst case over
     load power factors in [0.8, 1.0], which equals Max while the cable's own
-    power factor stays at or above 0.8. See dame_cable.voltage_drop
+    power factor stays at or above 0.8. See cable_sizing.voltage_drop
     .mv_per_a_m_08_column and spec-exchange/ANS-001 R-VD-2.
 
     Raises SpacedHasNoTabulatedVc if `arrangement` is one the standard routes

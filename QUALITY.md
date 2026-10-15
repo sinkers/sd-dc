@@ -31,7 +31,7 @@ Tested: 10,217 LOC at ~70%. Untested: 6,447 LOC.
 
 ```
 standards.py     100%     iec60228.py      100%     openapi.py       100%
-install_diagrams  99%     cable_sizing.py   94%     ezystrut.py       94%
+install_diagrams  99%     feeder.py         94%     ezystrut.py       94%
 service.py        92%     as3008.py         91%     mcp_server.py     69%
 server.py          0%  ← the HTTP layer is untested
 build_*.py         0%  ← build scripts, acceptable

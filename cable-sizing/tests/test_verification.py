@@ -10,11 +10,11 @@ spec's numeric verification section, executable.
 """
 import pytest
 
-from dame_cable.errors import MissingTableData
-from dame_cable.schema import (Cable, CableConstruction, ConductorMaterial,
-                               Insulation, Load, SystemType)
-from dame_cable.short_circuit import k_factor
-from dame_cable.voltage_drop import cross_check_mv_per_a_m
+from cable_sizing.errors import MissingTableData
+from cable_sizing.schema import (Cable, CableConstruction, ConductorMaterial,
+                                 Insulation, Load, SystemType)
+from cable_sizing.short_circuit import k_factor
+from cable_sizing.voltage_drop import cross_check_mv_per_a_m
 
 #: (material, insulation, construction, size_mm2, system, power_factor)
 CASES = [
@@ -58,7 +58,7 @@ def test_computed_mv_per_a_m_matches_the_standard(
 def test_k_values_from_the_transcribed_table_5_2(licensed_store):
     """Whatever temperatures Table 5.2 actually states, the resulting k must
     be a sane number and must step down across the thermoplastic size break."""
-    from dame_cable.short_circuit import k_for_size
+    from cable_sizing.short_circuit import k_for_size
     cable = Cable(material=ConductorMaterial.COPPER,
                   insulation=Insulation.THERMOPLASTIC_75,
                   construction=CableConstruction.MULTICORE,

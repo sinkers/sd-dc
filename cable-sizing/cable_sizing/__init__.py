@@ -1,8 +1,8 @@
-"""DAME LV cable sizing - AS/NZS 3008.1.1:2025 and AS/NZS 3000.
+"""LV cable sizing - AS/NZS 3008.1.1:2025 and AS/NZS 3000.
 
 The tables of both standards are licensed content and are NOT distributed with
 this package. Populate the CSV files under data/ from your own licensed copy;
-`python -m dame_cable.tables.validate data/` reports what is still missing.
+`python -m cable_sizing.tables.validate data/` reports what is still missing.
 """
 
 from .errors import (
@@ -29,6 +29,7 @@ from .schema import (
     Route,
     RouteSegment,
     Sheath,
+    SupportType,
     SystemType,
 )
 from .tables.registry import TableStore
@@ -40,5 +41,5 @@ __all__ = [
     "InstallationArrangement", "InstallationMethod", "Insulation",
     "InvalidDeclaration", "Load", "MissingTableData", "NoCompliantSize",
     "OpenItem", "Protection", "Route", "RouteSegment", "Selection", "Sheath",
-    "SystemType", "TableStore", "select",
+    "SupportType", "SystemType", "TableStore", "select",
 ]

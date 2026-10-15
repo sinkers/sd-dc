@@ -81,7 +81,7 @@ repository is an argument that data centres have all three.
 
 **Every answer is checkable.** A cable size is right or wrong against a
 standard. A pipe route either closes or it does not. A layout either meets
-clearances or it does not. `python3 test_cable_sizing.py` is 158 checks that run
+clearances or it does not. `python3 test_feeder.py` is 158 checks that run
 in under a second — which makes it a reward signal as much as a test suite.
 
 **The inputs are public and finite.** Vendors publish datasheets. Standards
@@ -467,7 +467,7 @@ The five tools an agent sees:
 | `list_cable_types` | Cable families with conductor, insulation, voltage, temperature |
 | `get_installation_diagram` | An SVG of the arrangement that sets the rating — spacing, formation, touching or spaced |
 
-308 checks across two suites (`test_cable_sizing.py`, `test_api.py`), plus a
+308 checks across two suites (`test_feeder.py`, `test_api.py`), plus a
 credential-free synthetic smoke suite that proves the code assembles without the
 licensed tables present.
 
@@ -690,7 +690,7 @@ Most components are standard-library Python 3 and need nothing installed.
 
 # Cable sizing — no dependencies
 cd cable-sizing
-python3 test_cable_sizing.py        # 158 checks
+python3 test_feeder.py        # 158 checks
 python3 server.py                   # REST + UI on localhost
 python3 build_status.py && open STATUS.html
 

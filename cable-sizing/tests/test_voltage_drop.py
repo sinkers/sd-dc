@@ -1,12 +1,12 @@
 """Section 5 - voltage drop, checked against the tabulated mV/A/m."""
 import pytest
 
-from dame_cable.schema import (SupportType, Cable, CableConstruction, ConductorMaterial,
-                               InstallationArrangement, InstallationMethod,
-                               Insulation, Load, Route, RouteSegment, SystemType)
-from dame_cable.voltage_drop import (check_voltage_drop, cross_check_mv_per_a_m,
-                                     mv_per_a_m, operating_temperature_c,
-                                     resistance_at, voltage_drop)
+from cable_sizing.schema import (SupportType, Cable, CableConstruction, ConductorMaterial,
+                                 InstallationArrangement, InstallationMethod,
+                                 Insulation, Load, Route, RouteSegment, SystemType)
+from cable_sizing.voltage_drop import (check_voltage_drop, cross_check_mv_per_a_m,
+                                       mv_per_a_m, operating_temperature_c,
+                                       resistance_at, voltage_drop)
 
 SIZES = [4, 16, 50, 120, 240, 400]
 

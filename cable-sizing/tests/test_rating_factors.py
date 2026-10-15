@@ -1,15 +1,15 @@
 """Section 4 - rating factors, the DeclaredAs guard, and harmonics."""
 import pytest
 
-from dame_cable.errors import InvalidDeclaration, MissingTableData, OpenItem
-from dame_cable.rating_factors import (FactorSet,
-                                       HarmonicBasis, RatingFactor,
-                                       build_factor_set, harmonic_treatment,
-                                       neutral_current_a)
-from dame_cable.schema import (SupportType, Cable, CableConstruction, ConductorMaterial,
-                               DeclaredAs, InstallationArrangement,
-                               InstallationMethod, Insulation, Load, SystemType)
-from dame_cable.tables.registry import TableStore
+from cable_sizing.errors import InvalidDeclaration, MissingTableData, OpenItem
+from cable_sizing.rating_factors import (FactorSet,
+                                         HarmonicBasis, RatingFactor,
+                                         build_factor_set, harmonic_treatment,
+                                         neutral_current_a)
+from cable_sizing.schema import (SupportType, Cable, CableConstruction, ConductorMaterial,
+                                 DeclaredAs, InstallationArrangement,
+                                 InstallationMethod, Insulation, Load, SystemType)
+from cable_sizing.tables.registry import TableStore
 
 
 def cable(size=50):
@@ -86,7 +86,7 @@ def test_buried_uses_the_soil_tables(store):
 
 
 def test_buried_without_depth_is_rejected_at_the_boundary():
-    from dame_cable.schema import SupportType, InvalidInstallation
+    from cable_sizing.schema import SupportType, InvalidInstallation
     with pytest.raises(InvalidInstallation, match="depth_of_burial_m"):
         InstallationMethod(support_type=SupportType.NONE, arrangement=InstallationArrangement.BURIED_DIRECT,
                            ambient_c=25, soil_thermal_resistivity_km_w=1.2)
@@ -109,8 +109,8 @@ def test_solar_is_a_base_column_not_an_uplift(store):
 
 
 def test_a_solar_factor_is_refused(store):
-    from dame_cable.errors import InadmissibleFactor
-    from dame_cable.rating_factors import admit
+    from cable_sizing.errors import InadmissibleFactor
+    from cable_sizing.rating_factors import admit
     with pytest.raises(InadmissibleFactor):
         admit(InstallationArrangement.AIR_EXPOSED_TO_SUN, "solar")
 

@@ -16,7 +16,7 @@ run() {  # run <name> <dir> <command...>
 # proves the code assembles. The two value suites need the licensed data and
 # skip cleanly (exit 0) without it — see tools/data_pull_standards.sh.
 run "cable-sizing — synthetic smoke (no data needed)" cable-sizing python3 test_synthetic.py
-run "cable-sizing — AS/NZS 3008 engine"               cable-sizing python3 test_cable_sizing.py
+run "cable-sizing — AS/NZS 3008 engine"               cable-sizing python3 test_feeder.py
 run "cable-sizing — REST + MCP API"                   cable-sizing python3 test_api.py
 
 # piping: the FreeCAD-free router and its service. The Rev B benchmark is

@@ -15,7 +15,7 @@ Current ratings come from `../cables/cable_catalog.json` (Nexans Australia).
 Calculation primitives live in `as3008.py`.
 
 Usage:
-    from cable_sizing import Source, Load, Installation, size_feeder
+    from feeder import Source, Load, Installation, size_feeder
 
     result = size_feeder(
         Source("MSB-1", voltage_v=415, fault_level_ka=25, clearing_time_s=0.2),

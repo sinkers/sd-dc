@@ -1,18 +1,15 @@
 """End-to-end example against the synthetic test fixtures.
 
-    python example.py
+    python3 example_cable_sizing.py
 
 Swap `tests/fixtures` for `data` once the licensed tables are transcribed.
 """
-import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent / "src"))
-
-from dame_cable import (Cable, CableConstruction, ConductorMaterial, DeviceType,
-                        InstallationArrangement, InstallationMethod, Insulation,
-                        Load, Protection, Route, RouteSegment, SystemType,
-                        TableStore, select)
+from cable_sizing import (Cable, CableConstruction, ConductorMaterial, DeviceType,
+                          InstallationArrangement, InstallationMethod, Insulation,
+                          Load, Protection, Route, RouteSegment, SupportType,
+                          SystemType, TableStore, select)
 
 store = TableStore.load(Path(__file__).parent / "tests" / "fixtures")
 
@@ -20,13 +17,15 @@ store = TableStore.load(Path(__file__).parent / "tests" / "fixtures")
 # buried crossing to the pod. UPS-backed, so a non-trivial third harmonic.
 route = Route([
     RouteSegment(25, InstallationMethod(
-        arrangement=InstallationArrangement.UNENCLOSED_TOUCHING,
-        ambient_c=45, circuits_in_group=4), "plant room riser"),
+        arrangement=InstallationArrangement.AIR_TOUCHING, ambient_c=45,
+        support_type=SupportType.VERTICAL_PERFORATED_TRAY,
+        circuits_in_group=3), "plant room riser"),
     RouteSegment(160, InstallationMethod(
-        arrangement=InstallationArrangement.UNENCLOSED_TOUCHING,
-        ambient_c=35), "ceiling tray"),
+        arrangement=InstallationArrangement.AIR_TOUCHING, ambient_c=35,
+        support_type=SupportType.LADDER), "ceiling tray"),
     RouteSegment(45, InstallationMethod(
         arrangement=InstallationArrangement.BURIED_DIRECT, ambient_c=25,
+        support_type=SupportType.NONE,
         depth_of_burial_m=0.8, soil_thermal_resistivity_km_w=1.2),
         "site crossing"),
 ])

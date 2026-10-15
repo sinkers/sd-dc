@@ -2,7 +2,7 @@
 
 The numbers here are invented. They are not from AS/NZS 3008.1.1, AS/NZS 3000
 or any other standard, and no design may be issued from them. Their only job is
-to let `import cable_sizing`, the engine and CI run on a checkout that has no
+to let `import feeder`, the engine and CI run on a checkout that has no
 licensed data -- so a contributor can work on the code without a licence, and
 so a CI job can prove the package still assembles.
 
