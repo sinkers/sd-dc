@@ -12,11 +12,14 @@ run() {  # run <name> <dir> <command...>
   fi
 }
 
-# The credential-free suite always runs: it points itself at fixtures/ and
-# proves the code assembles. The two value suites need the licensed data and
-# skip cleanly (exit 0) without it — see tools/data_pull_standards.sh.
+# The synthetic suite and the reference engine's suite always run: they point
+# themselves at fixtures/ and prove the code assembles and follows the method.
+# The service-engine value suites need the licensed data and skip cleanly
+# (exit 0) without it — see tools/data_pull_standards.sh.
 run "cable-sizing — synthetic smoke (no data needed)" cable-sizing python3 test_synthetic.py
-run "cable-sizing — AS/NZS 3008 engine"               cable-sizing python3 test_feeder.py
+run "cable-sizing — reference engine (cable_sizing/)"  cable-sizing python3 -m pytest -q tests
+run "cable-sizing — design current and harmonics"      cable-sizing python3 test_design_current.py
+run "cable-sizing — service engine (feeder.py)"        cable-sizing python3 test_feeder.py
 run "cable-sizing — REST + MCP API"                   cable-sizing python3 test_api.py
 
 # piping: the FreeCAD-free router and its service. The Rev B benchmark is
