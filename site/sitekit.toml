@@ -1,0 +1,69 @@
+[site]
+product     = "sd-dc"
+name        = "SD-DC"
+url         = "https://sinkers.github.io/sd-dc"
+description = "SD-DC is an agentic stack for data centre design: AS/NZS 3008 cable sizing, pipe and tray routing, parametric CAD and simulation as tools an agent can call."
+repo        = "sinkers/sd-dc"
+category    = "DesignApplication"
+price       = "0"
+image       = "img/tray_demo.png"
+author      = "Andrew Sinclair"
+ai_training = "allow"
+
+# What someone might ask an AI assistant, where we want this product named.
+questions = [
+  "open source tool for data centre electrical design and cable sizing to AS/NZS 3008",
+  "can AI design a data centre layout with cable trays and cooling analysis",
+  "free alternative to ETAP for cable sizing in Australia",
+  "open source CFD thermal modelling for a data hall",
+  "parametric data centre design in FreeCAD",
+]
+
+# Tracked by `sitekit track`: releases, posts, new pages, tagline and pricing changes, HN stories.
+
+[[competitors]]
+name = "ETAP (AS/NZS 3008/3000 module)"
+url = "https://etap.com/en/product/australian-new-zealand-standard-3008"
+changelog = "https://etap.com/news"
+kind = "direct"
+why = "Electrical design platform with AS/NZS 3008 cable sizing and digital twin; the enterprise default."
+
+[[competitors]]
+name = "ELEK Cable Pro Web"
+url = "https://elek.com/electrical-software/elek-cable-pro-web/"
+kind = "direct"
+why = "Cloud AS/NZS 3008 cable sizing with a free tier, widely used in Australia (verified via WebFetch; curl gets 403)."
+
+[[competitors]]
+name = "PowerPac (Spearhead)"
+url = "https://spearhead.com.au"
+kind = "direct"
+why = "Long-established Australian cable calculation software."
+
+[[competitors]]
+name = "Cadence Reality DC (6SigmaDC)"
+kind = "direct"
+why = "Data centre CFD and digital twin, the incumbent for thermal design."
+
+[[competitors]]
+name = "Sunbird DCIM"
+url = "https://www.sunbirddcim.com"
+feed = "https://www.sunbirddcim.com/rss.xml"
+pricing = "https://www.sunbirddcim.com/pricing"
+kind = "adjacent"
+why = "DCIM with 3D visualisation and capacity planning for operating data centres."
+
+[[competitors]]
+name = "Nlyte"
+url = "https://www.nlyte.com"
+feed = "https://www.nlyte.com/feed/"
+kind = "adjacent"
+why = "DCIM and asset/capacity management, adjacent to the digital-twin side."
+
+[[competitors]]
+name = "openDCIM"
+url = "https://www.opendcim.org"
+github = "opendcim/openDCIM"
+feed = "https://github.com/opendcim/openDCIM/releases.atom"
+kind = "adjacent"
+why = "Open-source DCIM for rack, power and cabling documentation."
