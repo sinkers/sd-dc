@@ -7,7 +7,7 @@ IndustroML model with parameters attached, and the viewer draws it from that
 model.
 
 **Status: simulation 01 of 2 built.** Grid, BESS and UPS with price-driven
-demand response, grid disturbance ride-through and a standby generator, 146
+demand response, grid disturbance ride-through and a standby generator, 167
 tests. Simulation 02 (bidirectional UPS replacing the BESS) is next.
 
 ```bash
