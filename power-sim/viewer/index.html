@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Power Sim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="ui/theme.css">
+</head>
+<body>
+<!-- Header, on every tab: what is loaded, and the playback that every tab follows. -->
+<header class="bar">
+  <div class="bar-inner">
+    <div class="title">
+      <h1 id="title">Power Sim</h1>
+      <span class="sub" id="current-scenario">Loading…</span>
+    </div>
+    <span class="grow"></span>
+    <div class="transport" role="group" aria-label="Playback">
+      <button id="play" type="button" aria-pressed="false">Play</button>
+      <label class="field-inline" for="speed"><span>Speed</span>
+        <select id="speed">
+          <option value="0.000277778">1 s/s (real time)</option>
+          <option value="0.00277778">10 s/s</option>
+          <option value="0.00833333">30 s/s</option>
+          <option value="0.0166667">1 min/s</option>
+          <option value="0.0833333">5 min/s</option>
+          <option value="0.25">15 min/s</option>
+          <option value="0.5">30 min/s</option>
+          <option value="1">1 h/s</option>
+          <option value="3" selected>3 h/s</option>
+          <option value="8">8 h/s</option>
+        </select>
+      </label>
+      <input id="scrub" type="range" min="0" max="287" value="0" aria-label="Time of day">
+      <span class="clock" id="clock">00:00</span>
+    </div>
+  </div>
+  <nav class="tabs bar-inner" role="tablist" aria-label="Sections">
+    <button role="tab" id="tab-btn-scenarios" aria-controls="tab-scenarios" data-tab="scenarios" type="button"><b>1</b> Scenarios</button>
+    <button role="tab" id="tab-btn-config" aria-controls="tab-config" data-tab="config" type="button"><b>2</b> Config</button>
+    <button role="tab" id="tab-btn-sim" aria-controls="tab-sim" data-tab="sim" type="button"><b>3</b> Simulation</button>
+    <button role="tab" id="tab-btn-reports" aria-controls="tab-reports" data-tab="reports" type="button"><b>4</b> Reports</button>
+    <span class="grow"></span>
+    <span class="status-line" id="status" role="status">Connecting to the simulation service…</span>
+  </nav>
+</header>
+
+<main class="wrap">
+
+  <!-- 1. Scenarios: pick one, or build one on the timeline. -->
+  <section class="tabpanel" id="tab-scenarios" role="tabpanel" aria-labelledby="tab-btn-scenarios">
+    <section class="panel">
+      <h2>Scenario <span class="spacer"></span>
+        <button id="reset" type="button">Reset to preset</button></h2>
+      <div class="body scenario-pick">
+        <label class="field-inline" for="scenario"><span>Preset or custom</span>
+          <select id="scenario"></select>
+        </label>
+        <p class="scenario-note" id="scenario-note"></p>
+      </div>
+    </section>
+    <section class="panel" id="editor-panel" aria-label="Scenario editor">
+      <h2>Scenario timeline <span class="spacer"></span>
+        <span class="tag muted">drag an event onto its lane · drag to move · select to edit</span></h2>
+      <div id="editor"></div>
+    </section>
+  </section>
+
+  <!-- 2. Config: every equipment setting. -->
+  <section class="tabpanel" id="tab-config" role="tabpanel" aria-labelledby="tab-btn-config" hidden>
+    <p class="scenario-note">Settings for each piece of equipment. Changes re-run the scenario at once; picking a preset
+      on the Scenarios tab resets them to that preset's.</p>
+    <div class="cards" id="settings"></div>
+    <details class="panel">
+      <summary style="padding:9px 14px;cursor:pointer" class="k">IndustroML model for this simulation</summary>
+      <div style="padding:0 14px 8px"><button id="copy-model" type="button">Copy JSON</button></div>
+      <pre class="model" id="model"></pre>
+    </details>
+  </section>
+
+  <!-- 3. Simulation: the plant, live. No money on this tab. -->
+  <section class="tabpanel" id="tab-sim" role="tabpanel" aria-labelledby="tab-btn-sim" hidden>
+    <section class="sim-status" id="sim-status" aria-label="Supply status">
+      <div><span class="k">Supply risk</span><span class="v" id="sum-risk">–</span><span class="n">unserved load, overloads</span></div>
+      <div class="wide"><span class="k">Ride-through</span><span class="v" id="sum-rt">–</span><span class="n" id="sum-rt-note"></span></div>
+      <div><span class="k">Grid now</span><span class="v" id="grid-now">–</span><span class="n" id="grid-now-note"></span></div>
+    </section>
+    <div class="sim-top">
+      <section class="panel" id="sld-panel">
+        <h2>Single-line diagram <span class="spacer"></span><span class="tag muted">click equipment for its settings · * kind not yet in IndustroML</span></h2>
+        <div class="oneline" id="sld"></div>
+      </section>
+      <div class="readouts" id="readouts"></div>
+    </div>
+    <section class="panel" id="charts-panel">
+      <h2>The run</h2>
+      <div class="charts" id="charts"></div>
+    </section>
+  </section>
+
+  <!-- 4. Reports: the money, and what happened when. -->
+  <section class="tabpanel" id="tab-reports" role="tabpanel" aria-labelledby="tab-btn-reports" hidden>
+    <section class="panel dispatch" aria-label="Power price and BESS dispatch">
+      <div class="now">
+        <span class="k">Power price now</span>
+        <span class="v" id="price-now">–</span>
+        <span class="pill zone" id="price-zone">–</span>
+        <span class="n" id="price-source"></span>
+      </div>
+      <div class="set">
+        <span class="k">BESS dispatch prices</span>
+        <div id="dispatch-controls"></div>
+        <p class="note" id="dispatch-note"></p>
+      </div>
+    </section>
+
+    <section class="summary" id="summary" aria-label="Financial summary">
+      <div class="hero">
+        <span class="k" id="sum-saving-label">Net saved today</span>
+        <span class="v" id="sum-saving">–</span>
+        <span class="n" id="sum-saving-now"></span>
+        <span class="n" id="sum-saving-note"></span>
+      </div>
+      <div><span class="k">From the BESS</span><span class="v" id="sum-bess">–</span><span class="n">arbitrage, after wear</span></div>
+      <div><span class="k">From the power cap</span><span class="v" id="sum-cap">–</span><span class="n" id="sum-cap-note"></span></div>
+      <div><span class="k">From the generator</span><span class="v" id="sum-gen">–</span><span class="n" id="sum-gen-note"></span></div>
+      <div><span class="k">Bill without BESS</span><span class="v" id="sum-base">–</span><span class="n">spot plus adder</span></div>
+      <div><span class="k">Bill with BESS</span><span class="v" id="sum-cost">–</span><span class="n">before wear</span></div>
+      <div><span class="k">Bought → sold at</span><span class="v" id="sum-spread">–</span><span class="n">mean $/MWh</span></div>
+      <div><span class="k">BESS use</span><span class="v" id="sum-cycles">–</span></div>
+    </section>
+
+    <section class="panel" id="plant-panel">
+      <h2>Plant data <span class="spacer"></span><span class="tag muted">voltage, power, state of charge and power capping over the run</span></h2>
+      <div class="charts" id="plant-charts"></div>
+    </section>
+
+    <section class="panel" id="price-charts-panel">
+      <h2>Price and saving <span class="spacer"></span>
+        <button id="price-scale" type="button">Price scale: log</button></h2>
+      <div class="charts" id="price-charts"></div>
+    </section>
+
+    <section class="panel report" id="report-panel" aria-label="Report">
+      <h2>Report <span class="spacer"></span>
+        <button id="rpt-print" type="button">Print or save as PDF</button>
+        <button id="rpt-html" type="button">Download report (HTML)</button>
+        <button id="rpt-csv" type="button">Download events (CSV)</button>
+        <button id="rpt-series" type="button">Download time series (CSV)</button>
+      </h2>
+      <div class="body" id="report"></div>
+    </section>
+  </section>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
