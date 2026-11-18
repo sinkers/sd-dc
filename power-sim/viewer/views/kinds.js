@@ -7,19 +7,19 @@
 
 import { fix, kw, minutes, money, pct, price, symlog } from '../ui/format.js';
 
-const stateOf = (text, cls = '') => ({ text, cls });
+// text is the full state, for readouts; short fits a diagram box beside its kW figure.
+const stateOf = (text, cls = '', short = null) => ({ text, cls, short: short ?? text });
 
 export const KINDS = {
   utility_supply: {
     glyph: 'grid',
-    badge: (s) => ({ text: `${price(s.price)}/MWh`, cls: 'price' }),
     kw: (s) => s.import_kw - s.export_kw,
     state: (s) => (!s.up ? stateOf('Outage', 'alarm')
-      : s.v_pct < 90 ? stateOf(`Sag to ${Math.round(s.v_pct)} %`, 'alarm')
+      : s.v_pct < 90 ? stateOf(`Sag to ${Math.round(s.v_pct)} %`, 'alarm', `Sag ${Math.round(s.v_pct)} %`)
       : s.over_capacity ? stateOf('Over capacity', 'alarm')
       : s.export_kw > 0 ? stateOf('Exporting', 'discharge') : stateOf('Importing')),
     dials: [
-      { id: 'price', label: 'Spot price', unit: '$/MWh', scale: symlog, format: (v) => price(v).replace('$', ''),
+      { id: 'price', pricing: true, label: 'Spot price', unit: '$/MWh', scale: symlog, format: (v) => price(v).replace('$', ''),
         range: (s, ctx) => [Math.min(-100, ctx.priceMin), Math.max(300, ctx.priceMax)],
         value: (s) => s.price, cls: (s, ctx) => (s.price >= ctx.dischargeAbove ? 'discharge' : s.price <= ctx.chargeBelow ? 'charge' : '') },
       { id: 'import', label: 'Grid import', unit: 'kW', format: (v) => kw(v),
@@ -28,7 +28,7 @@ export const KINDS = {
     ],
     stats: [
       ['Connection used', (s) => `${pct(s.utilisation_pct)} %`],
-      ['Bill so far', (s) => money(s.cost)],
+      ['Bill so far', (s) => money(s.cost), { pricing: true }],
       ['Imported', (s) => `${fix(s.import_kwh / 1000, 2)} MWh`],
       ['Exported', (s) => `${fix(s.export_kwh, 0)} kWh`],
       ['Voltage', (s) => (s.up ? `${fix(s.v_pct, 0)} %${s.dip_ms > 0 ? ` for ${fix(s.dip_ms, 0)} ms` : ''}` : 'none')],
@@ -51,8 +51,8 @@ export const KINDS = {
     state: (s) => ({
       charging: stateOf('Charging', 'charge'), discharging: stateOf('Discharging', 'discharge'),
       idle: stateOf('Idle'), full: stateOf('Full'), empty: stateOf('At reserve'),
-      disabled: stateOf('Disabled'), tripped: stateOf(`Tripped${s.trip_cause ? `: ${s.trip_cause}` : ''}`, 'alarm'),
-      reconnecting: stateOf(`Reconnect in ${Math.ceil(s.reconnect_remaining_s)} s`, 'alarm'),
+      disabled: stateOf('Disabled'), tripped: stateOf(`Tripped${s.trip_cause ? `: ${s.trip_cause}` : ''}`, 'alarm', 'Tripped'),
+      reconnecting: stateOf(`Reconnect in ${Math.ceil(s.reconnect_remaining_s)} s`, 'alarm', `Reconnect ${Math.ceil(s.reconnect_remaining_s)} s`),
     }[s.status] ?? stateOf(s.status)),
     dials: [
       { id: 'soc', label: 'State of charge', unit: '%', format: (v) => fix(v, 0),
@@ -68,7 +68,7 @@ export const KINDS = {
       ['Size', (s) => `${fix(s.rated_kw, 0)} kW / ${fix(s.capacity_kwh, 0)} kWh`],
       ['Duration', (s) => `${fix(s.duration_h, 1)} h`],
       ['Cycles so far', (s) => fix(s.cycles, 2)],
-      ['Wear so far', (s) => money(s.wear_cost)],
+      ['Wear so far', (s) => money(s.wear_cost), { pricing: true }],
       ['Power limit', (s) => (s.power_limit_kw < s.rated_kw - 0.5 ? `${kw(s.power_limit_kw)} kW, ramping` : 'full')],
       ['Fault ride-through', (s) => `${s.lvrt ? 'on' : 'off'}${s.trips ? `, ${s.trips} trip${s.trips > 1 ? 's' : ''}` : ''}`],
     ],
@@ -82,10 +82,10 @@ export const KINDS = {
     kw: (s) => s.output_kw,
     state: (s) => ({
       online: stateOf('Online', 'ok'), eco: stateOf('Eco mode', 'ok'), bypass: stateOf('Static bypass', 'discharge'),
-      'on battery': stateOf(`On battery${s.cause ? `: ${s.cause}` : ''}`, 'discharge'),
-      resync: stateOf(`On battery, resync in ${Math.ceil(s.resync_remaining_s)} s`, 'discharge'),
-      'walk-in': stateOf('Walk-in to grid', 'discharge'),
-      recharging: stateOf(s.recharge_limited ? 'Recharging, held to max demand' : 'Recharging', 'charge'),
+      'on battery': stateOf(`On battery${s.cause ? `: ${s.cause}` : ''}`, 'discharge', 'On battery'),
+      resync: stateOf(`On battery, resync in ${Math.ceil(s.resync_remaining_s)} s`, 'discharge', `Resync ${Math.ceil(s.resync_remaining_s)} s`),
+      'walk-in': stateOf('Walk-in to grid', 'discharge', 'Walk-in'),
+      recharging: stateOf(s.recharge_limited ? 'Recharging, held to max demand' : 'Recharging', 'charge', s.recharge_limited ? 'Recharge, held' : 'Recharging'),
       'load dropped': stateOf('Load dropped', 'alarm'),
     }[s.status] ?? stateOf(s.status)),
     dials: [
@@ -142,11 +142,12 @@ export const KINDS = {
     draw: (s) => s.kw,
     state: (s) => ({
       disabled: stateOf('Disabled'), off: stateOf('Stopped'),
-      starting: stateOf(`Starting, ${Math.ceil(s.countdown_s)} s`, 'discharge'),
+      starting: stateOf(`Starting, on load in ${Math.ceil(s.countdown_s)} s`, 'discharge', `Starting ${Math.ceil(s.countdown_s)} s`),
       running: s.islanded
-        ? stateOf(s.countdown_s > 0 ? `To grid in ${Math.ceil(s.countdown_s)} s` : 'Islanded', 'ok')
+        ? stateOf(s.countdown_s > 0 ? `Islanded, back to grid in ${Math.ceil(s.countdown_s)} s` : 'Islanded, carrying the site', 'ok',
+                  s.countdown_s > 0 ? `To grid ${Math.ceil(s.countdown_s)} s` : 'Islanded')
         : stateOf('In parallel', 'ok'),
-      cooldown: stateOf('Cooling down'), tripped: stateOf('Tripped on overload', 'alarm'),
+      cooldown: stateOf('Cooling down'), tripped: stateOf('Tripped on overload', 'alarm', 'Tripped'),
     }[s.state] ?? stateOf(s.state)),
     dials: [
       { id: 'kw', label: 'Output', unit: 'kW', format: (v) => kw(v),
@@ -158,11 +159,12 @@ export const KINDS = {
     ],
     stats: [
       ['Rating', (s) => `${fix(s.prime_kva, 0)} kVA × ${fix(s.pf, 2)} = ${fix(s.rated_kw, 0)} kW`],
-      ['Starts on', (s) => `outage${s.price_start ? `, price ≥ ${price(s.price_threshold)}` : ''}`],
+      ['Starts on', (s) => `outage${s.price_start ? ', high price' : ''}`],
       ['Energy so far', (s) => `${fix(s.kwh, 0)} kWh`],
       ['Run time', (s) => minutes(s.run_h * 60)],
-      ['Fuel so far', (s) => `${fix(s.fuel_l, 0)} L, ${money(s.fuel_cost)}`],
-      ['Running cost', (s) => `${price(s.cost_per_mwh)}/MWh`],
+      ['Fuel so far', (s) => `${fix(s.fuel_l, 0)} L`],
+      ['Fuel cost', (s) => money(s.fuel_cost), { pricing: true }],
+      ['Running cost', (s) => `${price(s.cost_per_mwh)}/MWh`, { pricing: true }],
       ['Starts, trips', (s) => `${s.starts}, ${s.trips}`],
     ],
   },

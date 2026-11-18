@@ -1,17 +1,16 @@
-// An equipment card: name and kind, a state pill, the kind's dials and
-// readouts, and the controls built from the component's schema. One function
-// for every kind, driven by views/kinds.js.
+// Equipment views, in two halves, driven by views/kinds.js for every kind:
+//
+//   readout()   name, state pill, dials and figures: what it is doing now.
+//               Lives on the Simulation tab. Money (prices, bills, fuel cost)
+//               is left out here; that belongs to the Reports tab.
+//   settings()  the controls built from the component's schema.
+//               Lives on the Config tab.
 
 import { dial } from '../ui/dial.js';
 import { controls } from '../ui/controls.js';
 import { kindOf } from './kinds.js';
 
-export function card(id, meta, values, onChange) {
-  const k = kindOf(meta.kind);
-  const el = document.createElement('section');
-  el.className = 'panel card';
-  el.id = `asset-${id}`;
-
+function header(id, meta, { pill = false } = {}) {
   const h = document.createElement('h2');
   const title = document.createElement('span');
   title.className = 'tag';
@@ -21,16 +20,28 @@ export function card(id, meta, values, onChange) {
   kind.textContent = `${id} · ${meta.kind}`;
   const spacer = document.createElement('span');
   spacer.className = 'spacer';
-  const pill = document.createElement('span');
-  pill.className = 'pill';
-  h.append(title, kind, spacer, pill);
+  h.append(title, kind, spacer);
+  let p = null;
+  if (pill) {
+    p = document.createElement('span');
+    p.className = 'pill';
+    h.append(p);
+  }
+  return { h, pill: p };
+}
 
+export function readout(id, meta) {
+  const k = kindOf(meta.kind);
+  const el = document.createElement('section');
+  el.className = 'panel card readout';
+  el.id = `live-${id}`;
+  const { h, pill } = header(id, meta, { pill: true });
   const body = document.createElement('div');
   body.className = 'body';
 
   const dialRow = document.createElement('div');
   dialRow.className = 'dials';
-  const dials = k.dials.map((d) => {
+  const dials = k.dials.filter((d) => !d.pricing).map((d) => {
     const g = dial({ label: d.label, unit: d.unit, format: d.format, centerZero: d.centerZero, scale: d.scale,
                      limLabels: d.limLabels });
     dialRow.append(g.el);
@@ -40,7 +51,7 @@ export function card(id, meta, values, onChange) {
 
   const dl = document.createElement('dl');
   dl.className = 'stats';
-  const stats = k.stats.map(([label, fn]) => {
+  const stats = k.stats.filter((s) => !s[2]?.pricing).map(([label, fn]) => {
     const div = document.createElement('div');
     const dt = document.createElement('dt');
     dt.textContent = label;
@@ -50,16 +61,14 @@ export function card(id, meta, values, onChange) {
     return { fn, dd };
   });
   if (stats.length) body.append(dl);
-
-  const ctl = controls(meta.schema, values, onChange, { prefix: id });
-  if (meta.schema.length) body.append(ctl.el);
   el.append(h, body);
 
   function update(snap, ctx) {
     if (!snap) return;
     const st = k.state(snap);
-    pill.textContent = st.text || '—';
-    pill.className = `pill ${st.cls}`;
+    const t = st.text || '—', c = `pill ${st.cls}`;
+    if (pill.textContent !== t) pill.textContent = t;
+    if (pill.className !== c) pill.className = c;
     for (const d of dials) {
       const [lo, hi] = d.def.range(snap, ctx);
       const bands = d.def.bands ? d.def.bands(snap, ctx) : [];
@@ -67,8 +76,24 @@ export function card(id, meta, values, onChange) {
       if (key !== d.key) { d.g.setRange(lo, hi, bands); d.key = key; }
       d.g.set(d.def.value(snap, ctx), d.def.cls ? d.def.cls(snap, ctx) : '');
     }
-    for (const s of stats) s.dd.textContent = s.fn(snap);
+    for (const s of stats) {
+      const t = s.fn(snap);
+      if (s.dd.textContent !== t) s.dd.textContent = t;
+    }
   }
 
-  return { el, update, set: ctl.set };
+  return { el, update, empty: !dials.length && !stats.length };
+}
+
+export function settings(id, meta, values, onChange) {
+  const el = document.createElement('section');
+  el.className = 'panel card settings';
+  el.id = `asset-${id}`;
+  const { h } = header(id, meta);
+  const body = document.createElement('div');
+  body.className = 'body';
+  const ctl = controls(meta.schema, values, onChange, { prefix: id });
+  body.append(ctl.el);
+  el.append(h, body);
+  return { el, set: ctl.set };
 }

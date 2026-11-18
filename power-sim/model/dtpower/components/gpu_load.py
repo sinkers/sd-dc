@@ -107,6 +107,9 @@ class GPUServerLoad:
         self.reset()
 
     def reset(self) -> None:
+        # Injected load changes: (start_h, end_h, utilisation %). While one is
+        # active it replaces the profile, the way a job scheduler would.
+        self.schedule: list[tuple[float, float, float]] = getattr(self, "schedule", [])
         self.kw = 0.0
         self.uncapped_kw = 0.0
         self.capped = False
@@ -131,6 +134,9 @@ class GPUServerLoad:
     def step(self, t: float, dt: float, price: float = 0.0) -> float:
         p = self.p
         util = clamp(p["utilisation_pct"] / 100 * profile_factor(p["profile"], t), 0, 1)
+        for a, b, u in self.schedule:
+            if a <= t < b:
+                util = clamp(u / 100, 0, 1)
         demand = self.idle_kw + (self.max_kw - self.idle_kw) * util
         self.uncapped_kw = demand
         self.capped = False

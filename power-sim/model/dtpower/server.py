@@ -4,7 +4,7 @@
     GET  /api/components               every registered component: kind, role, ports, schema
     GET  /api/sims                     the simulations, by id and title
     GET  /api/sims/<id>                one simulation: its model, asset schemas, scenarios
-    POST /api/sims/<id>/run            {"scenario": id, "params": {asset_id: {...}}} -> a day
+    POST /api/sims/<id>/run            {"scenario": id | "custom", "custom"?: {...}, "params": {...}} -> a run
     GET  /*                            static viewer assets
 
 Why plain HTTP and not the WebSocket the twins use: the twins hold a running
@@ -35,14 +35,21 @@ VIEWER_ROOT = Path(os.environ.get("DTPOWER_VIEWER_ROOT", Path(__file__).resolve(
 MAX_BODY = 256 * 1024
 
 
-def tidy(v, places: int = 3):
+# Times are in hours, where three decimals is a 3.6-second grid; they keep
+# enough places to land on the second.
+TIME_KEYS = {"t", "start_h", "hours", "dt_min", "window"}
+
+
+def tidy(v, places: int = 3, _key: str | None = None):
     """Round floats for the wire: a day is a few thousand numbers, not a few megabytes."""
     if isinstance(v, float):
-        return round(v, places) if v == v and abs(v) != float("inf") else None
+        if v != v or abs(v) == float("inf"):
+            return None
+        return round(v, 7 if _key in TIME_KEYS else places)
     if isinstance(v, dict):
-        return {k: tidy(x, places) for k, x in v.items()}
+        return {k: tidy(x, places, k) for k, x in v.items()}
     if isinstance(v, list):
-        return [tidy(x, places) for x in v]
+        return [tidy(x, places, _key) for x in v]
     return v
 
 
@@ -95,7 +102,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._error(413, "request too large")
         try:
             req = json.loads(self.rfile.read(length) or b"{}")
-            result = sim.simulate(req.get("scenario") or sim.SCENARIOS[0]["id"], req.get("params") or {})
+            result = sim.simulate(req.get("scenario") or sim.SCENARIOS[0]["id"], req.get("params") or {},
+                                  custom=req.get("custom"))
         except KeyError as e:
             return self._error(400, str(e).strip("'\""))
         except (ValueError, TypeError) as e:

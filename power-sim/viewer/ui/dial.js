@@ -71,7 +71,11 @@ export function dial({ label, unit = '', min = 0, max = 100, format = (v) => v.t
   }
   setRange();
 
+  let last = null;
   function set(v, cls = '') {
+    const key = `${v == null || !Number.isFinite(v) ? '-' : format(v)}|${cls}|${range.min}|${range.max}`;
+    if (key === last) return;
+    last = key;
     if (v == null || !Number.isFinite(v)) {
       num.textContent = '–';
       val.setAttribute('d', '');

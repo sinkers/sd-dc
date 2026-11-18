@@ -125,6 +125,69 @@ minutes, in `model/dtpower/data/nem_prices.json` with a provenance block
 (`verified: false`: whether an interval is labelled by its start or its end is not
 yet confirmed, so a price could sit one interval early).
 
+## The viewer
+
+The viewer has four tabs. The header, on every tab, names the scenario and
+holds the playback controls, so playback continues whichever tab is open. The
+URL tracks the tab (`#scenarios`, `#config`, `#sim`, `#reports`).
+
+| Tab | What is on it |
+|---|---|
+| 1 Scenarios | Pick a preset, or build one on the scenario timeline |
+| 2 Config | Every equipment setting, built from each component's schema |
+| 3 Simulation | Supply status, the single-line diagram, live readouts per asset, and voltage, power and SoC trends. No money on this tab |
+| 4 Reports | Price now and the BESS dispatch prices, the financial summary, price and saving trends, and the report with its exports |
+
+Click equipment on the diagram to open its settings on Config. Click an event
+in the report to jump to that moment on Simulation. Print works from any tab
+and includes the diagram, the trends and the report.
+
+## Scenario timeline and report
+
+Every scenario, preset or not, appears on the **scenario timeline**. It has a
+price day, a window, a step, and four lanes of injected events:
+
+- voltage sags
+- grid outages
+- price spikes
+- load changes
+
+Drag an event type onto its lane, drag a placed event to move it, and select
+it to set its time and details. The first edit turns the preset into a custom
+scenario called "(edited)". Every change re-runs. Custom scenarios go to the
+same `POST /api/sims/bess-dr/run` endpoint with `"scenario": "custom"` and the
+timeline as `"custom"`. The server checks them: the window must fall within
+the day, the step must be one of the allowed values, there is a limit of 6,000
+steps and 50 events, and a rejection says why.
+
+The **report** at the foot of the page has these parts:
+
+- the results;
+- the injected events;
+- the settings that differ from default;
+- the plant figures, from `dtpower/report.py`:
+  - grid voltage: lowest, mean, sags and outages with their times;
+  - power flows: peak, mean, lowest and energy for grid import, UPS input,
+    output and losses, GPU load and its demand before any cap, BESS charge and
+    discharge, and the generator;
+  - state of charge: start, end, lowest (and when), and highest for the BESS
+    and the UPS battery;
+  - power capping on the load: each capped period with the load it was held
+    to, the most cut, the lowest throughput and the mean price, or a line
+    saying no cap applied;
+- plant charts (voltage, power, SoC, GPU load against its demand before the
+  cap, and compute throughput), so the printed or exported report carries the
+  data, not only the tables;
+- the sequence of events: every state change the model went through, with the
+  SoC and kW at that moment. `dtpower/events.py` builds it from the run's
+  snapshots, so any simulation built from these components gets one. Click a
+  row to jump the playback there.
+
+You can print the report or save it as a PDF, download it as a self-contained
+HTML file, or download the events as CSV. A time-series CSV is also available:
+every step's voltage, power flows, SoC, GPU load, demand before cap, cap
+state, throughput, generator output, price and running saving.
+
 ## Components
 
 Each one lives in `model/dtpower/components/` and knows nothing about any

@@ -17,6 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 SAG_THRESHOLD_PCT = 90.0  # IEC 61000-4-30: a dip starts below 90 % of nominal
+EPS = 1e-9                # hours
 
 
 @dataclass(frozen=True)
@@ -53,7 +54,9 @@ class GridEvents:
             s0 = s["t"]
             s1 = s0 + s["duration_ms"] / 3.6e6
             overlap = min(t1, s1) - max(t, s0)
-            if overlap > 0 or (s0 >= t and s0 < t1):
+            # EPS absorbs float error at step edges (~4 µs), so a sag that starts
+            # exactly on a step boundary lands in that step and not the one before.
+            if overlap > EPS or (t - EPS <= s0 < t1 - EPS):
                 v = min(v, s["residual_pct"])
                 dip += max(overlap, 0.0) * 3.6e6
         return Supply(up=True, v_pct=v, dip_ms=dip) if v < 100.0 else NORMAL

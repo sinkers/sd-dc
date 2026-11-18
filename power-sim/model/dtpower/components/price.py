@@ -31,8 +31,17 @@ class PriceSignal:
         self.interval_min = interval_min
         self.name = name
         self.source = source
+        self.overrides: list[tuple[float, float, float]] = []   # (start_h, end_h, $/MWh)
+
+    def with_overrides(self, spikes: list[dict]) -> "PriceSignal":
+        """Lay injected price events over the series: [{t, duration_min, price}]."""
+        self.overrides = [(e["t"], e["t"] + e["duration_min"] / 60, float(e["price"])) for e in spikes]
+        return self
 
     def at(self, t: float) -> float:
+        for a, b, v in self.overrides:
+            if a <= t < b:
+                return v
         i = int(math.floor((t % 24) * 60 / self.interval_min + 1e-9))
         return self.series[i % len(self.series)]
 

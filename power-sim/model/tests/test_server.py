@@ -52,3 +52,23 @@ def test_bad_requests(base):
     with pytest.raises(urllib.error.HTTPError) as e:
         get(base + "/../../etc/passwd")
     assert e.value.code == 404
+
+
+def test_custom_run_and_its_errors(base):
+    spec = {"price": "tou", "window": [13.9, 14.4], "dt_s": 2,
+            "events": [{"type": "sag", "t": 14.0, "residual_pct": 70, "duration_ms": 150}]}
+    r = post(base + "/api/sims/bess-dr/run", {"scenario": "custom", "custom": spec,
+                                               "params": {"UPS-1": {"ride_through": False}}})
+    assert r["summary"]["ups_transfers"] == 1 and r["log"]["events"]
+    with pytest.raises(urllib.error.HTTPError) as e:
+        post(base + "/api/sims/bess-dr/run", {"scenario": "custom", "custom": {**spec, "dt_s": 3}})
+    assert e.value.code == 400 and "step" in json.loads(e.value.read())["error"]
+
+
+def test_times_survive_the_wire_to_the_second(base):
+    d = get(base + "/api/sims/bess-dr")
+    storm = next(s for s in d["scenarios"] if s["id"] == "sag-storm")
+    assert round(storm["editor"]["window"][0] * 3600) == 13 * 3600 + 58 * 60
+    assert round(storm["editor"]["events"][1]["t"] * 3600) == 14 * 3600 + 120
+    r = post(base + "/api/sims/bess-dr/run", {"scenario": "sag-storm"})
+    assert abs(r["rows"][1]["t"] - r["rows"][0]["t"] - 2 / 3600) < 1e-6

@@ -183,6 +183,15 @@ export function oneline(container, desc, { onSelect = () => {} } = {}) {
     boxes[a.id] = { rect, state, kwText, soc, badge, kind: k };
   }
 
+  // Set an attribute, text or style only when it differs from what is there.
+  // Rewriting an animated flow line every frame restarts its dash animation,
+  // which is what makes it flicker during playback.
+  const put = (node, name, v) => { if (node.getAttribute(name) !== v) node.setAttribute(name, v); };
+  const text = (node, v) => { if (node.textContent !== v) node.textContent = v; };
+  // Three speeds, not one per kW: the animation duration only changes when
+  // the flow moves to a different band.
+  const band = (kwAbs) => (kwAbs < 20 ? '1.8s' : kwAbs < 120 ? '1.1s' : '0.6s');
+
   function update(row) {
     const A = row.assets;
     for (const e of edges) {
@@ -190,36 +199,38 @@ export function oneline(container, desc, { onSelect = () => {} } = {}) {
       const k = kindOf(kindKey(e.child));
       const v = (k.draw ?? k.kw)(snap) ?? 0;
       const live = Math.abs(v) > 0.05;
-      e.flow.style.display = live ? '' : 'none';
+      const disp = live ? '' : 'none';
+      if (e.flow.style.display !== disp) e.flow.style.display = disp;
       e.line.classList.toggle('dead', !row.grid_up && !live);
       if (live) {
         const storage = role(e.child) === 'storage';
-        e.flow.setAttribute('d', v >= 0 ? e.fwd : e.rev);
-        e.flow.setAttribute('class', `flow ${e.gen ? 'gen' : storage ? (v > 0 ? 'chg' : 'rev') : v >= 0 ? 'fwd' : 'rev'}`);
-        e.flow.style.setProperty('--dur', `${Math.max(0.35, 2.2 - Math.log10(Math.abs(v) + 1) * 0.7).toFixed(2)}s`);
+        put(e.flow, 'd', v >= 0 ? e.fwd : e.rev);
+        put(e.flow, 'class', `flow ${e.gen ? 'gen' : storage ? (v > 0 ? 'chg' : 'rev') : v >= 0 ? 'fwd' : 'rev'}`);
+        const dur = band(Math.abs(v));
+        if (e.flow.style.getPropertyValue('--dur') !== dur) e.flow.style.setProperty('--dur', dur);
       }
-      e.label.textContent = live ? `${kw(Math.abs(v))} kW` : '';
+      text(e.label, live ? `${kw(Math.abs(v))} kW` : '');
     }
     for (const [id, b] of Object.entries(boxes)) {
       const snap = A[id];
       if (!snap) continue;
       const st = b.kind.state(snap);
-      b.state.textContent = st.text;
-      b.state.setAttribute('class', `state ${st.cls}`);
+      text(b.state, st.short ?? st.text);
+      put(b.state, 'class', `state ${st.cls}`);
       const v = b.kind.kw(snap);
-      b.kwText.textContent = v == null ? '' : `${kw(v)} kW`;
+      text(b.kwText, v == null ? '' : `${kw(v)} kW`);
       if (b.badge) {
         const bd = b.kind.badge(snap);
-        b.badge.textContent = bd.text;
-        b.badge.setAttribute('class', bd.cls);
+        text(b.badge, bd.text);
+        put(b.badge, 'class', bd.cls);
       }
       if (b.soc) {
         const { pct, cls } = b.kind.soc(snap);
-        b.soc.text.textContent = `SoC ${Math.round(pct)} %`;
-        b.soc.bar.setAttribute('width', ((BOX_W - 3) * Math.max(0, Math.min(100, pct))) / 100);
-        b.soc.bar.setAttribute('class', `soc-bar ${cls}`);
+        text(b.soc.text, `SoC ${Math.round(pct)} %`);
+        put(b.soc.bar, 'width', ((BOX_W - 3) * Math.max(0, Math.min(100, pct)) / 100).toFixed(1));
+        put(b.soc.bar, 'class', `soc-bar ${cls}`);
       }
-      b.rect.setAttribute('class', `equip${st.cls === 'alarm' ? ' alarm' : ''}${snap.enabled === false ? ' off' : ''}`);
+      put(b.rect, 'class', `equip${st.cls === 'alarm' ? ' alarm' : ''}${snap.enabled === false ? ' off' : ''}`);
     }
   }
 

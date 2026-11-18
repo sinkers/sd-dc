@@ -26,7 +26,11 @@ response, so it applies in all three runs.
 from __future__ import annotations
 
 from ..components import REGISTRY, PriceSignal
+from ..components.price import nem_days
+from ..events import sequence
+from ..report import plant
 from ..network import Network, interfaces_for
+from ..params import field, resolve
 
 ID = "bess-dr"
 TITLE = "Grid, BESS and UPS"
@@ -223,11 +227,135 @@ SCENARIOS = [
 
 
 def timing(sc: dict) -> dict:
-    """Where a scenario's run starts, how long it lasts and its step, plus its grid events."""
+    """Where a scenario's run starts, how long it lasts and its step, plus its injected events."""
     start, end = sc.get("window", [0.0, 24.0])
     dt_min = sc["dt_s"] / 60 if "dt_s" in sc else sc.get("dt_min", 5)
     return {"start_h": start, "hours": end - start, "dt_min": dt_min,
-            "outages": sc.get("outages", []), "sags": sc.get("sags", [])}
+            "outages": sc.get("outages", []), "sags": sc.get("sags", []),
+            "price_events": sc.get("price_events", []), "load_events": sc.get("load_events", [])}
+
+
+# ── Scenario editor ─────────────────────────────────────────────────────────
+# A scenario the editor builds is a price source, a window, a step and a list
+# of injected events. The four event types and their fields are served to the
+# viewer as schemas, the same way component parameters are.
+
+EVENT_TYPES = {
+    "sag": {"label": "Voltage sag", "schema": [
+        field("residual_pct", "Residual voltage", default=70, unit="% of nominal", min=0, max=89, step=1),
+        field("duration_ms", "Duration", default=150, unit="ms", min=10, max=5000, step=10)]},
+    "outage": {"label": "Grid outage", "schema": [
+        field("duration_s", "Duration", default=60, unit="s", min=1, max=14400, step=1)]},
+    "price": {"label": "Price spike", "schema": [
+        field("price", "Spot price", default=5000, unit="$/MWh", min=-1000, max=17500, step=10),
+        field("duration_min", "Duration", default=30, unit="min", min=5, max=480, step=5)]},
+    "load": {"label": "Load change", "schema": [
+        field("utilisation_pct", "GPU utilisation", default=100, unit="%", min=0, max=100, step=1),
+        field("duration_min", "Duration", default=30, unit="min", min=1, max=720, step=1)]},
+}
+DT_CHOICES = [1, 2, 5, 10, 30, 60, 300]
+MAX_STEPS = 6000
+MAX_EVENTS = 50
+
+
+def price_sources() -> list[dict]:
+    out = [{"value": f"nem:{k}", "label": f"{d['region']} {d['date']} ({d['summary']})"}
+           for k, d in nem_days()["days"].items()]
+    return out + [{"value": "tou", "label": "Time-of-use tariff (synthetic)"},
+                  {"value": "flat", "label": "Flat price (synthetic)"}]
+
+
+def _price_spec(src: str, flat_price: float = 100) -> dict:
+    if src.startswith("nem:"):
+        key = src[4:]
+        if key not in nem_days()["days"]:
+            raise ValueError(f"unknown price day {key!r}")
+        return {"kind": "nem", "key": key}
+    if src == "tou":
+        return {"kind": "tou"}
+    if src == "flat":
+        return {"kind": "flat", "price": float(flat_price)}
+    raise ValueError(f"unknown price source {src!r}")
+
+
+def editor_spec(sc: dict) -> dict:
+    """A preset scenario in the editor's terms, so it can be opened and changed."""
+    pr = sc["price"]
+    src = f"nem:{pr['key']}" if pr["kind"] == "nem" else pr["kind"]
+    events = [{"type": "sag", "t": x["t"], "residual_pct": x["residual_pct"], "duration_ms": x["duration_ms"]}
+              for x in sc.get("sags", [])]
+    events += [{"type": "outage", "t": a, "duration_s": round((b - a) * 3600)} for a, b in sc.get("outages", [])]
+    events += [{"type": "price", **e} for e in sc.get("price_events", [])]
+    events += [{"type": "load", **e} for e in sc.get("load_events", [])]
+    start, end = sc.get("window", [0.0, 24.0])
+    return {"label": sc["label"], "price": src, "flat_price": pr.get("price", 100), "window": [start, end],
+            "dt_s": sc.get("dt_s", round(sc.get("dt_min", 5) * 60)), "events": sorted(events, key=lambda e: e["t"]),
+            "params": sc.get("params", {})}
+
+
+def custom_scenario(spec: dict) -> dict:
+    """Validate an editor spec and turn it into a scenario. Raises ValueError with a reason."""
+    if not isinstance(spec, dict):
+        raise ValueError("custom scenario must be an object")
+    # Times arrive as hours from a browser. Round the window to the second and
+    # events to the millisecond, so steps and events share exact edges and a
+    # sag on a step boundary lands in that step, not the one before.
+    sec = lambda h: round(float(h) * 3600) / 3600            # noqa: E731
+    msec = lambda h: round(float(h) * 3.6e6) / 3.6e6         # noqa: E731
+    start, end = (sec(x) for x in spec.get("window", [0, 24]))
+    if not (0 <= start < end <= 24):
+        raise ValueError("window must lie within 00:00 and 24:00, start before end")
+    dt_s = int(spec.get("dt_s", 300))
+    if dt_s not in DT_CHOICES:
+        raise ValueError(f"step must be one of {DT_CHOICES} seconds")
+    steps = round((end - start) * 3600 / dt_s)
+    if steps > MAX_STEPS:
+        raise ValueError(f"{steps} steps is too many (limit {MAX_STEPS}); use a longer step or a shorter window")
+    events = spec.get("events", [])
+    if len(events) > MAX_EVENTS:
+        raise ValueError(f"at most {MAX_EVENTS} events")
+    sc = {"id": "custom", "label": str(spec.get("label") or "Custom scenario")[:120],
+          "description": "Built in the scenario editor.",
+          "price": _price_spec(spec.get("price", "tou"), spec.get("flat_price", 100)),
+          "window": [start, end], "dt_s": dt_s, "params": spec.get("params", {}),
+          "sags": [], "outages": [], "price_events": [], "load_events": []}
+    for e in events:
+        kind = e.get("type")
+        if kind not in EVENT_TYPES:
+            raise ValueError(f"unknown event type {kind!r}")
+        t = msec(e.get("t", start))
+        if not (0 <= t < 24):
+            raise ValueError("event time must be within the day")
+        v = resolve(EVENT_TYPES[kind]["schema"], e)
+        if kind == "sag":
+            sc["sags"].append({"t": t, "residual_pct": v["residual_pct"], "duration_ms": v["duration_ms"]})
+        elif kind == "outage":
+            sc["outages"].append([t, t + v["duration_s"] / 3600])
+        elif kind == "price":
+            sc["price_events"].append({"t": t, "price": v["price"], "duration_min": v["duration_min"]})
+        else:
+            sc["load_events"].append({"t": t, "utilisation_pct": v["utilisation_pct"], "duration_min": v["duration_min"]})
+    return sc
+
+
+def injected(sc: dict) -> list[dict]:
+    """The scenario's own events, for the report: what was done to the site, and when."""
+    from ..engine import clock
+    out = []
+    for x in sc.get("sags", []):
+        out.append({"t": x["t"], "clock": clock(x["t"], True), "type": "sag",
+                    "event": f"Voltage sag to {x['residual_pct']:.0f} % for {x['duration_ms']:.0f} ms"})
+    for a, b in sc.get("outages", []):
+        d = (b - a) * 3600
+        out.append({"t": a, "clock": clock(a, True), "type": "outage",
+                    "event": f"Grid outage for {d:.0f} s" if d < 120 else f"Grid outage for {d / 60:.0f} min"})
+    for e in sc.get("price_events", []):
+        out.append({"t": e["t"], "clock": clock(e["t"], True), "type": "price",
+                    "event": f"Price set to ${e['price']:,.0f}/MWh for {e['duration_min']:.0f} min"})
+    for e in sc.get("load_events", []):
+        out.append({"t": e["t"], "clock": clock(e["t"], True), "type": "load",
+                    "event": f"GPU utilisation set to {e['utilisation_pct']:.0f} % for {e['duration_min']:.0f} min"})
+    return sorted(out, key=lambda e: e["t"])
 
 
 def scenario(sid: str) -> dict:
@@ -246,9 +374,11 @@ def describe() -> dict:
                       "kind_proposed": getattr(cls, "kind_proposed", False), "schema": cls.schema}
     return {
         "id": ID, "title": TITLE, "description": DESCRIPTION,
-        "model": model(), "assets": comps,
+        "model": model(), "assets": comps, "defaults": DEFAULTS,
         "scenarios": [{"id": s["id"], "label": s["label"], "description": s["description"], "params": merge_params(s, {}),
-                       **timing(s)} for s in SCENARIOS],
+                       **timing(s), "editor": editor_spec(s)} for s in SCENARIOS],
+        "editor": {"event_types": EVENT_TYPES, "price_sources": price_sources(), "dt_choices": DT_CHOICES,
+                   "max_steps": MAX_STEPS, "max_events": MAX_EVENTS},
     }
 
 
@@ -271,12 +401,16 @@ def _run_once(params: dict, price: PriceSignal, tm: dict, *, bess_on: bool, dr_c
     net = Network(model(params), price, outages=tm["outages"], sags=tm["sags"], overrides=over,
                   measurements=measurements)
     grid, bess, gen = net.nodes["UTIL"].comp, net.nodes["BESS-1"].comp, net.nodes["GEN-1"].comp
+    net.nodes["GPU-1"].comp.schedule = [(e["t"], e["t"] + e["duration_min"] / 60, e["utilisation_pct"])
+                                        for e in tm["load_events"]]
     b = bess.battery
     e0 = b.energy_kwh
     # Energy the battery holds above (or below) where it started, valued as AC
-    # at the run's median price. The optimal controller values it the same way.
-    fc = sorted(price.forecast(tm["dt_min"] / 60, tm["hours"], tm["start_h"]))
-    median = fc[len(fc) // 2]
+    # at the median of the price day as recorded: what it would cost to put the
+    # energy back on an ordinary day. Not the run's own median, which a window
+    # dominated by an injected spike would push to the spike price.
+    base = sorted(price.series)
+    median = base[len(base) // 2]
     worth = b.eta * bess.pcs.eta * median / 1000
     cost, wear, stored = [], [], []
 
@@ -294,11 +428,12 @@ def _saving(base: dict, run: dict, i: int = -1) -> float:
     return base["cost"][i] - run["cost"][i] - run["wear"][i] + run["stored"][i]
 
 
-def simulate(scenario_id: str = "nsw-spike", params: dict | None = None, measurements=None) -> dict:
-    sc = scenario(scenario_id)
+def simulate(scenario_id: str = "nsw-spike", params: dict | None = None, measurements=None,
+             custom: dict | None = None) -> dict:
+    sc = custom_scenario(custom) if scenario_id == "custom" else scenario(scenario_id)
     p = merge_params(sc, params)
-    price = _price(sc["price"])
     tm = timing(sc)
+    price = _price(sc["price"]).with_overrides(tm["price_events"])
 
     kw = dict(measurements=measurements)
     # Each run adds one demand-response measure to the one before, so the saving
@@ -374,5 +509,8 @@ def simulate(scenario_id: str = "nsw-spike", params: dict | None = None, measure
         "price": {"name": price.name, "source": price.source, "series": price.series, "interval_min": price.interval_min},
         "params": p,
         "summary": summary,
+        "injected": injected(sc),
+        "log": sequence(rows, {aid: {"name": name, "kind": kind} for aid, name, kind in ASSETS}),
+        "plant": plant(rows, {aid: {"name": name, "kind": kind} for aid, name, kind in ASSETS}),
         "rows": rows,
     }
