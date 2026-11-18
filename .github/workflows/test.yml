@@ -32,7 +32,8 @@ jobs:
   # feeder.py and its service are standard library only, with 3.9 as the
   # measured floor. The rest of the repo needs 3.10.
   cable-sizing-floor:
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04, which has no Python 3.9 build.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
