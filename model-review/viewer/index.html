@@ -1,0 +1,112 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AU01 — model review</title>
+<style>
+  :root {
+    --bg: #101418; --panel: #181d23; --line: #2a3239;
+    --ink: #e6ebf0; --dim: #8b98a5; --accent: #7fb2e8;
+    --ok: #4ec9a0; --warn: #e0b34a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+         overflow: hidden; }
+  #scene { position: fixed; inset: 0; }
+  #scene canvas { display: block; }
+  .panel { position: fixed; background: rgba(24,29,35,.93); border: 1px solid var(--line);
+           border-radius: 8px; backdrop-filter: blur(8px); }
+  #left { top: 12px; left: 12px; width: 310px; padding: 14px;
+          max-height: calc(100vh - 24px); overflow-y: auto; }
+  #right { top: 12px; right: 12px; width: 260px; padding: 14px; }
+  #pick { bottom: 12px; left: 12px; padding: 10px 14px; display: none; max-width: 460px; }
+  #loading { position: fixed; inset: 0; display: grid; place-content: center;
+             background: var(--bg); z-index: 20; text-align: center; }
+  h1 { font-size: 14px; margin: 0 0 2px; letter-spacing: .01em; }
+  h2 { font-size: 10px; text-transform: uppercase; letter-spacing: .09em;
+       color: var(--dim); margin: 16px 0 7px; font-weight: 600; }
+  h2:first-child { margin-top: 0; }
+  .sub { color: var(--dim); font-size: 11px; margin: 0 0 4px; }
+  .row { display: flex; justify-content: space-between; gap: 10px; padding: 2px 0;
+         font-variant-numeric: tabular-nums; }
+  .row span:first-child { color: var(--dim); }
+  .row span:last-child { font-weight: 500; }
+  label.toggle { display: flex; align-items: center; gap: 8px; padding: 3px 0; cursor: pointer;
+                 user-select: none; }
+  label.toggle input { accent-color: #5b8fd0; margin: 0; }
+  label.toggle .t { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  label.toggle small { color: var(--dim); font-size: 10px; font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; accent-color: #5b8fd0; margin: 6px 0 2px; }
+  input[type=search] { width: 100%; background: #22292f; color: var(--ink);
+                       border: 1px solid var(--line); border-radius: 5px; padding: 5px 7px;
+                       font: inherit; font-size: 12px; }
+  .views { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 4px; }
+  .views button, .btn { background: #22292f; color: var(--ink); border: 1px solid var(--line);
+           border-radius: 5px; padding: 5px 0; font: inherit; font-size: 11px; cursor: pointer; }
+  .views button:hover, .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .reset { float: right; font-size: 10px; color: var(--accent); cursor: pointer;
+           text-transform: none; letter-spacing: 0; font-weight: 500; }
+  #pick b { font-size: 13px; }
+  #pick .meta { color: var(--dim); font-size: 11px; margin-top: 3px;
+                font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  #hits { color: var(--dim); font-size: 11px; margin-top: 5px; }
+  .foot { color: var(--dim); font-size: 10.5px; margin-top: 12px; line-height: 1.5; }
+</style>
+
+<div id="scene"></div>
+
+<div id="loading">
+  <div>
+    <h1>AU01 — model review</h1>
+    <p class="sub" id="loadingText">loading model…</p>
+  </div>
+</div>
+
+<div class="panel" id="left">
+  <h1>AU01 George Town</h1>
+  <p class="sub" id="source">—</p>
+
+  <h2>Find a part</h2>
+  <input type="search" id="search" placeholder="rack, pump, transformer…" autocomplete="off">
+  <div id="hits"></div>
+
+  <h2>Groups <span class="reset" id="allOn">all on</span></h2>
+  <div id="groups"></div>
+
+  <div class="foot" id="exportNote"></div>
+</div>
+
+<div class="panel" id="right">
+  <h2>View</h2>
+  <div class="views">
+    <button data-view="iso">Iso</button>
+    <button data-view="top">Top</button>
+    <button data-view="front">South</button>
+    <button data-view="back">North</button>
+    <button data-view="left">West</button>
+    <button data-view="right">East</button>
+  </div>
+  <button class="btn" id="fit" style="width:100%;margin-top:4px">Fit model</button>
+
+  <h2>Section <span class="reset" id="clipOff">off</span></h2>
+  <p class="sub" id="clipLabel">cut horizontally to see inside</p>
+  <input type="range" id="clip" min="0" max="100" value="100">
+
+  <h2>Model</h2>
+  <div class="row"><span>parts</span><span id="statParts">—</span></div>
+  <div class="row"><span>unique meshes</span><span id="statMeshes">—</span></div>
+  <div class="row"><span>triangles drawn</span><span id="statTris">—</span></div>
+  <div class="row"><span>extent</span><span id="statSize">—</span></div>
+  <div class="row"><span>fps</span><span id="statFps">—</span></div>
+</div>
+
+<div class="panel" id="pick">
+  <b id="pickLabel"></b>
+  <div class="meta" id="pickMeta"></div>
+</div>
+
+<!-- GLTFLoader and OrbitControls import the bare specifier "three". -->
+<script type="importmap">
+{ "imports": { "three": "./vendor/three.module.js" } }
+</script>
+<script type="module" src="./app.js"></script>
