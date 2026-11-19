@@ -46,10 +46,15 @@ is the template; every label in it must match the model.
 - `shots` — the film. A camera point is `{"anchor", "u", "v", "h"}`: fractions of the anchor box along the frame's x and y (0 to 1 is inside, negative is before it), and metres above the pad. Shot types:
   - `orbit` — `target`, `radius_m`, `height_m`, `from_deg` to `to_deg` (frame angles, 270 is the -y side)
   - `path` — `keys` with `t` (s), `cam`, `look`, optional `lens_mm`; `continue: true` starts from the last shot's camera
-  - `build` — an orbit while `stages` drop in from `drop_m`, one stage every `step_s`, each taking `each_s`
+  - `build` — an orbit while `stages` drop in from `drop_m`, one stage every `step_s`, each taking `each_s`. A stage may carry a `caption`; `intro_caption` shows before the first stage. `"stages": "plan"` takes the stages from the plan (below)
+  - any shot can carry `caption`: on-screen text for the whole shot
   - any shot can carry `events`: `lift` (rise `dz_m` over `dur_s`, then hide), `hide`, `show`, `restore`
 
 Each shot has its own camera, switched by a timeline marker, so cuts are clean.
+
+- `extra_models` — `[{"glb": "exploded.glb", "parts": "exploded.parts.json"}]`, files in the work folder. Imported after `model.glb`; main parts named in the extra table's `replaces` are dropped, so a linked component exported part by part (construction-sequence `explode_links.py`) stands in for its single solid.
+- `plan` — a construction-sequence `plan-<mode>.json` drives the build shot: `{"file", "stage_by": "layer" | "task", "captions": {id: text}, "skip": [id]}`. Each part the plan builds goes to collection `plan_<id>` of its layer or task, unless an explicit `collections` rule claims it first; an explicit collection then arrives with the stage that builds most of its parts. Parts the plan does not build (existing, context) stand throughout. Captions default to the layer or task name; set them for an audience.
+- `caption_style` — `font` (file), `size` and `y` (fractions of frame height), `colour`, `box` (background opacity). Captions are written to `captions.json` and burnt in by ffmpeg at the encode step (`captions_filter.py`), so stills do not show them.
 
 ## Requirements
 
