@@ -106,8 +106,10 @@ if [ "$RENDER" -eq 1 ]; then
   echo "== 4/4 encode"
   FPS="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["fps"])' "$OUT/render_info.json")"
   if [ -x "$FFMPEG" ]; then
+    # Captions (build stages, shot titles) are burnt in here, not rendered.
+    VF="$(python3 "$HERE/captions_filter.py" "$OUT")"
     "$FFMPEG" -y -loglevel error -framerate "$FPS" -pattern_type glob -i "$OUT/frames/*.png" \
-      -c:v libx264 -pix_fmt yuv420p -crf 18 -movflags +faststart "$OUT/flythrough.mp4"
+      ${VF:+-vf "$VF"} -c:v libx264 -pix_fmt yuv420p -crf 18 -movflags +faststart "$OUT/flythrough.mp4"
     echo "wrote $OUT/flythrough.mp4"
   else
     echo "ffmpeg not found; frames are in $OUT/frames/ at $FPS fps" >&2

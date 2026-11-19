@@ -38,6 +38,7 @@ import os
 import re
 import sys
 import time
+from collections import Counter
 
 import bpy
 import bmesh
@@ -155,8 +156,28 @@ def reset_scene():
     return scene
 
 
-def import_model(work):
-    glb = os.path.join(work, "model.glb")
+def import_model(work, config=None):
+    """The main GLB, then any extra_models. An extra model's part table may name
+    the main parts it `replaces` (a linked component exported part by part):
+    those are dropped so the pieces stand in for them."""
+    parts = import_glb(os.path.join(work, "model.glb"))
+    for extra in (config or {}).get("extra_models", []):
+        with open(os.path.join(work, extra["parts"])) as fh:
+            replaces = set(json.load(fh).get("replaces", []))
+        if replaces:
+            keep = []
+            for obj in parts:
+                if (obj.get("name") or obj.name) in replaces:
+                    bpy.data.objects.remove(obj, do_unlink=True)
+                else:
+                    keep.append(obj)
+            say("dropped %d parts replaced by %s" % (len(parts) - len(keep), extra["glb"]))
+            parts = keep
+        parts += import_glb(os.path.join(work, extra["glb"]))
+    return parts
+
+
+def import_glb(glb):
     say("importing %s (%.1f MB)" % (glb, os.path.getsize(glb) / 1e6))
     before = set(bpy.data.objects)
     bpy.ops.import_scene.gltf(filepath=glb)
@@ -176,10 +197,73 @@ def import_model(work):
     return parts
 
 
-def part_paths(work):
-    with open(os.path.join(work, "model.parts.json")) as fh:
-        table = json.load(fh)["part_table"]
-    return {row["name"]: (row["label"], row.get("path") or []) for row in table}
+def part_paths(work, config=None):
+    tables = ["model.parts.json"] + [e["parts"] for e in (config or {}).get("extra_models", [])]
+    paths = {}
+    for t in tables:
+        with open(os.path.join(work, t)) as fh:
+            for row in json.load(fh)["part_table"]:
+                paths[row["name"]] = (row["label"], row.get("path") or [])
+    return paths
+
+
+# ---------------------------------------------------------------- plan
+
+def load_plan(config, work, config_path):
+    """A construction-sequence plan (plan-<mode>.json) drives the build shot.
+
+    "plan": {"file": "plan-ground_up.json", "stage_by": "layer" | "task",
+             "captions": {"<layer or task id>": "on-screen text"},
+             "skip": ["<id>", ...]}
+
+    Every part the plan builds goes to the collection "plan_<id>" of its layer
+    (or task), unless an explicit collection rule claims it first. Parts the
+    plan does not build (existing, context) stay on screen throughout. A build
+    shot with "stages": "plan" then drops the stages in the plan's order."""
+    spec = config.get("plan")
+    if not spec:
+        return None
+    path = spec["file"]
+    if not os.path.isabs(path):
+        for base in (work, os.path.dirname(os.path.abspath(config_path))):
+            if os.path.exists(os.path.join(base, path)):
+                path = os.path.join(base, path)
+                break
+    with open(path) as fh:
+        plan = json.load(fh)
+    by = spec.get("stage_by", "layer")
+    task_layer = {t["id"]: t["layer"] for t in plan["tasks"]}
+    if by == "layer":
+        order = [l["id"] for l in plan["layers"]]
+        names = {l["id"]: l["name"] for l in plan["layers"]}
+    else:
+        tasks = sorted(plan["tasks"], key=lambda t: (t["start"], t["finish"]))
+        order = [t["id"] for t in tasks]
+        names = {t["id"]: t["name"] for t in tasks}
+    part_stage = {}
+    for name, entry in plan["parts"].items():
+        tid = entry.get("build")
+        if tid in task_layer:            # "existing" and the like stand throughout
+            part_stage[name] = task_layer[tid] if by == "layer" else tid
+    say("plan %s (%s): %d parts over %d %ss" % (os.path.basename(path), plan.get("mode", "?"),
+                                              len(part_stage), len(order), by))
+    return {"order": order, "names": names, "part_stage": part_stage,
+            "captions": spec.get("captions", {}), "skip": set(spec.get("skip", [])),
+            "coll_stage": {}}
+
+
+def plan_stages(plan, rigs):
+    """Build-shot stages in plan order, each with its caption."""
+    stages = []
+    for sid in plan["order"]:
+        if sid in plan["skip"]:
+            continue
+        colls = ["plan_" + sid] if ("plan_" + sid) in rigs else []
+        colls += sorted(c for c, s in plan["coll_stage"].items() if s == sid)
+        if colls:
+            stages.append({"collections": colls,
+                           "caption": plan["captions"].get(sid, plan["names"][sid])})
+    return stages
 
 
 def world_bbox(obj):
@@ -188,7 +272,7 @@ def world_bbox(obj):
             max(p.x for p in pts), max(p.y for p in pts), max(p.z for p in pts))
 
 
-def classify(parts, paths, config):
+def classify(parts, paths, config, plan=None):
     """Put every part in exactly one collection, by the config's ordered rules."""
     rules = config.get("collections", [])
     compiled = []
@@ -199,6 +283,7 @@ def classify(parts, paths, config):
     flat_limit = float(config.get("drop_flat_below_m", 0.002))
 
     groups, dropped_flat, dropped_excluded = {}, 0, 0
+    votes = {}          # explicit collection -> plan stages of its parts
     for obj in parts:
         name = obj.get("name") or obj.name
         label, path = paths.get(name, (obj.get("label") or obj.name, []))
@@ -214,12 +299,22 @@ def classify(parts, paths, config):
             bpy.data.objects.remove(obj, do_unlink=True)
             dropped_flat += 1
             continue
-        target = config.get("default_collection", "other")
+        target = None
         for cname, cpaths, regex in compiled:
             if (cpaths and cpaths.intersection(path)) or (regex and regex.search(label)):
                 target = cname
                 break
+        stage = plan["part_stage"].get(name) if plan else None
+        if target is None:
+            target = ("plan_" + stage) if stage else config.get("default_collection", "other")
+        elif stage:
+            votes.setdefault(target, Counter())[stage] += 1
         groups.setdefault(target, []).append(obj)
+    if plan:
+        # An explicit collection (a roof that a later shot lifts) arrives with
+        # the plan stage that builds most of it.
+        for cname, c in votes.items():
+            plan["coll_stage"][cname] = c.most_common(1)[0][0]
     say("classified %d parts into %d collections (%d flat and %d excluded dropped)"
         % (sum(len(v) for v in groups.values()), len(groups), dropped_flat, dropped_excluded))
     for cname in sorted(groups):
@@ -595,8 +690,11 @@ def key_camera(cam, tgt, frame, pos, look, lens=None):
         cam.data.keyframe_insert("lens", frame=frame)
 
 
-def build_shots(config, anchors, timeline, fps):
+def build_shots(config, anchors, timeline, fps, plan=None, captions=None):
+    """captions, if given, collects on-screen text as {text, start_s, end_s}:
+    one per build stage that has a caption, and one per shot with "caption"."""
     scene = bpy.context.scene
+    captions = captions if captions is not None else []
     frame = 1
     last = None            # (pos, look, lens) at the end of the previous shot
     shot_spans = []
@@ -655,19 +753,37 @@ def build_shots(config, anchors, timeline, fps):
                     timeline.key(name, fs)
                     timeline.key(name, fe, z=0.0, visible=True)
 
+        if shot.get("caption"):
+            captions.append({"text": shot["caption"], "start_s": (f0 - 1) / fps,
+                             "end_s": f1 / fps})
         if kind == "build":
             stages = shot["stages"]
+            if stages == "plan":
+                if not plan:
+                    raise SystemExit("shot %s: stages \"plan\" needs a \"plan\" in the config"
+                                     % shot["name"])
+                stages = plan_stages(plan, timeline.rigs)
             height = shot.get("drop_m", 30.0)
             each = shot.get("each_s", 2.0)
             gap = shot.get("step_s", 1.2)
             start = f0 + int(round(shot.get("start_s", 1.0) * fps))
             staged = [c for st in stages for c in st["collections"] if c in timeline.rigs]
             for name in staged:                       # clear the site
-                timeline.key(name, f0)
-                timeline.key(name, f0 + 1, z=height, visible=False)
+                # hidden from the shot's first frame; a key on the frame before
+                # keeps them standing through any earlier shot
+                if f0 > 1:
+                    timeline.key(name, f0 - 1)
+                timeline.key(name, f0, z=height, visible=False)
+            if shot.get("intro_caption"):
+                captions.append({"text": shot["intro_caption"], "start_s": (f0 - 1) / fps,
+                                 "end_s": (start - 1) / fps})
             for i, st in enumerate(stages):
                 s0 = start + int(round(i * gap * fps))
                 s1 = s0 + int(round(each * fps))
+                if st.get("caption"):
+                    nxt = start + int(round((i + 1) * gap * fps)) if i + 1 < len(stages) else f1 + 1
+                    captions.append({"text": st["caption"], "start_s": (s0 - 1) / fps,
+                                     "end_s": (min(nxt, f1 + 1) - 1) / fps})
                 for name in st["collections"]:
                     if name in timeline.rigs:
                         timeline.drop(name, s0, min(s1, f1), height)
@@ -694,8 +810,9 @@ def main():
         scene_info = json.load(fh)
 
     scene = reset_scene()
-    parts = import_model(args.work)
-    groups = classify(parts, part_paths(args.work), config)
+    parts = import_model(args.work, config)
+    plan = load_plan(config, args.work, args.config)
+    groups = classify(parts, part_paths(args.work, config), config, plan)
     rigs = build_rigs(groups)
     linearise_imported_colours([o for objs in groups.values() for o in objs])
     apply_material_overrides(groups, config)
@@ -737,7 +854,12 @@ def main():
     bpy.context.view_layer.update()          # matrix_world after the recentre
     anchors = Anchors(frame, rigs, config)
     timeline = RigTimeline(rigs)
-    spans = build_shots(config, anchors, timeline, scene.render.fps)
+    captions = []
+    spans = build_shots(config, anchors, timeline, scene.render.fps, plan, captions)
+    with open(os.path.join(args.work, "captions.json"), "w") as fh:
+        json.dump({"style": config.get("caption_style", {}), "items": captions}, fh, indent=1)
+    if captions:
+        say("%d captions -> captions.json (burnt in at encode)" % len(captions))
 
     blend = os.path.join(args.work, "flythrough.blend")
     bpy.ops.wm.save_as_mainfile(filepath=blend)
