@@ -12,6 +12,28 @@ config repo; this file is about the tool.
 | 2D maps, titles and overlays | HTML page, `render(t)` per frame, headless Chrome via Playwright | 0.22 s a frame (2,160 frames in about 8 min) | Same page draws opaque 2D scenes and transparent overlays for the 3D section |
 | Assembly | ffmpeg overlay and concat of PNG sequences, libx264 | over 10 min for 90 s at 720p | PNG decode and RGBA overlay dominate |
 
+## Workflow: preview before committing to a full render
+
+Every film is built in tiers, and nothing goes to the next tier until the one
+before it has been reviewed:
+
+| Tier | Size | Frame rate | Render | For |
+|---|---|---|---|---|
+| `preview` | 640 × 360 (or smaller) | 12 fps, every second frame | minimum samples | story, timing, framing, banners and voice sync |
+| `draft` | 1280 × 720 | 24 fps | standard | the review cut |
+| `final` | 1920 × 1080 | 24 fps | full quality | delivery, only after the draft is signed off |
+
+- A preview renders about 1/12 of the draft's pixel-frames, so it should come
+  back in a few minutes rather than tens of minutes.
+- Each tier renders into its own folders, so a preview never overwrites a
+  draft, and a re-run only renders missing frames.
+- One build command takes the tier name and runs render, overlays, assembly
+  and the audio mux end to end, printing time per stage.
+- Changes to text, banners, voice or sound need only the overlay and audio
+  layers rebuilt, at any tier, not the 3D frames.
+- Next: a frame-range option (`--from 01:03 --to 01:12`) to preview one scene
+  without building the whole film.
+
 ## Performance (next releases)
 
 1. **Parallel frame ranges.** Run three or four Blender processes on split frame
