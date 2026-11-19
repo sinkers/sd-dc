@@ -1,0 +1,101 @@
+# PRIVATE: project data. Do not commit to a public repository.
+# Brief for the brief-to-3d process. Copy into the project folder as <site>_brief.yaml.
+#
+# Every leaf answer is {value, units, status, source, id}:
+#   status: confirmed | assumption | OPEN
+#   OPEN items also carry owner + question; assumptions carry accepted_by.
+# Requirements add class: must (with instrument) | feasibility.
+
+meta:
+  brief_id: <PROJECT>-GEN-BRF-<NNNN>        # or OPEN until allocated
+  revision: "0.1"
+  status: draft
+  updated: <YYYY-MM-DD>
+  prepared_by: <name>
+  sources: []                                # every document used: number, revision, title
+
+project:                                     # R0
+  code: {value: null, status: OPEN, id: BR-PRJ-001}
+  name: {value: null, status: OPEN, id: BR-PRJ-002}
+  folder: {value: null, status: OPEN, id: BR-PRJ-003}
+  reference_design: {value: null, status: OPEN, id: BR-PRJ-004}
+  deliverables:                              # D1-D10, see references/deliverables.md
+    D1: {wanted: true}
+    D2: {wanted: true}
+    D3: {wanted: true}
+    D4: {wanted: null}
+    D5: {wanted: null}
+    D6: {wanted: null}
+    D7: {wanted: null}
+    D8: {wanted: null, note: compiler pending}
+    D9: {wanted: null}
+    D10: {wanted: null}
+
+site:                                        # R1
+  address: {value: null, status: OPEN, id: BR-SITE-001}
+  title: {value: null, status: OPEN, id: BR-SITE-002}
+  boundary: {source: null, polygon_mm: null, status: OPEN, id: BR-SITE-003}
+  crs: {value: null, status: OPEN, id: BR-SITE-004}            # e.g. EPSG:28354
+  datum: {value: AHD, status: OPEN, id: BR-SITE-005}
+  survey: {file: null, date: null, by: null, status: OPEN, id: BR-SITE-006}
+  aerial: {file: null, date: null, control_points: [], status: OPEN, id: BR-SITE-007}
+  access: []                                 # {id, road, authority, location, status}
+  setbacks: []                               # requirement: {id, what, from, value_m, class, instrument}
+  easements: []
+  overlays: []
+  pad: {rl_m: null, rule: null, status: OPEN, id: BR-SITE-009}
+  existing: []                               # {id, item, keep_or_remove}
+  drawn_but_absent: []                       # features in drawings that are not on the ground
+
+programme:                                   # R2
+  it_mw: {value: null, units: MW, status: OPEN, id: BR-PRG-001}
+  total_mw: {value: null, units: MW, firm: null, flexible: null, status: OPEN, id: BR-PRG-002}
+  racks: {count: null, kw_per_rack: null, type: null, status: OPEN, id: BR-PRG-003}
+  pods: {count: null, racks_per_pod: null, status: OPEN, id: BR-PRG-004}
+  cooling: {topology: null, design_ambient_source: null, status: OPEN, id: BR-PRG-005}
+  redundancy: []                             # {id, system, level, class, instrument}
+  phases: []                                 # {phase, scope, date}
+
+buildings: []                                # R3 - one entry per building:
+# - id: B-HALL
+#   name: Data hall
+#   footprint: {source: <drawing rev>, size_mm: [L, W], position_rule: <rule>, status: OPEN}
+#   storeys:
+#   - {name: L1, ffl_mm: 0, floor_to_floor_mm: null, clear_mm: null, status: OPEN}
+#   roof: {type: null, pitch_deg: null, eave_mm: null, ridge_mm: null, parapet_mm: null, status: OPEN}
+#   structure: {grid_mm: null, frames_at_mm: null, status: OPEN}
+#   envelope: {walls: null, roof: null, glazing: null}
+#   voids: []
+
+rooms: []                                    # R4 - one entry per room:
+# - {id: R-2.01, building: B-OFF, storey: L2, number: "2.01", name: NOC,
+#    rds_area_m2: 72.0, zone: restricted, polygon_source: <drawing rev>, status: confirmed}
+adjacencies: []                              # {id, a, b, rule, class}
+openings: []                                 # {id, building, storey, wall, kind, width_mm, head_mm, sill_mm, security}
+vertical_circulation: []                     # {id, kind, storeys, egress}
+
+plant: []                                    # R5 - {id, tag, catalogue_ref, envelope_mm, position_source, phase, status}
+clearances: []                               # {id, what, from, value_mm, source, class}
+
+site_works:                                  # R6
+  fence: {rule: null, height_mm: null, type: null, status: OPEN, id: BR-SW-001}
+  gates: []                                  # {id, width_mm, type, road}
+  roads: []                                  # {id, kind, width_mm, design_vehicle}
+  parking: {bays: null, accessible: null, dimensions_source: null, status: OPEN, id: BR-SW-005}
+  lighting: {in_scope: null}
+  drainage: {in_scope: null}
+  landscaping: {in_scope: null}
+
+connections:                                 # R7 - sources for the IndustroML connections
+  electrical: {source: null, status: OPEN, id: BR-CON-001}
+  mechanical: {source: null, status: OPEN, id: BR-CON-002}
+  data: {source: null, status: OPEN, id: BR-CON-003}
+  control_safety: {source: null, status: OPEN, id: BR-CON-004}
+
+visualisation:                               # R8
+  toggle_groups: []
+  flyover: {shots: [], build_sequence: [], quality: draft, audience: null}
+
+checks: []                                   # R9 - {id, check, rule, source, tolerance, signoff}
+
+open_items: []                               # mirrored into D3

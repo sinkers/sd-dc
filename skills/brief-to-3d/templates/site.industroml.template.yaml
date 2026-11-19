@@ -1,0 +1,52 @@
+# PRIVATE: project data. Do not commit to a public repository.
+# IndustroML v0.1 skeleton for a site built through brief-to-3d.
+# Geometry conventions: ../references/industroml-geometry.md
+# Validate: python3 ~/workspace/industroml/validate_industroML.py <file> --schema ~/workspace/industroml/industroml.schema.json
+meta:
+  format: IndustroML
+  version: '0.1'
+  site_name: <site name>
+  units: {length: mm, level: mm above pad, pad_rl: m AHD}
+  tags: [brief-to-3d]
+  sources: [<brief id and revision>]
+containers:
+- id: SITE
+  name: <site name>
+  type: site
+  attributes:
+    crs: <EPSG code or local>
+    datum: AHD
+    boundary_mm: []
+    pad_rl_m: null
+- id: B-HALL
+  name: Data hall
+  type: building
+  parent: SITE
+  attributes:
+    frame: {origin_mm: [0, 0, 0], yaw_deg: 0}
+    footprint_mm: []
+    levels: [{name: L1, ffl_mm: 0}]
+    roof: {type: null}
+- id: YARD-1
+  name: Plant yard 1
+  type: area
+  parent: SITE
+  attributes: {polygon_mm: []}
+assets:
+- id: UTIL-1
+  name: Utility supply
+  domain: electrical
+  kind: utility_supply
+  container: SITE
+  attributes: {source: <grid connection document>}
+- id: MSB-1
+  name: Main switchboard 1
+  domain: electrical
+  kind: switchboard
+  container: YARD-1
+  attributes: {position_mm: [0, 0, 0], yaw_deg: 0, envelope_mm: [0, 0, 0], catalogue_ref: null}
+interfaces:
+- {id: UTIL-1.OUT, asset: UTIL-1, name: OUT, domain: electrical, medium: ac_hv_3ph, role: out}
+- {id: MSB-1.IN, asset: MSB-1, name: IN, domain: electrical, medium: ac_hv_3ph, role: in}
+connections:
+- {id: C-UTIL-1, type: cable, from: UTIL-1.OUT, to: MSB-1.IN, attributes: {source: <document>}}
